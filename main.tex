@@ -62,6 +62,82 @@ of two vectors of integers:
 
 \lstinputlisting{src/dotprod.fut}
 
+In Futhark, the notation for an array of element type $t$ is
+\texttt{[]$t$}.  The program declares a function called \texttt{main}
+that takes two arguments, both integer arrays, and returns an integer.
+The program first computes computes the element-wise product of its
+two arguments, resulting in an array of integers, then computes the
+product of the elements in this new array.
+
+If you put this program in a file \texttt{dotprod.fut}, then you can
+compile it to a binary \texttt{dotprod} (or \texttt{dotprod.exe} on
+Windows) by running:
+
+\begin{verbatim}
+$ futhark-c dotprod.fut
+\end{verbatim}
+
+A Futhark program compiled to an executable will read the arguments to
+its \texttt{main} function from standard input, and will print the
+result to standard output:
+
+\begin{verbatim}
+$ echo [2,2,3] [4,5,6] | ./dotprod
+36i32
+\end{verbatim}
+
+In Futhark, an array literal is written with square brackets
+surrounding a comma-separated sequence of elements.  Integer literals
+can be suffixed with a specific type.  This is why \texttt{dotprod}
+prints \texttt{36i32}, rather than just \texttt{36} - this makes it
+clear that the result is a 32-bit integer.  Later we will see when
+these suffixes can be useful.
+
+The \texttt{futhark-c} compiler we used above translates a Futhark
+program into sequential code running on the GPU.  This can be useful
+for testing, and will work on most systems, even those without GPUs.
+However, this wastes the main potential of Futhark: fast parallel
+execution.  We can instead use the \texttt{futhark-opencl} compiler to
+generate an executable that offloads execution via the OpenCL
+framework.  In principle, this allows offloading to any kind of
+device, but the \texttt{futhark-opencl} compilation pipelines makes
+optimisation assumptions that are oriented towards contemporary GPUs.
+Use of \texttt{futhark-opencl} is simple, assuming your system has a
+working OpenCL setup:
+
+\begin{verbatim}
+$ futhark-opencl dotprod.fut
+\end{verbatim}
+
+And execution is just as before:
+
+\begin{verbatim}
+$ echo [2,2,3] [4,5,6] | ./dotprod
+36i32
+\end{verbatim}
+
+In this case, the workload is small enough that there is little
+benefit in parallelising the execution.  In fact, it is likely that
+the OpenCL startup overhead results in several orders of magnitude
+slowdown, over sequential execution, for this tiny dataset.  See
+Section~\ref{sec:benchmarking} for information on how to measure
+execution times.
+
+The ability to compile Futhark programs to executables is useful for
+testing, but it should be noted that it is not how Futhark is intended
+to be used in practice.  As a pure functional array language, Futhark
+is not capable of input handling or user interfaces, and as such
+cannot be used as a general-purpose language.  Futhark is intended to
+be used for small, performance-sensitive parts of larger applications,
+typically by compiling a Futhark program to a \textit{library} that
+can be imported and used by applications written in conventional
+languages.  While this usage is still work-in-progress, see
+Chapter~\ref{chap:interoperability} for more information.
+
+As befits their use for testing, compiled Futhark executables take a
+range of command line options to manipulate their behaviour and print
+debugging information.  These will be introduced as neded.
+
 \section{Core Language}
 
 \section{In-Place Updates}
@@ -77,6 +153,91 @@ fun radix_sort_up(xs: [n]u32) : ([n]u32,[n]i32) =
 
 
 \section{Modules}
+
+\section{Benchmarking}
+\label{sec:benchmarking}
+
+Consider an implementation of dot product:
+
+\lstinputlisting{src/dotprod.fut}
+
+We earlier mentioned that, for small data sets, sequential execution
+is likely to be much faster than parallel execution.  But how much
+faster?  To answer this question, we need to perform some simple
+\textit{benchmarking}.  First, let us compile \texttt{dotprod.fut} to
+two different executables, one for each compiler:
+
+\begin{verbatim}
+$ futhark-c dotprod.fut -o dotprod-c
+$ futhark-opencl dotprod.fut -o dotprod-opencl
+\end{verbatim}
+
+One way to time execution is to use the standard \texttt{time(1)}
+tool:
+
+\begin{verbatim}
+$ echo [2,2,3] [4,5,6] | time ./dotprod-c
+36i32
+0.00user 0.00system 0:00.00elapsed ...
+$ echo [2,2,3] [4,5,6] | time ./dotprod-opencl
+36i32
+0.12user 0.00system 0:00.14elapsed ...
+\end{verbatim}
+
+It seems that \texttt{dotprod-c} executes in less than 10
+milliseconds, while \texttt{dotprod-opencl} takes about 120
+milliseconds.  However, this is not a truly useful comparison, as it
+also measures time taken to read the input (for both executables), as
+well as time taken to initialise the OpenCL driver (for
+\texttt{dotprod-opencl}).  Recall that in a real application, the
+Futhark program would be compiled as a \textit{library}, and the
+startup cost paid just once, while the program may be invoked multiple
+times.  A more precise run-time measurement, where parsing,
+initialisation, and printing of results is not included, can be
+performed using the \texttt{-t} command line option, which specifies a
+file where the run-time (measured in microseconds) should be put:
+
+\begin{verbatim}
+$ echo [2,2,3] [4,5,6] | \
+  ./dotprod-c -t /dev/stderr > /dev/null
+0
+\end{verbatim}
+
+In this case, I ask for the runtime to be printed to the screen, and
+for the normal evaluation result to be thrown away.  Apparently it
+takes less than one microsecond to compute the dot product of two
+three-element vectors on a CPU (this is not very surprising).  On an
+AMD W8100 GPU:
+
+\begin{verbatim}
+$ echo [2,2,3] [4,5,6] | \
+  ./dotprod-opencl -t /dev/stderr > /dev/null
+575
+\end{verbatim}
+
+Almost half a millisecond!  GPUs have fairly high launch cost, and so
+are not particularly suited for this small problem.  We can use the
+\texttt{futhark-dataset(1)} tool to generate random test data of a
+desired size:
+
+\begin{verbatim}
+$ futhark-dataset -g [10000000]int -g [10000000]int > input
+\end{verbatim}
+
+Two ten million element vectors should be enough work to amortise the
+GPU startup cost:
+
+\begin{verbatim}
+$ cat input | ./dotprod-opencl -t /dev/stderr > /dev/null
+2238
+$ cat input | ./dotprod-c -t /dev/stderr > /dev/null
+17078
+\end{verbatim}
+
+That's more like it - parallel execution is now more than seven times
+faster than sequential execution.  This program is entirely
+memory-bound - on a compute-bound algorithm we can expect much greater
+speedups.
 
 \section{When Things Go Wrong}
 
@@ -207,6 +368,8 @@ algorithms.
 \end{enumerate}
 
 \chapter{Interoperability}
+\label{chap:interoperability}
+
 \begin{enumerate}
 \item python and c
 \item examples: mandelbrot, life, cam, nbody
