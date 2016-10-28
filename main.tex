@@ -1,0 +1,137 @@
+\documentclass[11pt]{book}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{url}
+\usepackage{amssymb,amsthm}
+\usepackage[utf8]{inputenc}
+%\usepackage{inconsolata}
+\usepackage{sourcecodepro}
+
+\input{futhark.tex}
+
+\usepackage{color}
+\definecolor{eclipseBlue}{RGB}{42,0.0,255}
+\newcommand{\soac}[1]{\texttt{\color{eclipseBlue}#1}}
+
+\title{\bf Parallel Programming in Futhark}
+\author{HIPERFIT \\ Department of Computer Science \\ University of Copenhagen (DIKU)}
+\date{\today}
+
+\begin{document}
+\frontmatter
+\maketitle
+\chapter{Preface}
+
+These notes ...
+
+\tableofcontents
+\mainmatter
+\part{Parallel Functional Programming}
+\chapter{Introduction}
+
+\begin{enumerate}
+\item Moores law, CPUs, GPUs, other parallel architectures
+\item Concurrency vs parallelism
+\item Task parallelism, data parallism, simd, mimd
+\item Low-level languages vs high-level language approaches
+\end{enumerate}
+
+See \cite{finpar}.
+
+\chapter{The Futhark Language}
+
+\begin{lstlisting}
+-- A least significant digit radix sort to test out `write`.
+fun radix_sort_up(xs: [n]u32) : ([n]u32,[n]i32) =
+  let is = iota(n) in
+  loop (p:([n]u32,[n]i32) = (xs,is)) = for i < 32 do
+    radix_sort_step_up(p,i)
+  in p
+\end{lstlisting}
+
+
+\begin{enumerate}
+\item Basic principles (sequentialising whole program compiler, fusion, optimisations for coallesced mem access)
+\item core language
+\item arrays and SOACs (forward ptr to reasoning about operator associativity, etc)
+\item AoS to SoA
+\item uniqueness types
+\item modules
+\end{enumerate}
+
+\chapter{Algebraic Properties of SOACs}
+\begin{enumerate}
+\item general reasoning principles
+\item assumptions
+\item fusion rules
+\item list homomorphism theorem
+\item let the compiler do the fusion (how to reason)
+\end{enumerate}
+
+\chapter{Parallel Cost Models}
+\begin{enumerate}
+\item motivation
+\item memory vs compute bound
+\item nested parallism and flattening
+\item work and depth
+\item Futhark specifics and limitations
+\end{enumerate}
+
+\part{Parallel Algorithms}
+
+\chapter{Parallel Algorithms}
+In this chapter, we will present a number of parallel algorithms for
+solving a number of problems. We will make use effective use of the
+SOAC parallel operators, in particular, it turns out that the
+\soac{scan} operator is critical for obtaining parallel algorithms. In
+fact, we shall first develop the notion of a \emph{segmented scan}
+operation, which, as we shall see, can be implemented using Futhark's \soac{scan}
+operator, and which in its own right is essential to many of the later
+algorithms.
+
+\section{Segmented Scan}
+
+\lstinputlisting[firstline=7]{src/sgm_scan.fut}
+
+\begin{enumerate}
+\item segmented scan
+\item radix sort
+\lstinputlisting[firstline=18]{src/radix_sort.fut}
+\item pseudo random numbers and sobol
+\item trees
+\item graphs
+\item longest streak
+\item segmented replication
+\item histograms
+\item parenthesis matching
+\end{enumerate}
+
+\chapter{Bigger Applications}
+\begin{enumerate}
+\item monte carlo
+\item learning with stochastic gradient descent
+\item stencils
+\item convolutions
+\end{enumerate}
+
+\chapter{Interoperability}
+\begin{enumerate}
+\item python and c
+\item examples: mandelbrot, life, cam, nbody
+\end{enumerate}
+
+\bibliographystyle{plain}
+\bibliography{bib}
+
+\appendix
+
+\part{Appendices}
+
+\chapter{Tool References}
+\begin{enumerate}
+\item futhark-c, futhark-opencl
+\item measuring runtimes, debugging
+\end{enumerate}
+
+\end{document}
