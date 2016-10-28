@@ -41,6 +41,31 @@ See \cite{finpar}.
 
 \chapter{The Futhark Language}
 
+Futhark is a pure functional data-parallel array language.  Is is both
+syntactically and conceptually similar to established functional
+languages, such as Haskell or Standard ML.  In contrast to these
+languages, Futhark focuses less on expressivity and elaborate type
+systems, but more on compilation to high-performance parallel code.
+Futhark comes with language constructs for performing bulk operations
+on arrays, called \textit{Second-Order Array Combinators} (SOACs),
+that mirror the higher order functions found in conventional
+functional languages: \texttt{map}, \texttt{reduce}, \texttt{filter},
+and so forth.  In Futhark, SOACs are not merely library functions, but
+built-in language features with parallel semantics, and which will
+typically be compiled to parallel code.
+
+Programming in Futhark feels similar to programming in other
+functional languages.  If you know Haskell or Standard ML, you will
+likely be able to read and modify most Futhark code.  For example,
+this program computes the dot product $\Sigma_{i} x_{i}\cdot{}y_{i}$
+of two vectors of integers:
+
+\lstinputlisting{src/dotprod.fut}
+
+\section{Core Language}
+
+\section{In-Place Updates}
+
 \begin{lstlisting}
 -- A least significant digit radix sort to test out `write`.
 fun radix_sort_up(xs: [n]u32) : ([n]u32,[n]i32) =
@@ -51,14 +76,80 @@ fun radix_sort_up(xs: [n]u32) : ([n]u32,[n]i32) =
 \end{lstlisting}
 
 
-\begin{enumerate}
-\item Basic principles (sequentialising whole program compiler, fusion, optimisations for coallesced mem access)
-\item core language
-\item arrays and SOACs (forward ptr to reasoning about operator associativity, etc)
-\item AoS to SoA
-\item uniqueness types
-\item modules
-\end{enumerate}
+\section{Modules}
+
+\section{When Things Go Wrong}
+
+Futhark is a much younger and more raw language than you may be
+accustomed to, and many common language features are missing.  It is
+important to remember that Futhark is an \textit{on-going research
+  project}, and you should not encounter the same predictability and
+quality of error messages that you may be used to from more mature
+languages.  In general, the limitations you will encounter will tend
+to fall in three different categories:
+
+\begin{description}
+\item[Incidental] limitations are those languages features that are
+  missing for no reason other than insufficient development resources.
+  For example, Futhark does not support user-defined polymorphic
+  functions, sum types, nontrivial type inference, or any kind of
+  higher-order functions.  We know how to implement these, but simply
+  have not gotten around to it yet.
+
+\item[Essential] limitations touch upon fundamental restrictions in
+  the target platform(s) for the Futhark compiler.  For example, GPUs
+  do not permit dynamic memory allocation inside GPU code.  All memory
+  must be pre-allocated before GPU programs are launched.  This means
+  that the Futhark compiler must be able to pre-compute the size of
+  all intermediate arrays (symbolically), or compilation will fail.
+
+\item[Implementation] limitations are weaknesses in the Futhark
+  compiler that could reasonably be solved.  Many implementation
+  limitations, such as the inability to pre-compute some array sizes,
+  or eliminate bounds checks inside parallel sections, will manifest
+  themselves as essential limitations that could be worked around by a
+  smarter compiler.
+\end{description}
+
+For example, consider this program:
+
+\begin{lstlisting}
+fun main(n: int): [][]int =
+  map (fn i =>
+         let a = iota i
+         let b = iota (n-i)
+         in concat a b)
+  (iota n)
+\end{lstlisting}
+
+At the time of this writing, the \texttt{futhark-opencl} compiler will
+fail with the not particularly illuminative error message
+\texttt{Cannot allocate memory in kernel}.  The reason is that the
+compiler is trying to compile the \texttt{map} to parallel code, which
+involves pre-allocating memory for the \texttt{a} and \texttt{b}
+array.  It is unable to do this, as the sizes of these two arrays
+depend on values that are only known \textit{inside} the map, which is
+too late.  There are various techniques the Futhark compiler could use
+to estimate how much memory would be needed, but these have not yet
+been implemented.
+
+It is usually possible, sometimes with some pain, to come up with a
+workaround.  We could rewrite the program as:
+
+\begin{lstlisting}
+fun main(n: int): [][]int =
+  let big_iota = iota n
+  in map (fn i =>
+            let res = iota n
+            let res[i:n] = big_iota[0:n-i]
+            in res)
+         (iota n)
+\end{lstlisting}
+
+This exploits the fact that the compiler does not generate allocations
+for array slices or in-place updates.  The only allocation is of the
+initial \texttt{res}, the size of which can be computed before
+entering the \texttt{map}.
 
 \chapter{Algebraic Properties of SOACs}
 \begin{enumerate}
@@ -135,3 +226,8 @@ algorithms.
 \end{enumerate}
 
 \end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
