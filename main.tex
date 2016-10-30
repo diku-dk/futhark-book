@@ -152,7 +152,7 @@ As befits their use for testing, compiled Futhark executables take a
 range of command line options to manipulate their behaviour and print
 debugging information.  These will be introduced as neded.
 
-\section{Core Language}
+\section{Basic Language Features}
 
 As a functional or \textit{value-oriented} language, Futhark can be
 understood entirely by how values are constructed, and how expressions
@@ -195,7 +195,7 @@ the same shape.  For example, \texttt{[[1,2], [3,4]]} is a valid array
 of type \texttt{[][]i32}, but \texttt{[[1,2], [3,4,5]]} is not.  We
 will return to the implications of this restriction in later chapters.
 
-\section{Basic Expressions}
+\subsection{Simple Expressions}
 
 The Futhark expression syntax is mostly conventional, and supports the
 usual binary and unary operators, with few surprises.  This section
@@ -281,10 +281,10 @@ exclusive.  Slicing of multiple dimensions can be done by separating
 with commas, and may be intermixed freely with indexing.  It is an
 error if \texttt{j < n}.
 
-\section{Function Definitions}
+\subsection{Function Definitions}
 \label{sec:function-declarations}
 
-An Futhark program consists of a sequence of \textit{function
+A Futhark program consists of a sequence of \textit{function
   definitions}, of the following form:
 
 \begin{lstlisting}
