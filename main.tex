@@ -54,6 +54,20 @@ and so forth.  In Futhark, SOACs are not merely library functions, but
 built-in language features with parallel semantics, and which will
 typically be compiled to parallel code.
 
+The primary idea behind Futhark is to design a language that has
+enough expressive power to conveniently express complex programs, yet
+is also amenable to aggressive optimisation and parallelisation.  The
+tension is that as the expressive power of a language grows, the
+difficulty of efficient compilation rises likewise.  For example,
+Futhark supports nested parallelism, despite the complexities of
+efficiently mapping it to the flat parallelism supported by hardware,
+as many algorithms are awkward to write with just flat parallelism.
+On the other hand, we do not support non-regular arrays, as they
+complicate size analysis a great deal.  The fact that Futhark is
+purely functional is intended to give an optimising compiler more
+leeway in rearranging the code and performing high-level
+optimisations.
+
 Programming in Futhark feels similar to programming in other
 functional languages.  If you know Haskell or Standard ML, you will
 likely be able to read and modify most Futhark code.  For example,
@@ -139,6 +153,158 @@ range of command line options to manipulate their behaviour and print
 debugging information.  These will be introduced as neded.
 
 \section{Core Language}
+
+As a functional or \textit{value-oriented} language, Futhark can be
+understood entirely by how values are constructed, and how expressions
+transform one value to another.  As a statically typed language, all
+values are classified by their \textit{type}.  The primitive types in
+Futhark are the signed integer types \texttt{i8}, \texttt{i16},
+\texttt{i32}, \texttt{i64}, the unsigned integer types \texttt{u8},
+\texttt{u16}, \texttt{u32}, \texttt{u64}, the floating-point types
+\texttt{f32}, \texttt{f64}, as well as \texttt{bool}.  Furthermore,
+\texttt{int} is an alias for \texttt{i32}.  An \texttt{f32} is always
+a single-precision float and a \texttt{f64} is a double-precision
+float.
+
+Numeric literals can be suffixed with their intended type.  For
+example \texttt{42i8} is of type \texttt{i8}, and \texttt{1337e2f64}
+is of type \texttt{f64}.  If no suffix is given, integer literals are
+of type \texttt{i32}, and decimal literals are of type \texttt{f64}.
+Boolean literals are written as \texttt{True} and \texttt{False}.
+
+All primitive values can be combined in tuples and arrays.  A tuple
+value or type is written as a sequence of comma-separated values or
+types enclosed in parentheses.  For example, \texttt{(0, 1)} is a
+tuple value of type \texttt{(i32,i32)}.  The elements of a tuple need
+not have the same type -- the value \texttt{(False, 1, 2.0)} is of
+type \texttt{(bool, i32, f64)}.  A tuple element can also be another
+tuple, as in \texttt{((1,2),(3,4))}, which is of type
+\texttt{((i32,i32),(i32,i32))}.  A tuple cannot have just one element,
+but empty tuples are permitted (if not very useful) -- these are
+written as simply \texttt{()} and are of type \texttt{()}.
+
+An array value is written as a nonempty sequence of comma-separated
+values enclosed in square brackets.  An array type is written as
+\texttt{[]$t$}, where \texttt{$t$} is the element type of the array.
+For example, an array of three integers could be written as
+\texttt{[1,2,3]}, and has type \texttt{[]i32}.  An empty array is
+written as \texttt{empty($t$)}, where \texttt{$t$} is the element
+type.  Multi-dimensional arrays are supported in Futhark, but they
+must be \textit{regular}.  This means that all inner arrays must have
+the same shape.  For example, \texttt{[[1,2], [3,4]]} is a valid array
+of type \texttt{[][]i32}, but \texttt{[[1,2], [3,4,5]]} is not.  We
+will return to the implications of this restriction in later chapters.
+
+\section{Basic Expressions}
+
+The Futhark expression syntax is mostly conventional, and supports the
+usual binary and unary operators, with few surprises.  This section
+will not try to cover the entire Futhark expression language in
+complete detail.  See the reference manual at
+\url{http://futhark.readthedocs.io} for a comprehensive treatment.
+
+Function calls are written using simple juxtaposition.  For example,
+to apply the predefined \texttt{cos64} function (cosinus for
+\texttt{f64} values) to a constant argument, we write:
+
+\begin{lstlisting}
+cos64 1.0
+\end{lstlisting}
+
+See Section \ref{sec:function-declarations} for how to declare your
+own functions.
+
+A \texttt{let}-expression can be used to give a name to the result of
+an expression:
+
+\begin{lstlisting}
+  let z = x + y
+  in body
+\end{lstlisting}
+
+Futhark is eagerly evaluated (unlike Haskell), so the expression for
+\texttt{z} will be fully evaluated before \texttt{body}.  The \texttt{in} keyword is optional when it precedes another
+\texttt{let}.  This means that instead of writing:
+
+\begin{lstlisting}
+  let a = 0 in
+  let b = 1 in
+  let c = 2 in
+  a + b + c
+\end{lstlisting}
+
+we can write:
+
+\begin{lstlisting}
+  let a = 0
+  let b = 1
+  let c = 2
+  in a + b + c
+\end{lstlisting}
+
+The final \texttt{in} is still necessary.  In examples, we will often
+skip the body of a \texttt{let} if it is not important.  A limited
+amount of pattern matching is supported in \texttt{let}-bindings,
+which permits tuple components to be extracted:
+
+\begin{lstlisting}
+  let (x,y) = e -- must be of some type (t1,t2)
+\end{lstlisting}
+
+This also demonstrates the Futhark line comment syntax - two dashes
+followed by a space.  Block comments are not presently supported.
+
+Two-way \texttt{if-then-else} is the only branching construct in
+Futhark:
+
+\begin{lstlisting}
+if x < 0 then -x else x
+\end{lstlisting}
+
+Arrays are indexed using the common row-major notation, e.g.,
+\texttt{a[i1, i2, i3...]}.  An indexing is said to be \textit{full} if
+the number of given indices is equal to the dimensionality of the
+array.  All array accesses are checked at runtime, and the program
+will terminate abnormally if an invalid access is attempted.
+
+Indexing binds very tightly.  For example, the expression
+\texttt{a~b~[i]} means ``apply the function \texttt{a} to the
+expression \texttt{b[i]}'', \textit{not} ``apply the function
+\texttt{a} to the expressions \texttt{b} and \texttt{[i]}''.  When the
+latter is desired, enclose the literal array with parentheses, as
+\texttt{a~b~([i])}.
+
+Futhark also supports array \textit{slices}.  The expression
+\texttt{a[i:j]} returns a slice of the array \texttt{a} from index
+\texttt{i} to \texttt{j}, the latter inclusive and the latter
+exclusive.  Slicing of multiple dimensions can be done by separating
+with commas, and may be intermixed freely with indexing.  It is an
+error if \texttt{j < n}.
+
+\section{Function Definitions}
+\label{sec:function-declarations}
+
+An Futhark program consists of a sequence of \textit{function
+  definitions}, of the following form:
+
+\begin{lstlisting}
+   fun name params... : return_type = body
+\end{lstlisting}
+
+A function must declare both its return type and the types of all its
+parameters.  All functions (except for inline anonymous functions, as
+we will get to later) are defined globally.  Futhark does not use type
+inference.  As a concrete example, here is the recursive definition of
+the factorial function in Futhark:
+
+\begin{lstlisting}
+  fun fact(n: int): int =
+    if n == 0 then 1
+              else n * fact(n-1)
+\end{lstlisting}
+
+Indentation has no syntactical significance in Futhark, but is
+recommended for readability.
 
 \section{In-Place Updates}
 
