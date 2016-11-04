@@ -170,7 +170,7 @@ Numeric literals can be suffixed with their intended type.  For
 example \texttt{42i8} is of type \texttt{i8}, and \texttt{1337e2f64}
 is of type \texttt{f64}.  If no suffix is given, integer literals are
 of type \texttt{i32}, and decimal literals are of type \texttt{f64}.
-Boolean literals are written as \texttt{True} and \texttt{False}.
+Boolean literals are written as \texttt{true} and \texttt{false}.
 
 All primitive values can be combined in tuples and arrays.  A tuple
 value or type is written as a sequence of comma-separated values or
@@ -306,7 +306,102 @@ the factorial function in Futhark:
 Indentation has no syntactical significance in Futhark, but is
 recommended for readability.
 
+\section{Array Operations}
+
+Futhark provides various combinators for performing bulk
+transformations of arrays.  Judicious use of these combinators is key
+to getting good performance.  There are two overall categories:
+\textit{first-order array combinators}, like \texttt{concat}, that
+always perform the same operation, and \textit{second-order array
+  combinators} (\textit{SOAC}s), like \texttt{map}, that take a
+\textit{functional argument} indicating the operation to perform.
+SOACs are absolutely crucial to Futhark programming.  While they are
+designed to resemble higher-order functions that may be familiar from
+functional languages, they have implicitly parallel semantics, and
+some restrictions to preserve those semantics.
+
+The simplest SOAC is probably \texttt{map}.  It takes two arguments: a
+function and an array.  The function argument can be a function name,
+or an anonymous function using \texttt{fn} syntax.  The function is
+called for every element of input array, and an array of the result is
+returned.  For example:
+
+\begin{lstlisting}
+map (fn x => x + 2) [1,2,3] == [3,4,5]
+\end{lstlisting}
+
+Functions defined using \texttt{fn} syntax need not define their
+parameter- or return types, but you are free to do so to increase
+readability:
+
+\begin{lstlisting}
+map (fn (x:int): int => x + 2) [1,2,3]
+\end{lstlisting}
+
+The functional argument can also be an operator, which must be
+enclosed in parentheses:
+
+\begin{lstlisting}
+map (!) [True, False, True] == [False, True, False]
+\end{lstlisting}
+
+Currying for operators is also supported using a syntax taken from
+Haskell:
+
+\begin{lstlisting}
+map (2-) [1,2,3] == [-1,0,1]
+\end{lstlisting}
+
+While \texttt{map} accepts only a single array argument, there is a
+variation called \texttt{zipWith}, that takes any nonzero number of
+array arguments, and requires a function with the same number of
+parameters.  For example, we can perform an element-wise sum of two
+arrays:
+
+\begin{lstlisting}
+zipWith (+) [1,2,3] [4,5,6] == [5,7,9]
+\end{lstlisting}
+
+While \texttt{map} is an array transformer, the \texttt{reduce} SOAC
+is an array aggregator: it uses some function of type \texttt{t -> t
+  -> t} to combine the elements of an array of type \texttt{[]t} to a
+value of type \texttt{t}.  In order to do this in parallel, the
+function must be \textit{associative} and have a \textit{neutral
+  element} (i.e, form a monoid).
+
+\begin{itemize}
+\item A function $f$ is associative if $f(x,f(y,z)) = f(f(x,y),z)$ for
+  all $x,y,z$.
+\item A function $f$ has a neutral element $e$ if
+  $f(x,e) = f(e,x) = x$ for all $x$.
+\end{itemize}
+
+Many common mathematical operators fulfill these laws, e.g addition:
+$(x+y)+z=x+(y+z)$ and $x+0=0+x=0$.  But others, like subtraction, do
+not.  In Futhark, we can use the addition operator and its neutral
+element to compute the sum of an array of integers:
+
+\begin{lstlisting}
+reduce (+) 0 [1,2,3] == 6
+\end{lstlisting}
+
+It turns out that combining \texttt{map} and \texttt{reduce} is both
+powerful and has remarkable optimisation properties, as we will
+discuss in chapter~\ref{chap:soac-algebra}.  Many Futhark programs are
+primarly \texttt{map}-\texttt{reduce} compositions.  For example, we
+can define a function to compute the dot product of two vectors of
+integers:
+
+\begin{lstlisting}
+fun dotProd (xs: []int) (ys: []int): []int =
+  reduce (+) 0 (zipWith (+) xs ys)
+\end{lstlisting}
+
+\section{Sequential Loops}
+\label{sec:sequential-loops}
+
 \section{In-Place Updates}
+\label{sec:in-place-updates}
 
 \begin{lstlisting}
 -- A least significant digit radix sort to test out `write`.
@@ -479,6 +574,8 @@ initial \texttt{res}, the size of which can be computed before
 entering the \texttt{map}.
 
 \chapter{Algebraic Properties of SOACs}
+\label{chap:soac-algebra}
+
 \begin{enumerate}
 \item general reasoning principles
 \item assumptions
