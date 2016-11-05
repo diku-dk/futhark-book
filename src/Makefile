@@ -69,3 +69,12 @@ testopencl: $(RESOPENCLFILES)
 .PHONY: clean
 clean:
 	rm -f *~ *.c *.exe *.res *.out *.exeopencl *.resopencl *.outopencl
+
+.PHONY: viz
+viz:
+	futhark-c -o lines.exe lines.fut
+	./lines.exe | ./viz.sh
+
+viz0:
+	futhark-c -o lines.exe lines.fut
+	./lines.exe
