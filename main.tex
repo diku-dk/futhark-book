@@ -430,6 +430,127 @@ Chapter~\ref{chap:parallel-algorithms}.
 \section{Sequential Loops}
 \label{sec:sequential-loops}
 
+Futhark has built-in syntax for expressing certain tail-recursive
+functions.  Consider the following tail-recursive formulation of a
+function for computing the Fibonacci numbers
+
+\begin{lstlisting}
+  fun fib(n: int): int = fibhelper(1,1,n)
+
+  fun fibhelper(x: int, y: int, n: int): int =
+    if n == 1 then x else fibhelper(y, x+y, n-1)
+\end{lstlisting}
+
+We can rewrite this using \texttt{loop} syntax:
+
+\begin{lstlisting}
+  fun fib(n: int): int =
+    loop ((x, y) = (1,1)) = for i < n do
+                              (y, x+y)
+    in x
+\end{lstlisting}
+
+The semantics of this is precisely as in the tail-recursive function
+formulation.  In general, a loop:
+
+\begin{lstlisting}
+  loop (pat = initial) = for i < bound do loopbody
+  in body
+\end{lstlisting}
+
+Has the following the semantics:
+
+\begin{enumerate}
+\item Bind \texttt{pat} to the initial values given in
+  \texttt{initial}.
+\item While \texttt{i < bound}, evaluate \texttt{loopbody}, rebinding
+  \texttt{pat} to be the value returned by the body.  At the end of
+  each iteration, increment \texttt{i} by one.
+\item Evaluate \texttt{body} with \texttt{pat} bound to its final
+  value.
+\end{enumerate}
+
+Semantically, a \texttt{loop} expression is completely equivalent to a
+call to its corresponding tail-recursive function.
+
+For example, denoting by \texttt{t} the type of \texttt{x}, this
+loop:
+
+\begin{lstlisting}
+  loop (x = a) =
+    for i < n do
+      g(x)
+    in body
+\end{lstlisting}
+
+has the semantics of a call to this tail-recursive function:
+
+\begin{lstlisting}
+  fun f(i: int, n: int, x: t): t =
+    if i >= n then x
+       else f(i+1, n, g(x))
+
+-- the call
+  let x = f(i, n, a)
+  in body
+\end{lstlisting}
+
+The purpose of \texttt{loop} is partly to render some sequential
+computations slightly more convenient, but primarily to express
+certain very specific forms of recursive functions, specifically those
+with a fixed iteration count.  This property is used for analysis and
+optimisation by the Futhark compiler.  In contrast to most functional
+languages, Futhark does \textit{not} perform tail call optimisation.
+Furthermore, recursive functions may not work inside parallel
+sections, depending on the targeted backend.  It is therefore strongly
+recommended to use \texttt{loop} syntax instead of recursion.
+
+Apart from the \texttt{i < n} form, which loops from zero, Futhark
+also supports the \texttt{v <= i < n} form which starts at \texttt{v}.
+We can also invert the order of iteration by writing \texttt{n > i} or
+\texttt{n > i >= v}, which loops down from the upper bound to the
+lower.  Due to parser limitations, most non-atomic expressions will
+have to be parenthesised when used as the left-hand bound.
+
+Apart from \texttt{for}-loops, Futhark also supports \texttt{while}
+loops.  These do not provide as much information to the compiler, but
+can be used for convergence loops, where the number of iterations
+cannot be predicted in advance.  For example, the following program
+doubles a given number until it exceeds a given threshold value::
+
+\begin{lstlisting}
+  fun main(x: int, bound: int): int =
+    loop (x) = while x < bound do x * 2
+    in x
+\end{lstlisting}
+
+In all respects other than termination criteria, \texttt{while}-loops
+behave identically to \texttt{for}-loops.
+
+For brevity, the initial value expression can be elided, in which case
+an expression equivalent to the pattern is implied.  This is easier to
+understand with an example.  The loop
+
+\begin{lstlisting}
+  fun fib(n: int): int =
+    let x = 1
+    let y = 1
+    loop ((x, y) = (x, y)) = for i < n do (y, x+y)
+    in x
+\end{lstlisting}
+
+can also be written
+
+\begin{lstlisting}
+  fun fib(n: int): int =
+    let x = 1
+    let y = 1
+    loop ((x, y)) = for i < n do (y, x+y)
+    in x
+\end{lstlisting}
+
+This can sometimes make imperative code look more natural.
+
 \section{In-Place Updates}
 \label{sec:in-place-updates}
 
