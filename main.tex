@@ -397,6 +397,36 @@ fun dotProd (xs: []int) (ys: []int): []int =
   reduce (+) 0 (zipWith (+) xs ys)
 \end{lstlisting}
 
+A close cousin of \texttt{reduce} is \texttt{scan}, often called
+\textit{generalised prefix sum}.  Where \texttt{reduce} produces just
+one result, \texttt{scan} produces one result for every prefix of the
+input array.  This is perhaps best understood with an example:
+
+\begin{lstlisting}
+scan (+) 0 [1,2,3] == [0+1, 0+1+2, 0+1+2+3] == [1, 3, 6]
+\end{lstlisting}
+
+Intuitively, the result of \texttt{scan} is an array of calling
+\texttt{reduce} on increasing prefixes of the input array.  The last
+element of the returned array is equivalent to the result of calling
+\texttt{reduce} Like with \texttt{reduce}, the operator given to
+\texttt{scan} must be associative and have a neutral element.
+
+There are two main ways to compute scans: \textit{exclusive} and
+\textit{inclusive}.  The difference is that the empty prefix is
+considered in an exclusive scan, but not in an inclusive scan.
+Computing the exclusive $+$-scan of \texttt{[1,2,3]} thus gives
+\texttt{[0,1,3,6]}, while the inclusive $+$-scan is \texttt{[1,3,6]}.
+The \texttt{scan} SOAC in Futhark is inclusive, but it is of course
+easy to generate a corresponding exclusive scan simply by prepending
+the neutral element.
+
+While the idea behind \texttt{reduce} is probably familiar,
+\texttt{scan} is a little more esoteric, and mostly has applications
+for handling algorithms that do not seem parallel at first glance.
+Several examples are discussed in
+Chapter~\ref{chap:parallel-algorithms}.
+
 \section{Sequential Loops}
 \label{sec:sequential-loops}
 
@@ -596,6 +626,8 @@ entering the \texttt{map}.
 \part{Parallel Algorithms}
 
 \chapter{Parallel Algorithms}
+\label{chap:parallel-algorithms}
+
 In this chapter, we will present a number of parallel algorithms for
 solving a number of problems. We will make use effective use of the
 SOAC parallel operators, in particular, it turns out that the
