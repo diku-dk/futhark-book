@@ -6,6 +6,7 @@
   % list of keywords
   morekeywords={
     do,
+    else,
     fn,
     for,
     fun,
@@ -13,6 +14,8 @@
     in,
     let,
     loop,
+    then,
+    while,
     with,
   },
   sensitive=true, % keywords are not case-sensitive
@@ -27,14 +30,14 @@
 \definecolor{eclipseBlue}{RGB}{42,0.0,255}
 \definecolor{eclipseGreen}{RGB}{63,127,95}
 \definecolor{eclipsePurple}{RGB}{127,0,85}
- 
+
 % Set Language
 \lstset{
   language={futhark},
-  basicstyle=\footnotesize\ttfamily, % Global Code Style
+  basicstyle=\ttfamily, % Global Code Style
   captionpos=b, % Position of the Caption (t for top, b for bottom)
   extendedchars=true, % Allows 256 instead of 128 ASCII characters
-  tabsize=2, % number of spaces indented when discovering a tab 
+  tabsize=2, % number of spaces indented when discovering a tab
   columns=fixed, % make all characters equal width
   keepspaces=true, % does not ignore spaces to fit width, convert tabs to spaces
   showstringspaces=false, % lets spaces in strings appear as real spaces
@@ -43,7 +46,7 @@
   frameround=tttt, % make the frame round at all four corners
   framesep=4pt, % quarter circle size of the round corners
   numbers=left, % show line numbers at the left
-  numberstyle=\tiny\ttfamily, % style of the line numbers
+  numberstyle=\small\ttfamily, % style of the line numbers
   commentstyle=\slshape\bfseries\color{eclipseGreen}, % style of comments
   keywordstyle=\bfseries\color{eclipsePurple}, % style of keywords
   stringstyle=\color{eclipseBlue}, % style of strings
@@ -54,8 +57,12 @@
     map,
     partition,
     reduce,
+    replicate,
+    shape,
     scan,
+    unzip,
     write,
+    zip,
     zipWith,
   },
   emphstyle=[1]{\color{eclipseBlue}},

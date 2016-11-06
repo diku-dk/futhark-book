@@ -6,7 +6,7 @@
 \usepackage{amssymb,amsthm}
 \usepackage[utf8]{inputenc}
 %\usepackage{inconsolata}
-\usepackage{sourcecodepro}
+\usepackage[scaled=.8]{sourcecodepro}
 
 \input{futhark.tex}
 
@@ -74,12 +74,15 @@ likely be able to read and modify most Futhark code.  For example,
 this program computes the dot product $\Sigma_{i} x_{i}\cdot{}y_{i}$
 of two vectors of integers:
 
+\noindent
+\begin{minipage}{\textwidth}
 \lstinputlisting{src/dotprod.fut}
+\end{minipage}
 
 In Futhark, the notation for an array of element type $t$ is
 \texttt{[]$t$}.  The program declares a function called \texttt{main}
 that takes two arguments, both integer arrays, and returns an integer.
-The program first computes computes the element-wise product of its
+The program first computes the element-wise product of its
 two arguments, resulting in an array of integers, then computes the
 product of the elements in this new array.
 

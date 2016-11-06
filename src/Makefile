@@ -1,7 +1,9 @@
 FUTHARKC ?= futhark-c
 FUTHARKOPENCL ?= futhark-opencl
 
-FUTFILES=$(wildcard *.fut)
+#FUTFILES=$(wildcard *.fut)
+SRCFILES=radix_sort sgm_scan
+FUTFILES=$(SRCFILES:%=%.fut)
 FUTEXECS=$(FUTFILES:%.fut=%.exe)
 RESFILES=$(FUTFILES:%.fut=%.res)
 RESOPENCLFILES=$(FUTFILES:%.fut=%.resopencl)
