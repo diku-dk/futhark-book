@@ -23,18 +23,124 @@
 \maketitle
 \chapter{Preface}
 
-These notes ...
+This book is written with the aim of providinf an introduction to
+parallel functional programming and algorithms with the focus on using
+the Futhark language as the development language.
+
+Futhark is currently being actively developed but it is mature enough
+that simple algorithms---and also quite a few non-trivial ones---can
+be written in the language and executed in parallel on real parallel
+GPU hardware.
+
+The book is Open Source, maintained on github, and distributed under
+an XXX license. We will appreciate pull-requests for fixing any kinds
+of typos and errors in the text and in the enclosed
+programs. Regarding errors in the programs, most of the programs
+written in the book can be run and tested against an expected result;
+this execution and test can be done by typing \texttt{make} in the
+\texttt{src/} directory of the repository.
+
+\section*{Acknowledgments}
+This work has been partially supported by the Danish Strategic Research
+Council, Program Committee for Strategic Growth Technologies, for the
+research center HIPERFIT: Functional High Performance Computing for
+Financial Information Technology (\url{hiperfit.dk}) under contract number
+10-092299.
+
+\section*{Contributions}
+Here we list contributions by non-HIPERFIT contributors.
+
 
 \tableofcontents
 \mainmatter
 \part{Parallel Functional Programming}
 \chapter{Introduction}
+In 1965, Gordon E.\ Moore predicted a doubling every year in the number of
+components in an integrated circuit \cite{moore1965}. He revised the prediction in 1975
+to a doubling every two year \cite{moore1975} and later revisions suggest a slight
+decrease in the growth rate, while the growth rate, here 50 years after Moore's first prediction, is not seriously
+predicted to fade out in the next decade. In the first many years, the
+increase in components per chip area, as predicted by ``Moore's law'', had a direct influence on
+processor speed. The personal computer was getting popular and
+software providers were happy beneficials of the so-called ``free
+lunch'', which made programs running on single Central Processing
+Units (CPUs) double in speed whenever new processors hit the market.
+
+The days of the ``free lunches'' for sequentially written programs is
+over. The physical speed limit for sequential processing unit has
+pretty much been reached. Increases in processor clock frequency
+introduces heat problems that are difficult to deal with and chip
+providers have instead turned their focus on providing multiple cores in the
+same chip. Thus, for programs to run faster on ever new
+architectures, programs will have to make use of algorithms and data
+structures that benefit from simultaneous, that is \emph{parallel},
+execution on multiple cores. Newer architectures, such as Graphical
+Processing Unis (GPUs), host a high number of cores that are designed
+for parallel processing and over the coming decade, we will see a
+drastic increase in the number of cores hosted in each chip.
+
+In this book we distinguish between the notions of parallelism and
+concurrency. By \emph{concurrency}, we refer to programming language
+controls for coordinating work done by multiple virtual
+processes. Such processes may in principle run on the same physical
+processor (using for instance time sharing) or they may run on
+multiple processors. Controlling the communication and dependencies
+between multiple processes turns out to be immensely difficult and
+programmers need to deal with problems such as unforseen
+non-determinism and dead-locks, collectively named \emph{race
+  conditions}, issues that emerges when two or more processes (and
+their interaction with an external environment) interleave. By
+\emph{parallelism}, on the other hand, we simply refer to the notion
+of speeding up a program by making it run on multiple
+processors. Given a program, we can analyze the program to discover
+dependencies between units of computation and as such, the program
+contains all the information there is to know about to which degree
+the program can be executed in parallel. We emphasize here the notion
+that a parallel program should result in the same output given an
+input no-matter how many processors are used for executing the
+program. On the other hand, we hope that running the program in
+parallel with multiple processors will execute faster than if only one
+processor is used. As we shall see, making predictable models for
+determining whether a given program will run efficiently on a parallel
+machine can be difficult, in particular in cases where the program is
+inhomogenerously parallel at several levels, simultaneously.
+
+Parallelism can be divided into the notions of \emph{task
+  parallelism}, which emphasizes the concept of executing multiple
+independent tasks in parallel, and \emph{data parallelism}, which
+focuses on executing the same program on a number of different data
+objects in parallel. At the hardware side, Multiple Instruction
+Multiple Data (MIMD) processor designs directly allow for different
+tasks to be executed in parallel. For such designs, each processor is
+quite complex and in terms of fitting most processors on a single
+chip, so as to increase overall throughput, vendors have had better
+success by simplifying the chip designs in such a way that a compute
+unit executes single instructions on multiple data (SIMD). Such
+processor designs have turned out to be useful for a large number of
+application domains, including graphics processing, machine learning,
+image analysis, financial algorithms, and many more. In particular,
+for graphics processing, chip designers have since the 1970'es
+developed the concept of graphics processing units (GPUs), which, in
+the later years, have turned into ``general purpose'' graphics
+processing units (GPGPUs).
+
+The notions of parallel processing and parallel programming are not
+new. Concepts in these areas have emerged over a period of more than three
+decades and today the notion of parallism appears in many
+disguises. For example, the internet as we know it can be understood
+as a giant parallel processing unit and whenever some user is browsing
+and searching the internet, a large number of processing units are
+working in parallel to provide the user with the best information
+available on the topic. At all levels, software engineers need to know
+how to exploit the ever increasing amount of computational resources.
+
 
 \begin{enumerate}
-\item Moores law, CPUs, GPUs, other parallel architectures
-\item Concurrency vs parallelism
-\item Task parallelism, data parallism, simd, mimd
+\item Moores law, CPUs, GPUs, other parallel architectures (OK)
+\item Concurrency vs parallelism (OK)
+\item Task parallelism, data parallism, simd, mimd (OK)
 \item Low-level languages vs high-level language approaches
+\item Cost models for machines and for languages - problems with the RAM model, problems with the PRAM model, Work and Span.
 \end{enumerate}
 
 See \cite{finpar}.
@@ -43,7 +149,7 @@ See \cite{finpar}.
 
 Futhark is a pure functional data-parallel array language.  Is is both
 syntactically and conceptually similar to established functional
-languages, such as Haskell or Standard ML.  In contrast to these
+languages, such as Haskell and Standard ML.  In contrast to these
 languages, Futhark focuses less on expressivity and elaborate type
 systems, but more on compilation to high-performance parallel code.
 Futhark comes with language constructs for performing bulk operations
@@ -126,7 +232,8 @@ working OpenCL setup:
 $ futhark-opencl dotprod.fut
 \end{verbatim}
 
-And execution is just as before:
+\noindent
+Execution is just as before:
 
 \begin{verbatim}
 $ echo [2,2,3] [4,5,6] | ./dotprod
@@ -153,7 +260,7 @@ Chapter~\ref{chap:interoperability} for more information.
 
 As befits their use for testing, compiled Futhark executables take a
 range of command line options to manipulate their behaviour and print
-debugging information.  These will be introduced as neded.
+debugging information.  These will be introduced as needed.
 
 \section{Basic Language Features}
 
@@ -183,8 +290,8 @@ not have the same type -- the value \texttt{(False, 1, 2.0)} is of
 type \texttt{(bool, i32, f64)}.  A tuple element can also be another
 tuple, as in \texttt{((1,2),(3,4))}, which is of type
 \texttt{((i32,i32),(i32,i32))}.  A tuple cannot have just one element,
-but empty tuples are permitted (if not very useful) -- these are
-written as simply \texttt{()} and are of type \texttt{()}.
+but empty tuples are permitted, although they are not very useful---these are
+written \texttt{()} and are of type \texttt{()}.
 
 An array value is written as a nonempty sequence of comma-separated
 values enclosed in square brackets.  An array type is written as
@@ -193,10 +300,11 @@ For example, an array of three integers could be written as
 \texttt{[1,2,3]}, and has type \texttt{[]i32}.  An empty array is
 written as \texttt{empty($t$)}, where \texttt{$t$} is the element
 type.  Multi-dimensional arrays are supported in Futhark, but they
-must be \textit{regular}.  This means that all inner arrays must have
-the same shape.  For example, \texttt{[[1,2], [3,4]]} is a valid array
-of type \texttt{[][]i32}, but \texttt{[[1,2], [3,4,5]]} is not.  We
-will return to the implications of this restriction in later chapters.
+must be \textit{regular}.  This regularity requirement means that all
+inner arrays must have the same shape.  For example, \texttt{[[1,2],
+    [3,4]]} is a valid array of type \texttt{[][]i32}, but
+\texttt{[[1,2], [3,4,5]]} is not.  We will return to the implications
+of this restriction in later chapters.
 
 \subsection{Simple Expressions}
 
@@ -214,6 +322,7 @@ to apply the predefined \texttt{cos64} function (cosinus for
 cos64 1.0
 \end{lstlisting}
 
+\noindent
 See Section \ref{sec:function-declarations} for how to declare your
 own functions.
 
@@ -221,51 +330,54 @@ A \texttt{let}-expression can be used to give a name to the result of
 an expression:
 
 \begin{lstlisting}
-  let z = x + y
-  in body
+let z = x + y
+in body
 \end{lstlisting}
 
 Futhark is eagerly evaluated (unlike Haskell), so the expression for
 \texttt{z} will be fully evaluated before \texttt{body}.  The \texttt{in} keyword is optional when it precedes another
-\texttt{let}.  This means that instead of writing:
+\texttt{let}.  Thus, instead of writing:
 
 \begin{lstlisting}
-  let a = 0 in
-  let b = 1 in
-  let c = 2 in
-  a + b + c
+let a = 0 in
+let b = 1 in
+let c = 2 in
+a + b + c
 \end{lstlisting}
 
-we can write:
+\noindent
+we can write
 
 \begin{lstlisting}
-  let a = 0
-  let b = 1
-  let c = 2
-  in a + b + c
+let a = 0
+let b = 1
+let c = 2
+in a + b + c
 \end{lstlisting}
 
+\noindent
 The final \texttt{in} is still necessary.  In examples, we will often
 skip the body of a \texttt{let} if it is not important.  A limited
 amount of pattern matching is supported in \texttt{let}-bindings,
 which permits tuple components to be extracted:
 
 \begin{lstlisting}
-  let (x,y) = e -- must be of some type (t1,t2)
+let (x,y) = e      -- e must be of some type (t1,t2)
 \end{lstlisting}
 
-This also demonstrates the Futhark line comment syntax - two dashes
+\noindent
+This feature also demonstrates the Futhark line comment syntax---two dashes
 followed by a space.  Block comments are not presently supported.
 
-Two-way \texttt{if-then-else} is the only branching construct in
+A two-way \texttt{if-then-else} is the only branching construct in
 Futhark:
 
 \begin{lstlisting}
 if x < 0 then -x else x
 \end{lstlisting}
 
-Arrays are indexed using the common row-major notation, e.g.,
-\texttt{a[i1, i2, i3...]}.  An indexing is said to be \textit{full} if
+Arrays are indexed using the common row-major notation, as in the expression
+\texttt{a[i1, i2, i3, ...]}.  An indexing is said to be \textit{full} if
 the number of given indices is equal to the dimensionality of the
 array.  All array accesses are checked at runtime, and the program
 will terminate abnormally if an invalid access is attempted.
@@ -274,7 +386,7 @@ Indexing binds very tightly.  For example, the expression
 \texttt{a~b~[i]} means ``apply the function \texttt{a} to the
 expression \texttt{b[i]}'', \textit{not} ``apply the function
 \texttt{a} to the expressions \texttt{b} and \texttt{[i]}''.  When the
-latter is desired, enclose the literal array with parentheses, as
+latter is desired, enclose the literal array with parentheses, as in
 \texttt{a~b~([i])}.
 
 Futhark also supports array \textit{slices}.  The expression
@@ -291,9 +403,10 @@ A Futhark program consists of a sequence of \textit{function
   definitions}, of the following form:
 
 \begin{lstlisting}
-   fun name params... : return_type = body
+fun name params... : return_type = body
 \end{lstlisting}
 
+\noindent
 A function must declare both its return type and the types of all its
 parameters.  All functions (except for inline anonymous functions, as
 we will get to later) are defined globally.  Futhark does not use type
@@ -301,11 +414,12 @@ inference.  As a concrete example, here is the recursive definition of
 the factorial function in Futhark:
 
 \begin{lstlisting}
-  fun fact(n: int): int =
-    if n == 0 then 1
-              else n * fact(n-1)
+fun fact(n: int): int =
+  if n == 0 then 1
+            else n * fact(n-1)
 \end{lstlisting}
 
+\noindent
 Indentation has no syntactical significance in Futhark, but is
 recommended for readability.
 
@@ -326,7 +440,7 @@ some restrictions to preserve those semantics.
 The simplest SOAC is probably \texttt{map}.  It takes two arguments: a
 function and an array.  The function argument can be a function name,
 or an anonymous function using \texttt{fn} syntax.  The function is
-called for every element of input array, and an array of the result is
+called for every element of the input array, and an array of the result is
 returned.  For example:
 
 \begin{lstlisting}
@@ -438,27 +552,26 @@ functions.  Consider the following tail-recursive formulation of a
 function for computing the Fibonacci numbers
 
 \begin{lstlisting}
-  fun fib(n: int): int = fibhelper(1,1,n)
-
-  fun fibhelper(x: int, y: int, n: int): int =
-    if n == 1 then x else fibhelper(y, x+y, n-1)
+fun fib(n: int): int = fibhelper(1,1,n)
+fun fibhelper(x: int, y: int, n: int): int =
+  if n == 1 then x else fibhelper(y, x+y, n-1)
 \end{lstlisting}
 
 We can rewrite this using \texttt{loop} syntax:
 
 \begin{lstlisting}
-  fun fib(n: int): int =
-    loop ((x, y) = (1,1)) = for i < n do
-                              (y, x+y)
-    in x
+fun fib(n: int): int =
+  loop ((x, y) = (1,1)) = for i < n do
+                            (y, x+y)
+  in x
 \end{lstlisting}
 
 The semantics of this is precisely as in the tail-recursive function
 formulation.  In general, a loop:
 
 \begin{lstlisting}
-  loop (pat = initial) = for i < bound do loopbody
-  in body
+loop (pat = initial) = for i < bound do loopbody
+in body
 \end{lstlisting}
 
 Has the following the semantics:
@@ -480,22 +593,22 @@ For example, denoting by \texttt{t} the type of \texttt{x}, this
 loop:
 
 \begin{lstlisting}
-  loop (x = a) =
-    for i < n do
-      g(x)
-    in body
+loop (x = a) =
+  for i < n do
+    g(x)
+  in body
 \end{lstlisting}
 
 has the semantics of a call to this tail-recursive function:
 
 \begin{lstlisting}
-  fun f(i: int, n: int, x: t): t =
-    if i >= n then x
-       else f(i+1, n, g(x))
+fun f(i: int, n: int, x: t): t =
+  if i >= n then x
+     else f(i+1, n, g(x))
 
 -- the call
-  let x = f(i, n, a)
-  in body
+let x = f(i, n, a)
+in body
 \end{lstlisting}
 
 The purpose of \texttt{loop} is partly to render some sequential
@@ -522,9 +635,9 @@ cannot be predicted in advance.  For example, the following program
 doubles a given number until it exceeds a given threshold value::
 
 \begin{lstlisting}
-  fun main(x: int, bound: int): int =
-    loop (x) = while x < bound do x * 2
-    in x
+fun main(x: int, bound: int): int =
+  loop (x) = while x < bound do x * 2
+  in x
 \end{lstlisting}
 
 In all respects other than termination criteria, \texttt{while}-loops
@@ -535,21 +648,21 @@ an expression equivalent to the pattern is implied.  This is easier to
 understand with an example.  The loop
 
 \begin{lstlisting}
-  fun fib(n: int): int =
-    let x = 1
-    let y = 1
-    loop ((x, y) = (x, y)) = for i < n do (y, x+y)
-    in x
+fun fib(n: int): int =
+  let x = 1
+  let y = 1
+  loop ((x, y) = (x, y)) = for i < n do (y, x+y)
+  in x
 \end{lstlisting}
 
 can also be written
 
 \begin{lstlisting}
-  fun fib(n: int): int =
-    let x = 1
-    let y = 1
-    loop ((x, y)) = for i < n do (y, x+y)
-    in x
+fun fib(n: int): int =
+  let x = 1
+  let y = 1
+  loop ((x, y)) = for i < n do (y, x+y)
+  in x
 \end{lstlisting}
 
 This can sometimes make imperative code look more natural.
