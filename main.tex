@@ -7,7 +7,7 @@
 \usepackage[utf8]{inputenc}
 %\usepackage{inconsolata}
 \usepackage[scaled=.8]{sourcecodepro}
-
+%\usepackage[sc]{mathpazo}
 \input{futhark.tex}
 
 \usepackage{color}
@@ -23,7 +23,7 @@
 \maketitle
 \chapter{Preface}
 
-This book is written with the aim of providinf an introduction to
+This book is written with the aim of providing an introduction to
 parallel functional programming and algorithms with the focus on using
 the Futhark language as the development language.
 
@@ -109,20 +109,20 @@ Parallelism can be divided into the notions of \emph{task
   parallelism}, which emphasizes the concept of executing multiple
 independent tasks in parallel, and \emph{data parallelism}, which
 focuses on executing the same program on a number of different data
-objects in parallel. At the hardware side, Multiple Instruction
-Multiple Data (MIMD) processor designs directly allow for different
-tasks to be executed in parallel. For such designs, each processor is
-quite complex and in terms of fitting most processors on a single
-chip, so as to increase overall throughput, vendors have had better
-success by simplifying the chip designs in such a way that a compute
-unit executes single instructions on multiple data (SIMD). Such
-processor designs have turned out to be useful for a large number of
-application domains, including graphics processing, machine learning,
-image analysis, financial algorithms, and many more. In particular,
-for graphics processing, chip designers have since the 1970'es
-developed the concept of graphics processing units (GPUs), which, in
-the later years, have turned into ``general purpose'' graphics
-processing units (GPGPUs).
+objects in parallel. At the hardware side, multiple instruction
+multiple data (MIMD) processor designs, coined after Flynns's taxonomy
+\cite{Flynn1972}, directly allow for different tasks to be executed in
+parallel. For such designs, each processor is quite complex and in
+terms of fitting most processors on a single chip, so as to increase
+overall throughput, vendors have increasing success with simpler chip
+designs for which compute units execute single instructions on
+multiple data (SIMD). Such processor designs have turned out to be
+useful for a large number of application domains, including graphics
+processing, machine learning, image analysis, financial algorithms,
+and many more. In particular, for graphics processing, chip designers
+have since the 1970'es developed the concept of graphics processing
+units (GPUs), which, in the later years, have turned into ``general
+purpose'' graphics processing units (GPGPUs).
 
 The notions of parallel processing and parallel programming are not
 new. Concepts in these areas have emerged over a period of more than three
@@ -134,14 +134,35 @@ working in parallel to provide the user with the best information
 available on the topic. At all levels, software engineers need to know
 how to exploit the ever increasing amount of computational resources.
 
+For many years, programmers and engineers have been accustomed to the
+simple performance reasoning principles of the von Neumann computing
+model \cite{vonneumann1945}, which is also often referred to as the
+sequential Random Access Machine (RAM) model.\footnote{Following
+  Flynn's taxonomy, this model fits within a single instruction single
+  data (SISD) design \cite{Flynn1972}.} With ever more complex chip
+circuits, introducing speculative instruction scheduling and advanced
+memory cache hierarcies for leveraging the far from constant-time
+access to random memory, reasoning about performance has become
+difficult even for programs running on sequential hardware. The
+consequence is that, even for sequential programs, programmers and
+engineers are requesting better models for predicting performance. For
+programs designed to run on parallel hardware, the situation is often
+worse. Understanding the performance aspects of executing a
+task-parallel program on a MIMD architecture can quickly become an
+immensely complex task in particular because the programmer can be
+forced to reason about concurrency aspects of the program running on
+the MIMD architecture.
 
 \begin{enumerate}
-\item Moores law, CPUs, GPUs, other parallel architectures (OK)
+\item Moore's law, CPUs, GPUs, other parallel architectures (OK)
 \item Concurrency vs parallelism (OK)
 \item Task parallelism, data parallism, simd, mimd (OK)
-\item Low-level languages vs high-level language approaches
+\item Low-level languages (CUDA, OpenCL) vs high-level languages (Futhark, NESL) vs annotation approaches (OpenAcc, OpenMP) vs library approaches (CUBLAS)
 \item Cost models for machines and for languages - problems with the RAM model, problems with the PRAM model, Work and Span.
 \end{enumerate}
+
+In this book, we shall look at parallelism from a data-parallel
+functional programming perspective.
 
 See \cite{finpar}.
 
