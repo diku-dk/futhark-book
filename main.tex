@@ -55,12 +55,14 @@ Here we list contributions by non-HIPERFIT contributors.
 \mainmatter
 \part{Parallel Functional Programming}
 \chapter{Introduction}
-In 1965, Gordon E.\ Moore predicted a doubling every year in the number of
-components in an integrated circuit \cite{moore1965}. He revised the prediction in 1975
-to a doubling every two year \cite{moore1975} and later revisions suggest a slight
-decrease in the growth rate, while the growth rate, here 50 years after Moore's first prediction, is not seriously
-predicted to fade out in the next decade. In the first many years, the
-increase in components per chip area, as predicted by ``Moore's law'', had a direct influence on
+In 1965, Gordon E.\ Moore predicted a doubling every year in the
+number of components in an integrated circuit \cite{moore1965}. He
+revised the prediction in 1975 to a doubling every two year
+\cite{moore1975} and later revisions suggest a slight decrease in the
+growth rate, while the growth rate, here 50 years after Moore's first
+prediction, is not seriously predicted to fade out in the next
+decade. In the first many years, the increase in components per chip
+area, as predicted by ``Moore's law'', had a direct influence on
 processor speed. The personal computer was getting popular and
 software providers were happy beneficials of the so-called ``free
 lunch'', which made programs running on single Central Processing
@@ -135,7 +137,7 @@ available on the topic. At all levels, software engineers need to know
 how to exploit the ever increasing amount of computational resources.
 
 For many years, programmers and engineers have been accustomed to the
-simple performance reasoning principles of the von Neumann computing
+simple performance reasoning principles of the von Neumann machine
 model \cite{vonneumann1945}, which is also often referred to as the
 sequential Random Access Machine (RAM) model.\footnote{Following
   Flynn's taxonomy, this model fits within a single instruction single
@@ -151,20 +153,64 @@ worse. Understanding the performance aspects of executing a
 task-parallel program on a MIMD architecture can quickly become an
 immensely complex task in particular because the programmer can be
 forced to reason about concurrency aspects of the program running on
-the MIMD architecture.
+the MIMD architecture. Machines are becoming more complex and the
+abstractions provided by the simpler machine models seem broken as the
+models no longer can be used to reason, in a predictable way, about
+performance. One particular instance of this problem is the assumption
+in the shared memory PRAM model, which assumes that all processors
+have constant-time access to random memory.
 
-\begin{enumerate}
-\item Moore's law, CPUs, GPUs, other parallel architectures (OK)
-\item Concurrency vs parallelism (OK)
-\item Task parallelism, data parallism, simd, mimd (OK)
-\item Low-level languages (CUDA, OpenCL) vs high-level languages (Futhark, NESL) vs annotation approaches (OpenAcc, OpenMP) vs library approaches (CUBLAS)
-\item Cost models for machines and for languages - problems with the RAM model, problems with the PRAM model, Work and Span.
-\end{enumerate}
+Low-level languages and frameworks that more or less directly mirror
+their parallel target architectures include OpenCL \cite{opencl2011}
+and CUDA \cite{Nickolls:2008:SPP:1365490.1365500} for data-parallel
+GPU programming. More abstract approaches to target parallel hardware
+include library-based approaches, such as CUBLAS for GPU-targeted
+linear algebra routines, and annotation-based approaches, such as
+OpenAcc for targeting GPUs and OpenMP for targeting multi-core
+platforms.
 
-In this book, we shall look at parallelism from a data-parallel
-functional programming perspective.
+Instead of requiring programmers to reason about programs based on a
+particular machine model, an alternative is to base performance
+reasoning on more abstract \emph{language based cost models}, which
+are models that emphasize higher-level programming language concepts and
+functionalities. By introducing such an abstraction layer, programmers will
+no longer need to ``port'' their performance reasoning whenever a new
+parallel machine is targeted. It will instead be up to the language
+implementor to port the language to new architectures.
 
-See \cite{finpar}.
+The introduction of language based cost models is of course not a
+silver bullet, but they may help isolate the assumptions under which
+performance reasoning is made. Guy Blelloch's seminal work on NESL
+\cite{blelloch1990vector,blelloch1994implementation} introduces a cost
+model based on the concept of \emph{work}, which, in abstract terms,
+defines a notion of the total work done by a program, and the concept
+of \emph{steps}, which defines a notion of the number of dependent
+parallel steps that the program will take, assuming an infinite number
+of processors.
+
+In this book we shall develop a performance reasoning model for a
+subset of a data-parallel language and discuss benefits and
+limitations of the approach. The cost model is based on the
+language-based cost model developed for NESL, but in contrary to the
+cost model for NESL, we shall not base our reasoning on an automatic
+flattening technique for dealing with nested parallism. Instead, we
+shall require the programmer to perform certain kinds of flattening manually.
+
+We shall primarily look at parallelism from a data-parallel functional
+programming perspective. The development in the book is made through
+the introduction of the Futhark data-parallel functional language
+\cite{henriksen2014size,henriksen2016design,henriksen2014bounds,henriksen2013t2},
+which readily will generate GPU-executable code for a Futhark program
+by first compiling the program into a number of OpenCL kernels and
+coordinating host code for spawning the kernels. Besides the OpenCL
+backend, Futhark also features a C backend and Futhark has been
+demonstrated to compile quite complex data-parallel programs into
+well-performing GPU code \cite{finpar,apltofuthark2016}.
+
+
+\section{Structure of the Book}
+
+MEMO
 
 \chapter{The Futhark Language}
 
@@ -872,7 +918,7 @@ entering the \texttt{map}.
 \item let the compiler do the fusion (how to reason)
 \end{enumerate}
 
-\chapter{Parallel Cost Models}
+\chapter{A Parallel Cost Model for Futhark Programs}
 \begin{enumerate}
 \item motivation
 \item memory vs compute bound
@@ -881,15 +927,50 @@ entering the \texttt{map}.
 \item Futhark specifics and limitations
 \end{enumerate}
 
+\section{Futhark---the Language}
+
+\begin{lstlisting}[mathescape=true]
+  $p$ ::= $x$  |  ($p_1$,...,$p_n$)  |  $p_1$ $p_2$
+  $F$ ::= fn $p$ => $e$
+  $D$ ::= fun $f$ $p$ = $e$  |  $D_1$ $D_2$  |  val $p$ = $e$
+  $b$ ::= true  |  false  |  $n$  |  $r$
+  $e$ ::= $b$  |  let $p$ = $e$ in $e$  |  ($e_1$,...,$e_n$)
+      | f $e_1$ ... $e_n$
+      | map $f$ $e$
+      | scan $F$ $e$ $e$
+      | reduce $F$ $e$ $e$
+\end{lstlisting}
+
+\section{Work}
+
+\newcommand{\Eval}{\mathrm{Eval}}
+\newcommand{\Let}{\mathrm{let}}
+\newcommand{\In}{\mathrm{in}}
+\begin{lstlisting}[mathescape=true]
+  $W(b)$ = $1$
+  $W($let $x_1$,...,$x_n$ = $e$ in $e')$ =
+    $\Let$ [$v_1$,...,$v_n$] = $\Eval(e)$
+    $\In$ $W(e) + W(e'[v_1/x_1,\cdots,v_n/x_n])$
+  $W($[$e_1,\cdots,e_n$]$)$ = $W(e_1) + \ldots + W(e_n)$
+  $W($map (fn $x$ => $e'$) $e)$ =
+    $\Let$ [$v_1,\cdots,v_n$] = $\Eval(e)$
+    $\In$ $W(e) + W(e'[v_1/x]) + \ldots + W(e'[v_n/x])$
+\end{lstlisting}
+
+\section{Span}
+\begin{lstlisting}
+\end{lstlisting}
+
+
 \part{Parallel Algorithms}
 
 \chapter{Parallel Algorithms}
 \label{chap:parallel-algorithms}
 
 In this chapter, we will present a number of parallel algorithms for
-solving a number of problems. We will make use effective use of the
-SOAC parallel operators, in particular, it turns out that the
-\soac{scan} operator is critical for obtaining parallel algorithms. In
+solving a number of problems. We will make effective use of the
+SOAC parallel operators. In particular, it turns out that the
+\soac{scan} operator is critical for writing parallel algorithms. In
 fact, we shall first develop the notion of a \emph{segmented scan}
 operation, which, as we shall see, can be implemented using Futhark's \soac{scan}
 operator, and which in its own right is essential to many of the later
@@ -910,6 +991,7 @@ algorithms.
 \item segmented replication
 \item histograms
 \item parenthesis matching
+\item line drawing
 \end{enumerate}
 
 \chapter{Bigger Applications}
