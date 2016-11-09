@@ -32,7 +32,7 @@ fun main () : [][]i32 =
   let width:i32 = 70
   let grid : *[][]i32 = replicate height (replicate width 0)
   let lines = [((58,20),(2,3)),((27,3),(2,28)),((5,20),(20,20)),((6,10),(6,25)),((26,25),(26,2))]
-  in drawlines_seq grid lines
+  in drawlines_par grid lines
 
 -- Sequential algorithm for drawing multiple lines
 fun linepoints (p1:point) (p2:point) : points =

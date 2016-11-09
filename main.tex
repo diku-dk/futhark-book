@@ -210,10 +210,24 @@ well-performing GPU code \cite{finpar,apltofuthark2016}.
 
 \section{Structure of the Book}
 
-MEMO
+The book is organised into two parts. In Chapter~\ref{chap:futlang}, we
+introduce the Futhark language, including its basic syntax, the
+semantics of the core language, and the built-in array second-order
+array combinators and their parallel semantics. We also describe how
+to compile and execute Futhark programs using both the sequential C
+backend and the parallel GPU backend. In Chapter~\ref{chap:costmodel}, we introduce
+an ``ideal'' cost model for the Futhark language based on the notions
+of work and span. In Chapter~\ref{chap:soac-algebra}, we present to
+the reader the underlying algebraic reasoning principles that lye
+behind the Futhark internal fusion technology. In particular, we
+introduce the reader to the list-homorphism theorem, which forms the
+basis of map-reduce reasoning and which turns out to play an important
+role in the fusion engine of Futhark.
+
+In Part~2 of the book, ...
 
 \chapter{The Futhark Language}
-
+\label{chap:futlang}
 Futhark is a pure functional data-parallel array language.  Is is both
 syntactically and conceptually similar to established functional
 languages, such as Haskell and Standard ML.  In contrast to these
@@ -907,18 +921,8 @@ for array slices or in-place updates.  The only allocation is of the
 initial \texttt{res}, the size of which can be computed before
 entering the \texttt{map}.
 
-\chapter{Algebraic Properties of SOACs}
-\label{chap:soac-algebra}
-
-\begin{enumerate}
-\item general reasoning principles
-\item assumptions
-\item fusion rules
-\item list homomorphism theorem
-\item let the compiler do the fusion (how to reason)
-\end{enumerate}
-
 \chapter{A Parallel Cost Model for Futhark Programs}
+\label{chap:costmodel}
 \begin{enumerate}
 \item motivation
 \item memory vs compute bound
@@ -961,6 +965,18 @@ entering the \texttt{map}.
 \begin{lstlisting}
 \end{lstlisting}
 
+\chapter{Algebraic Properties of SOACs}
+\label{chap:soac-algebra}
+
+\begin{enumerate}
+\item general reasoning principles
+\item assumptions
+\item fusion rules
+\item list homomorphism theorem
+\item let the compiler do the fusion (how to reason)
+\end{enumerate}
+
+\chapter{Reasoning about Multi-Dimensional Arrays}
 
 \part{Parallel Algorithms}
 
@@ -969,7 +985,7 @@ entering the \texttt{map}.
 
 In this chapter, we will present a number of parallel algorithms for
 solving a number of problems. We will make effective use of the
-SOAC parallel operators. In particular, it turns out that the
+SOAC parallel array combinators. In particular, it turns out that the
 \soac{scan} operator is critical for writing parallel algorithms. In
 fact, we shall first develop the notion of a \emph{segmented scan}
 operation, which, as we shall see, can be implemented using Futhark's \soac{scan}
