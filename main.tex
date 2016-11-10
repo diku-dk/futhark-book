@@ -9,7 +9,7 @@
 \usepackage[scaled=.8]{sourcecodepro}
 %\usepackage[sc]{mathpazo}
 \input{futhark.tex}
-
+\input{util.tex}
 \usepackage{color}
 \definecolor{eclipseBlue}{RGB}{42,0.0,255}
 \newcommand{\soac}[1]{\texttt{\color{eclipseBlue}#1}}
@@ -188,13 +188,18 @@ of \emph{steps}, which defines a notion of the number of dependent
 parallel steps that the program will take, assuming an infinite number
 of processors.
 
-In this book we shall develop a performance reasoning model for a
+In this book we shall make use of a performance cost model for a
 subset of a data-parallel language and discuss benefits and
 limitations of the approach. The cost model is based on the
 language-based cost model developed for NESL, but in contrary to the
 cost model for NESL, we shall not base our reasoning on an automatic
 flattening technique for dealing with nested parallism. Instead, we
-shall require the programmer to perform certain kinds of flattening manually.
+shall require the programmer to perform certain kinds of flattening
+manually. The cost model developed for Futhark has been adapted from
+the cost model developed for the SPARC parallel functional programming
+language developed for the Carnegie Mellon University (CMU) Fall 2016
+course ``15-210: Parallel and Sequenctial Data Structures and
+Algorithms'' \cite{algdesign:parseq2016}.
 
 We shall primarily look at parallelism from a data-parallel functional
 programming perspective. The development in the book is made through
@@ -933,17 +938,202 @@ entering the \texttt{map}.
 
 \section{Futhark---the Language}
 
+In this section we present the Futhark syntax, a simple type system
+for the language, and a strict evaluation semantics for the language.
+
+We assume a countable infinite number of program variables, ranged over
+by $x$ and $f$. Binary infix scalar operators, first-order built-in operations, and
+second order array combinators are given as follows:
+
 \begin{lstlisting}[mathescape=true]
-  $p$ ::= $x$  |  ($p_1$,...,$p_n$)  |  $p_1$ $p_2$
-  $F$ ::= fn $p$ => $e$
-  $D$ ::= fun $f$ $p$ = $e$  |  $D_1$ $D_2$  |  val $p$ = $e$
-  $b$ ::= true  |  false  |  $n$  |  $r$
-  $e$ ::= $b$  |  let $p$ = $e$ in $e$  |  ($e_1$,...,$e_n$)
-      | f $e_1$ ... $e_n$
-      | map $f$ $e$
-      | scan $F$ $e$ $e$
-      | reduce $F$ $e$ $e$
+  $\id{binop}$ ::= + | - | * | / | $\cdots$
+  $\id{op}$ ::= - | abs | copy | concat | empty | iota
+       | partition | rearrange | replicate | reshape
+       | rotate | shape | split | transpose | unzip | write | zip
+  $\id{soac}$ ::= map | reduce | reduceComm | scan | filter
+       | partition | zipWith
 \end{lstlisting}
+
+In the grammar for the Futhark language below, we have eluded the
+explicit type annotations, both the required annotations and the
+optional annotations:
+
+\begin{lstlisting}[mathescape=true]
+  $p$ ::= $x$  |  ($p_1$,...,$p_n$)
+  $\id{ps}$ ::= $p_1 \cdots p_n$
+  $F$ ::= fn $\id{ps}$  => $e$
+  $P$ ::= fun $f$ $\id{ps}$ = $e$  |  $P_1$ $P_2$  |  val $\id{ps}$ = $e$
+  $v$ ::= true  |  false  |  $n$  |  $r$  |  [$v_1$,...,$v_n$]
+  $e$ ::= $v$  |  let $\id{ps}$ = $e$ in $e$
+      | [$e_1$,...,$e_n$]  |  f $e_1$ ... $e_n$  |  $e_1$ $\id{op}$ $e_2$
+      | $\id{soac}$ $f$ $e_1 \cdots e_n$
+\end{lstlisting}
+
+\section{Futhark Type System}
+The type system for Futhark is quite simple. Types ($\tau$) follow the following grammar---slightly simplified:
+\begin{lstlisting}[mathescape=true]
+  $\tau$ ::= i32 | f32 | bool | []$\tau$ | ($\tau_1$,...,$\tau_n$)
+      |   $\tau \rarr \tau'$ | $\alpha$
+\end{lstlisting}
+
+Futhark's second order array combinators and some of its primitive
+operations have \emph{polymorphic} types, which we specify by
+introducing the concept of type schemes, ranged over by $\sigma$,
+which are basically quantified types with $\alpha$ and $\beta$ ranging
+over ordinary types. When $\sigma=\forall\vec{\alpha}.\tau$ is some
+type scheme, we say that $\tau'$ is an instance of $\sigma$, written
+$\sigma \geq \tau'$ if there exists a substitution
+$[\vec{\tau}/\vec{\alpha}]$ such that $\tau[\vec{\tau}/\vec{\alpha}] =
+\tau'$. The type schemes for Futhark's second-order array combinators
+are given in Figure~\ref{fig:soactypeschemes}. The type schemes for
+Futhark's built-in first-order operations are given in
+Figure~\ref{fig:foactypeschemes}. The type schemes for
+Futhark's built-in infix scalar operations are given in
+Figure~\ref{fig:primtypeschemes}
+
+\begin{figure}
+  \begin{eqnarray*}
+\id{soac} & : & \mathrm{TypeOf}(\id{soac}) \\
+    \kw{filter} & : & \forall \alpha. (\alpha \rarr \mathtt{bool}) \rarr []\alpha \rarr []\alpha\\
+    \kw{map} & : & \forall \alpha\beta. (\alpha \rarr \beta) \rarr []\alpha \rarr []\beta\\
+    \kw{reduce} & : & \forall \alpha. (\alpha \rarr \alpha \rarr \alpha) \rarr \alpha \rarr []\alpha \rarr \alpha\\
+    \kw{scan} & : & \forall \alpha. (\alpha \rarr \alpha \rarr \alpha) \rarr \alpha \rarr []\alpha \rarr []\alpha\\
+    \kw{zipWith} & : & \forall \alpha_1\cdots\alpha_n\beta. (\alpha_1\rarr\cdots\rarr\alpha_n \rarr \beta) \rarr []\alpha_1 \rarr\cdots\rarr []\alpha_n \rarr []\beta
+  \end{eqnarray*}
+  \caption{Type schemes for Futhark's second-order array combinators (SOACs). The relation $\mathrm{TypeOf}(\id{soac}) = \sigma$.}
+  \label{fig:soactypeschemes}
+\end{figure}
+
+\begin{figure}
+  \begin{eqnarray*}
+\id{op} & : & \mathrm{TypeOf}(\id{op}) \\
+    \kw{concat} & : & \forall \alpha. []\alpha \rarr \cdots \rarr []\alpha \rarr []\alpha \\
+    \kw{empty} & : & \forall \alpha. []\alpha \\
+    \kw{iota} & : & \kw{int} \rarr []\kw{int} \\
+    \kw{replicate} & : & \forall \alpha. \kw{int} \rarr \alpha \rarr []\alpha\\
+    \kw{rotate} & : & \forall \alpha. \kw{int} \rarr []\alpha \rarr []\alpha\\
+    \kw{transpose} & : & \forall \alpha. [][]\alpha \rarr [][]\alpha\\
+    \kw{unzip} & : & \forall \alpha_1\cdots\alpha_n. [](\alpha_1,\cdots,\alpha_n) \rarr ([]\alpha_1,\cdots,[]\alpha_n) \\
+    \kw{write} & : & \forall \alpha. []\kw{int} \rarr []\alpha \rarr []\alpha \rarr []\alpha \\
+    \kw{zip} & : & \forall \alpha_1\cdots\alpha_n. []\alpha_1\rarr\cdots\rarr[]\alpha_n \rarr [](\alpha_1,\cdots,\alpha_n)
+  \end{eqnarray*}
+  \caption{Type schemes for Futhark's first-order array operations. The relation $\mathrm{TypeOf}(\id{op}) = \sigma$.}
+  \label{fig:foactypeschemes}
+\end{figure}
+
+\begin{figure}
+  \begin{eqnarray*}
+\id{binop} & : & \mathrm{TypeOf}(\id{binop}) \\
+    \kw{+},\kw{-},\kw{*},\kw{/},\cdots & : & \forall \alpha \kw{:>} \{\kw{i32},\kw{f32}\}. \alpha \rarr \alpha \rarr \alpha \\
+    \kw{==},\kw{<},\kw{<=},\kw{>},\kw{>=} & : & \forall \alpha \kw{:>} \{\kw{i32},\kw{f32}\}. \alpha \rarr \alpha \rarr \kw{bool}
+  \end{eqnarray*}
+  \caption{Type schemes for Futhark's primitive scalar operations. The relation $\mathrm{TypeOf}(\id{binop}) = \sigma$.}
+  \label{fig:foactypeschemes}
+\end{figure}
+
+
+We use $\Gamma$ to range over \emph{type environments}, which are
+finite maps mapping variables to types. We use $\{\}$ to denote the
+empty type environment and $\{x:\tau\}$ to denote a singleton type
+environment. When $\Gamma$ is some type environment, we write
+$\Gamma,x:\tau$ to denote the type environment with domain
+$\Dom(\Gamma) \cup \{x\}$ and values $(\Gamma,x:\tau)(y) = \tau$ if
+$y=x$ and $\Gamma(y)$, otherwise. Moreover, when $\Gamma$ and
+$\Gamma'$ are type environments, we write $\Gamma + \Gamma'$ to denote
+the type environment with domain $\Dom(\Gamma) \cup \Dom(\Gamma')$ and
+values $(\Gamma + \Gamma')(x) = \Gamma'(x)$ if $x \in \Dom(\Gamma')$
+and $\Gamma(x)$, otherwise.
+
+Type judgments for values take the form $\vd v : \tau$, which are read
+``the value $v$ has type $\tau$.'' Type judgments for expressions take
+the form $\Gamma \vd e : \tau$, which are read ``in the type
+environment $\Gamma$, the expression $e$ has type $\tau$.'' Finally,
+type judgments for programs take the form $\Gamma \vd P : \Gamma'$,
+which are read ``in the type environment $\Gamma$, the program $P$ has
+type environment $\Gamma'$.''
+
+\subsubsection*{Values \sembox{ \vd v : \tau}}
+
+\twopart{
+\fraccc{}{\vd r : \kw{f32}}
+}{
+\fraccc{}{\vd n : \kw{i32}}
+}
+
+\twopart{
+\fraccc{}{\vd \kw{true} : \kw{bool}}
+}{
+\fraccc{}{\vd \kw{false} : \kw{bool}}
+}
+
+\twopart{
+\fraccc{\vd v_i : \tau_i ~~~i = [1;n]}{\vd \kw{(}v_1,\cdots,v_n\kw{)} : \kw{(}\tau_1,\cdots,\tau_n\kw{)}}
+}{
+\fraccc{\vd v_i : \tau ~~~i = [1;n]}{\vd \kw{[}v_1,\cdots,v_n\kw{]} : \kw{[]}\tau}
+}
+
+\subsubsection*{Expressions \sembox{\Gamma \vd e : \tau}}
+
+\twopart{
+\fraccc{\Gamma \vd e : \tau ~~~~
+\Gamma, x:\tau \vd e' : \tau'}{\Gamma \vd \kw{let}~x~\kw{=} ~e~ \kw{in}~e' : \tau'}
+}{
+\fraccc{\Gamma \vd e : \kw{(}\tau_1,\cdots,\tau_n\kw{)} \\
+\Gamma, x_1:\tau_1,\cdots,x_n:\tau_n \vd e' : \tau}{\Gamma \vd \kw{let}~\kw{(}x_1,\cdots,x_n\kw{)} ~\kw{=} ~e~ \kw{in}~e' : \tau}
+}
+
+\twopart{
+\fraccc{\Gamma \vd e_i : \tau_i ~~~i = [1;n]}{\Gamma \vd \kw{(}e_1,\cdots,e_n\kw{)} : \kw{(}\tau_1,\cdots,\tau_n\kw{)}}
+}{
+\fraccc{\Gamma \vd e_i : \tau ~~~i = [1;n]}{\Gamma \vd \kw{[}e_1,\cdots,e_n\kw{]} : \kw{[]}\tau}
+}
+
+\twopart{
+\fraccc{\vd v : \tau}{\Gamma \vd v : \tau}
+}{
+\fraccc{\Gamma(f) = \kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau ~~~~ \Gamma \vd e_i : \tau_n ~~ i = [1;n]}{\Gamma \vd f~e_1\cdots e_n : \tau}
+}
+
+\twopart{
+  \fraccc{\Gamma \vd e_i : \tau_i ~~ i = [1;2] \\
+  \mathrm{TypeOf}(\id{binop}) \geq \tau_1 \rarr \tau_2 \rarr \tau}{\Gamma \vd e_1 ~\id{binop}~ e_n : \tau
+  }
+}{
+  \fraccc{\Gamma \vd e_i : \tau_i ~~ i = [1;n] \\
+  \mathrm{TypeOf}(\id{op}) \geq \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau}{\Gamma \vd \id{op}~ e_1~\cdots~e_n : \tau
+  }
+}
+
+\onepart{
+  \fraccc{\Gamma \vd F : \tau_\mathrm{f} ~~~ \Gamma \vd e_i : \tau_i ~~ i = [1;n] ~~~~
+  \mathrm{TypeOf}(\id{soac}) \geq \tau_\mathrm{f} \rarr \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau}{
+    \Gamma \vd \id{soac} ~F~e_1~\cdots~e_n : \tau
+  }
+}
+
+MEMO: Add rules for rearrange, shape, and reshape
+
+\subsubsection*{Functions \sembox{\Gamma \vd F : \tau}}
+
+\onepart{
+  \fraccc{\Gamma,x_1:\tau_1~\cdots~x_n:\tau_n \vd e : \tau}{
+    \Gamma \vd \kw{fn} ~x_1:\tau_1~\cdots~x_n:\tau_n ~ \kw{=>} ~e : \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau
+  }
+}
+
+\subsubsection*{Programs \sembox{\Gamma \vd P : \Gamma'}}
+
+\twopart{
+\fraccc{\Gamma \vd e : \tau}{\Gamma \vd \kw{val}~x~\kw{=} ~e : \{x:\tau\}}
+}{
+\fraccc{\Gamma \vd P_1 : \Gamma_1 ~~~~ \Gamma + \Gamma_1 \vd P_2 : \Gamma_2}
+       {\Gamma \vd P_1~P_2 : \Gamma_1 + \Gamma_2}
+}
+
+\onepart{
+\fraccc{\Gamma,x_1:\tau_1,\cdots,x_n:\tau_n \vd e : \tau}{\Gamma \vd \kw{fun}~f~\kw{(}x_1,\cdots,x_n\kw{)}~\kw{=} ~e : \{f:\kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau\}}
+}
+
 
 \section{Work}
 
@@ -951,7 +1141,7 @@ entering the \texttt{map}.
 \newcommand{\Let}{\mathrm{let}}
 \newcommand{\In}{\mathrm{in}}
 \begin{lstlisting}[mathescape=true]
-  $W(b)$ = $1$
+  $W(v)$ = $1$
   $W($let $x_1$,...,$x_n$ = $e$ in $e')$ =
     $\Let$ [$v_1$,...,$v_n$] = $\Eval(e)$
     $\In$ $W(e) + W(e'[v_1/x_1,\cdots,v_n/x_n])$
@@ -962,7 +1152,8 @@ entering the \texttt{map}.
 \end{lstlisting}
 
 \section{Span}
-\begin{lstlisting}
+\begin{lstlisting}[mathescape=true]
+  $S(b)$ = $1$
 \end{lstlisting}
 
 \chapter{Algebraic Properties of SOACs}
