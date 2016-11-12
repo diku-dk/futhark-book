@@ -6,8 +6,10 @@
 \usepackage{amssymb,amsthm}
 \usepackage[utf8]{inputenc}
 %\usepackage{inconsolata}
-\usepackage[scaled=.8]{sourcecodepro}
 %\usepackage[sc]{mathpazo}
+\usepackage{newtxtext}
+\usepackage{newtxmath}
+\usepackage[scaled=.8]{sourcecodepro}
 \input{futhark.tex}
 \input{util.tex}
 \usepackage{color}
@@ -1024,11 +1026,11 @@ Figure~\ref{fig:primtypeschemes}
 \begin{figure}
   \begin{eqnarray*}
 \id{binop} & : & \mathrm{TypeOf}(\id{binop}) \\
-    \kw{+},\kw{-},\kw{*},\kw{/},\cdots & : & \forall \alpha \kw{:>} \{\kw{i32},\kw{f32}\}. \alpha \rarr \alpha \rarr \alpha \\
-    \kw{==},\kw{<},\kw{<=},\kw{>},\kw{>=} & : & \forall \alpha \kw{:>} \{\kw{i32},\kw{f32}\}. \alpha \rarr \alpha \rarr \kw{bool}
+    \kw{+},\kw{-},\kw{*},\kw{/},\cdots & : & \forall \alpha \triangleright \{\kw{i32},\kw{f32}\}. \alpha \rarr \alpha \rarr \alpha \\
+    \kw{==},\kw{!=},\kw{<},\kw{<=},\kw{>},\kw{>=} & : & \forall \alpha \triangleright \{\kw{i32},\kw{f32}\}. \alpha \rarr \alpha \rarr \kw{bool}
   \end{eqnarray*}
   \caption{Type schemes for Futhark's primitive scalar operations. The relation $\mathrm{TypeOf}(\id{binop}) = \sigma$.}
-  \label{fig:foactypeschemes}
+  \label{fig:primtypeschemes}
 \end{figure}
 
 
