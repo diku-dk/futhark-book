@@ -382,17 +382,30 @@ but empty tuples are permitted, although they are not very useful---these are
 written \texttt{()} and are of type \texttt{()}.
 
 An array value is written as a nonempty sequence of comma-separated
-values enclosed in square brackets.  An array type is written as
-\texttt{[]$t$}, where \texttt{$t$} is the element type of the array.
-For example, an array of three integers could be written as
-\texttt{[1,2,3]}, and has type \texttt{[]i32}.  An empty array is
+values enclosed in square brackets: \texttt{[1,2,3]}.  An array type
+is written as \texttt{[$d$]$t$}, where \texttt{$t$} is the element
+type of the array, and $d$ is an integer indicating the size.  We
+typically elide $d$, in which case the size will be inferred.  As an
+example, an array of three integers could be written as
+\texttt{[1,2,3]}, and has type \texttt{[3]i32}.  An empty array is
 written as \texttt{empty($t$)}, where \texttt{$t$} is the element
-type.  Multi-dimensional arrays are supported in Futhark, but they
-must be \textit{regular}.  This regularity requirement means that all
-inner arrays must have the same shape.  For example, \texttt{[[1,2],
-    [3,4]]} is a valid array of type \texttt{[][]i32}, but
-\texttt{[[1,2], [3,4,5]]} is not.  We will return to the implications
-of this restriction in later chapters.
+type.  The type can also be used to indicate the size of the array, by
+putting the size in between the brackets.
+
+Multi-dimensional arrays are supported in Futhark, but they must be
+\textit{regular}, meaning that all inner arrays must have the same
+shape.  For example, \texttt{[[1,2], [3,4], [5,6]]} is a valid array
+of type \texttt{[2][3]i32}, but \texttt{[[1,2], [3,4,5], [6,7]]} is
+not, because there we cannot determine integers $m$ and $n$ such that
+\texttt{[$m$][$n$]i32} describes the array.  The restriction to
+regular arrays is rooted in low-level concerns about efficient
+compilation.  However, we can understand it in language terms by the
+inability to write a type with consistent dimension sizes for an
+irregular array value.  In a Futhark program, all array values,
+including intermediate (unnamed) arrays, must be typeable.
+
+We will return to the implications of this restriction in later
+chapters.
 
 \subsection{Simple Expressions}
 
@@ -403,7 +416,7 @@ complete detail.  See the reference manual at
 \url{http://futhark.readthedocs.io} for a comprehensive treatment.
 
 Function calls are written using simple juxtaposition.  For example,
-to apply the predefined \texttt{cos64} function (cosinus for
+to apply the predefined \texttt{cos64} function (cosine for
 \texttt{f64} values) to a constant argument, we write:
 
 \begin{lstlisting}
@@ -860,7 +873,7 @@ speedups.
 Futhark is a much younger and more raw language than you may be
 accustomed to, and many common language features are missing.  It is
 important to remember that Futhark is an \textit{on-going research
-  project}, and you should not encounter the same predictability and
+  project}, and you should not expect the same predictability and
 quality of error messages that you may be used to from more mature
 languages.  In general, the limitations you will encounter will tend
 to fall in three different categories:
