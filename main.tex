@@ -497,11 +497,12 @@ exclusive.  Slicing of multiple dimensions can be done by separating
 with commas, and may be intermixed freely with indexing.  It is an
 error if \texttt{j < n}.
 
-\subsection{Function Definitions}
+\subsection{Top-Level Definitions}
 \label{sec:function-declarations}
 
-A Futhark program consists of a sequence of \textit{function
-  definitions}, of the following form:
+A Futhark program consists of a sequence of top-level definitions,
+which are either \textit{function definitions} or \textit{value
+  definitions}.  A function definition has the following form:
 
 \begin{lstlisting}
 fun name params... : return_type = body
@@ -523,6 +524,25 @@ fun fact(n: int): int =
 \noindent
 Indentation has no syntactical significance in Futhark, but is
 recommended for readability.
+
+A value definition is very similar:
+
+\begin{lstlisting}
+val name: value_type = definition
+\end{lstlisting}
+
+For example:
+
+\begin{lstlisting}
+val physicists_pi: f64 = 4.0
+\end{lstlisting}
+
+A value definition is semantically similar to a function that ignores
+its argument and always returns the same value.  Values and functions
+may refer to each other, and the order in which they are defined does
+not matter (except when modules get involved---see \ref{sec:modules}).
+You can even define mutually recursive values, although this will
+result in an infinite loop if the value is ever used.
 
 \section{Array Operations}
 
@@ -736,7 +756,7 @@ cannot be predicted in advance.  For example, the following program
 doubles a given number until it exceeds a given threshold value::
 
 \begin{lstlisting}
-fun main(x: int, bound: int): int =
+fun main(x: i32, bound: i32): i32 =
   loop (x) = while x < bound do x * 2
   in x
 \end{lstlisting}
@@ -746,20 +766,20 @@ behave identically to \texttt{for}-loops.
 
 For brevity, the initial value expression can be elided, in which case
 an expression equivalent to the pattern is implied.  This is easier to
-understand with an example.  The loop
+understand with an example.  The loop---
 
 \begin{lstlisting}
-fun fib(n: int): int =
+fun fib(n: i32): i32 =
   let x = 1
   let y = 1
   loop ((x, y) = (x, y)) = for i < n do (y, x+y)
   in x
 \end{lstlisting}
 
-can also be written
+---can also be written:
 
 \begin{lstlisting}
-fun fib(n: int): int =
+fun fib(n: i32): i32 =
   let x = 1
   let y = 1
   loop ((x, y)) = for i < n do (y, x+y)
@@ -770,6 +790,205 @@ This can sometimes make imperative code look more natural.
 
 \section{In-Place Updates}
 \label{sec:in-place-updates}
+
+While Futhark is through and through a pure functional language, it
+may occasionally prove useful to express certain algorithms in an
+imperative style.  Consider a function for computing the $n$ first
+Fibonacci numbers:
+
+\lstinputlisting{src/fib_sequential.fut}
+
+If the array \texttt{arr} is copied for each iteration of the loop, we
+would put enormous pressure on memory, and spend a lot of time moving
+around data, even though it is clear in this case that the ``old''
+value of \texttt{arr} will never be used again.  Precisely, what
+should be an algorithm with complexity $O(n)$ becomes $O(n^2)$, due to
+copying the size $n$ array (an $O(n)$ operation) for each of the $n$
+iterations of the loop.
+
+To prevent this, we want to update the array \textit{in-place}, that
+is, with a static guarantee that the operation will not require any
+additional memory allocation, or copying the array.  An
+\textit{in-place update} can modify the array in time proportional to
+the elements being updated ($O(1)$ in the case of the Fibonacci
+function), rather than time proportional to the size of the final
+array, as would the case if we perform a copy.  In order to perform
+the update without violating referential transparency, we need to know
+that no other references to the array exists, or at least that such
+references will not be used on any execution path following the
+in-place update.
+
+In Futhark, this is done through a type system feature called
+\textit{uniqueness types}, similar to, although simpler, than the
+uniqueness types of
+Clean~\cite{clean-uniqueness-types,barendsen1996uniqueness}.
+Alongside a (relatively) simple aliasing analysis in the type checker,
+this is sufficient to determine at compile time whether an in-place
+modification is safe, and signal a compile time error if in-place
+updates are used in way where safety cannot be guaranteed.
+
+The simplest way to introduce uniqueness types is through examples.
+To that end, let us consider the following function definition.
+
+\begin{lstlisting}
+fun modify(a: @@*@@[]i32, i: i32, x: i32): @@*@@[]i32 =
+  let a[i] = a[i] + x
+  in a
+\end{lstlisting}
+
+The function call \texttt{modify($a$,$i$,$x$)} returns $a$, but where
+the element at index \texttt{i} has been increased by $x$.  Note the
+asterisks: in the parameter declaration \texttt{a: *[int]}, this means
+that the function \texttt{modify} has been given ``ownership'' of the
+array $a$, meaning that any caller of \texttt{modify} will never
+reference array $a$ after the call again.  In particular,
+\texttt{modify} can change the element at index \texttt{i} without
+first copying the array, i.e. \texttt{modify} is free to do an
+in-place modification.  Furthermore, the return value of
+\texttt{modify} is also unique - this means that the result of the
+call to \texttt{modify} does not share elements with any other visible
+variables.
+
+Let us consider a call to \texttt{modify}, which might look as
+follows.
+
+\begin{lstlisting}[mathescape=true]
+let $b$ = modify($a$, $i$, $x$)
+\end{lstlisting}
+
+Under which circumstances is this call valid?  Two things must hold:
+\begin{enumerate}
+\item The type of \texttt{$a$} must be \texttt{*[]int}, of course.
+
+\item Neither \texttt{$a$} or any variable that \textit{aliases}
+  \texttt{$a$} may be used on any execution path following the call to
+  \texttt{modify}.
+\end{enumerate}
+
+When a value is passed as a unique-typed argument in a function call,
+we say that the value is \textit{consumed}, and neither it nor any of
+its \textit{aliases} (see below) can be used again.  Otherwise, we
+would break the contract that gives the function liberty to manipulate
+the argument however it wants.  Note that it is the type in the
+argument declaration that must be unique - it is permissible to pass a
+unique-typed variable as a non-unique argument (that is, a unique type
+is a subtype of the corresponding nonunique type).
+
+A variable $v$ aliases $a$ if they may share some elements,
+i.e. overlap in memory.  As the most trivial case, after evaluating
+the binding \texttt{let b = a}, the variable \texttt{b} will alias
+\texttt{$a$}.  As another example, if we extract a row from a
+two-dimensional array, the row will alias its source:
+\begin{lstlisting}
+let b = a[0] -- b is aliased to a
+             -- (assuming a is not one-dimensional)
+\end{lstlisting}
+Most array combinators produce fresh arrays that initially alias no
+other arrays in the program.  In particular, the result of \texttt{map
+  f a} does not alias \texttt{a}.  One exception is \texttt{split},
+used for dividing arrays into multiple parts, where each of the
+partitions are aliased to the original array (but the partitions,
+being non-overlapping, are not aliased to each other).
+
+Let us consider the definition of a function returning a unique array:
+
+\begin{lstlisting}[mathescape=true]
+fun f(a: [int]): *[int] = $e$
+\end{lstlisting}
+
+Note that the argument, \texttt{a}, is non-unique, and hence we cannot
+modify it inside the function.  There is another restriction as well:
+\texttt{a} must not be aliased to our return value, as the uniqueness
+contract requires us to ensure that there are no other references to
+the unique return value.  This requirement would be violated if we
+permitted the return value in a unique-returning function to alias its
+(non-unique) parameters.
+
+To summarise: \textit{values are consumed by being the source in a
+  \texttt{let-with}, or by being passed as a \textit{unique} parameter
+  in a function call}.  We can crystallise valid usage in the form of
+three principal rules:
+
+\begin{description}
+\item[Uniqueness Rule 1] When a value is consumed --- for example, by
+  being passed in the place of a unique parameter in a function call,
+  or used as the source in a in-place \texttt{let} expression, neither
+  that value, nor any value that aliases it, may be used on any
+  execution path following the function call.  A violation of this
+  rule is illustrated on Figure \ref{fig:uniqueness-rule-1-violation}.
+
+\item[Uniqueness Rule 2] If a function definition is declared to
+  return a unique value, the return value (that is, the result of the
+  body of the function) must not share memory with any non-unique
+  arguments to the function.  As a consequence, at the time of
+  execution, the result of a call to the function is the only
+  reference to that value.  A violation of this rule is illustrated on
+  Figure \ref{fig:uniqueness-rule-2-violation}.
+
+\item[Uniqueness Rule 3] If a function call yields a unique return
+  value, the caller has exclusive access to that value.  At
+  \textit{the point the call returns}, the return value may not share
+  memory with any variable used in any execution path following the
+  function call.  This rule is particularly subtle, but can be
+  considered a rephrasing of Uniqueness Rule 2 from the ``calling
+  side''.
+\end{description}
+
+\begin{figure}
+\centering
+\begin{lstlisting}
+let b = a with [i] <- 2 in
+f(b,a) // @@Error:@@ a used after being source in a let-with
+\end{lstlisting}
+\caption{Violation of Uniqueness Rule 1}
+\label{fig:uniqueness-rule-1-violation}
+\end{figure}
+
+\begin{figure}
+\centering
+\begin{lstlisting}
+fun *[int] broken([[int]] a, int i) =
+  a[i] // @@Error:@@ Return value aliased with 'a'.
+\end{lstlisting}
+\caption{Violation of Uniqueness Rule 2}
+\label{fig:uniqueness-rule-2-violation}
+\end{figure}
+
+It is worth emphasising that everything related to uniqueness types is
+implemented as a static analysis.  \textit{All} violations of the
+uniqueness rules will be discovered at compile time (during
+type-checking), leaving the code generator and runtime system at
+liberty to exploit them for low-level optimisation.
+
+\subsection{When To Use In-Place Updates}
+
+If you are used to programming in impure languages, in-place updates
+may seem a natural and convenient tool that you may use frequently.
+However, Futhark is a functional array language, and should be used as
+such.  In-place updates are restricted to simple cases that the
+compiler is able to analyze, and should only be used when absolutely
+necessary.  Many interesting and complicated Futhark programs can be
+written without making use of in-place updates at all.
+
+Typically, we use in-place updates to efficiently express sequential
+algorithms that are then mapped on some array.  Somewhat
+counter-intuitively, however, in-place updates can also be used for
+expressing irregular nested parallel algorithms (which are otherwise
+not expressible in Futhark), albeit in a low-level way.  The key here
+is the array combinator \texttt{write}, which writes to several
+positions in an array in parallel.  Suppose we have an array
+\texttt{is} of type \texttt{[$n$]i32}, an array \texttt{vs} of type
+\texttt{[$n$]$t$} (for some \texttt{$t$}), and an array \texttt{as}
+of type \texttt{[$m$]$t$} Then the expression \texttt{write is vs
+  as} morally computes---
+\begin{lstlisting}[language=ruby,mathescape=true]
+  for i in 0..$n$-1:
+    j = is[i]
+    v = vs[i]
+    as[j] = v
+\end{lstlisting}
+---and returns the modified \texttt{as} array.  The old \texttt{as}
+array is marked as consumed and may not be used anymore.
 
 \begin{lstlisting}
 -- A least significant digit radix sort to test out `write`.
@@ -782,6 +1001,7 @@ fun radix_sort_up(xs: [n]u32) : ([n]u32,[n]i32) =
 
 
 \section{Modules}
+\label{sec:modules}
 
 \section{Benchmarking}
 \label{sec:benchmarking}
