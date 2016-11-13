@@ -668,14 +668,14 @@ fun fib(n: int): int =
 \end{lstlisting}
 
 The semantics of this is precisely as in the tail-recursive function
-formulation.  In general, a loop:
+formulation.  In general, a loop---
 
 \begin{lstlisting}
 loop (pat = initial) = for i < bound do loopbody
 in body
 \end{lstlisting}
 
-Has the following the semantics:
+---has the following the semantics:
 
 \begin{enumerate}
 \item Bind \texttt{pat} to the initial values given in
