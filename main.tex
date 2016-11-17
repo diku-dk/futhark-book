@@ -1189,16 +1189,17 @@ second order array combinators are given as follows:
        | partition | zipWith
 \end{lstlisting}
 
-In the grammar for the Futhark language below, we have eluded the
-explicit type annotations, both the required annotations and the
-optional annotations:
+In the grammar for the Futhark language below, we have eluded both the
+required explicit type annotations and the optional explicit type
+annotations. Also for simplicity, we are considering only ``unnested''
+pattern matching.
 
 \begin{lstlisting}[mathescape=true]
-  $p$ ::= $x$  |  ($p_1$,...,$p_n$)
+  $p$ ::= $x$  |  ($x_1$,...,$x_n$)
   $\id{ps}$ ::= $p_1 \cdots p_n$
-  $F$ ::= fn $\id{ps}$  => $e$
-  $P$ ::= fun $f$ $\id{ps}$ = $e$  |  $P_1$ $P_2$  |  val $\id{ps}$ = $e$
-  $v$ ::= true  |  false  |  $n$  |  $r$  |  [$v_1$,...,$v_n$]
+  $F$ ::= fn $\id{ps}$ => $e$
+  $P$ ::= fun $f$ $\id{ps}$ = $e$  |  $P_1$ $P_2$  |  val $p$ = $e$
+  $v$ ::= true  |  false  |  $n$  |  $r$  |  [$v_1$,...,$v_n$]  |  ($v_1$,...,$v_n$)
   $e$ ::= $v$  |  let $\id{ps}$ = $e$ in $e$
       | [$e_1$,...,$e_n$]  |  f $e_1$ ... $e_n$  |  $e_1$ $\id{op}$ $e_2$
       | $\id{soac}$ $f$ $e_1 \cdots e_n$
@@ -1369,11 +1370,16 @@ MEMO: Add rules for rearrange, shape, and reshape
 \fraccc{\Gamma,x_1:\tau_1,\cdots,x_n:\tau_n \vd e : \tau}{\Gamma \vd \kw{fun}~f~\kw{(}x_1,\cdots,x_n\kw{)}~\kw{=} ~e : \{f:\kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau\}}
 }
 
+\section{Futhark Evaluation Semantics}
+
+In this section we develop a simple big-step semantics for Futhark programs. Besides from the notion of values, which has already been introduced in the previous section
+
 
 \section{Work}
 
 \newcommand{\Eval}{\mathrm{Eval}}
 \newcommand{\Let}{\mathrm{let}}
+\newcommand{\Where}[1]{\mathrm{where} \begin{array}[t]{l} #1 \end{array}}
 \newcommand{\In}{\mathrm{in}}
 \begin{lstlisting}[mathescape=true]
   $W(v)$ = $1$
@@ -1381,6 +1387,11 @@ MEMO: Add rules for rearrange, shape, and reshape
     $\Let$ [$v_1$,...,$v_n$] = $\Eval(e)$
     $\In$ $W(e) + W(e'[v_1/x_1,\cdots,v_n/x_n])$
   $W($[$e_1,\cdots,e_n$]$)$ = $W(e_1) + \ldots + W(e_n)$
+  $W(f$ $e_1 \cdots e_n)$ =
+    $W(e_1) + \ldots + W(e_n) + W(e[v_1/x_1,\cdots v_n/x_n])$
+    $\Where{P(f) = \lambda x_1 \cdots x_n . e \\
+            v_1 = \Eval(e_1), \cdots, v_n = \Eval(e_n)}$
+  $W(e_1$ $\id{op}$ $e_2)$ = $W(e_1) + W(e_2) + 1$
   $W($map (fn $x$ => $e'$) $e)$ =
     $\Let$ [$v_1,\cdots,v_n$] = $\Eval(e)$
     $\In$ $W(e) + W(e'[v_1/x]) + \ldots + W(e'[v_n/x])$
