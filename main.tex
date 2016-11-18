@@ -2,7 +2,7 @@
 
 \usepackage{amsmath}
 \usepackage{amsfonts}
-\usepackage{url}
+\usepackage{hyperref}
 \usepackage{amssymb,amsthm}
 \usepackage[utf8]{inputenc}
 %\usepackage{inconsolata}
@@ -351,7 +351,7 @@ range of command line options to manipulate their behaviour and print
 debugging information.  These will be introduced as needed.
 
 \section{Basic Language Features}
-
+\label{sec:baselang}
 As a functional or \textit{value-oriented} language, Futhark can be
 understood entirely by how values are constructed, and how expressions
 transform one value to another.  As a statically typed language, all
@@ -1173,8 +1173,9 @@ entering the \texttt{map}.
 
 \section{Futhark---the Language}
 
-In this section we present the Futhark syntax, a simple type system
-for the language, and a strict evaluation semantics for the language.
+In this section we present a simplified version of the Futhark
+language in terms of syntax, a type system for the language, and a
+strict evaluation semantics.
 
 We assume a countable infinite number of program variables, ranged over
 by $x$ and $f$. Binary infix scalar operators, first-order built-in operations, and
@@ -1192,39 +1193,58 @@ second order array combinators are given as follows:
 In the grammar for the Futhark language below, we have eluded both the
 required explicit type annotations and the optional explicit type
 annotations. Also for simplicity, we are considering only ``unnested''
-pattern matching.
+pattern matching and we do not, in this section, consider uniqueness types.
 
 \begin{lstlisting}[mathescape=true]
   $p$ ::= $x$  |  ($x_1$,...,$x_n$)
   $\id{ps}$ ::= $p_1 \cdots p_n$
-  $F$ ::= fn $\id{ps}$ => $e$
+  $F$ ::= fn $\id{ps}$ => $e$  |  $e$ $\id{op}$  |  $\id{op}$ $e$
   $P$ ::= fun $f$ $\id{ps}$ = $e$  |  $P_1$ $P_2$  |  val $p$ = $e$
   $v$ ::= true  |  false  |  $n$  |  $r$  |  [$v_1$,...,$v_n$]  |  ($v_1$,...,$v_n$)
   $e$ ::= $v$  |  let $\id{ps}$ = $e$ in $e$
-      | [$e_1$,...,$e_n$]  |  f $e_1$ ... $e_n$  |  $e_1$ $\id{op}$ $e_2$
+      | [$e_1$,...,$e_n$]  |  ($v_1$,...,$v_n$)
+      | f $e_1$ ... $e_n$  |  $e_1$ $\id{op}$ $e_2$
+      | loop ($p_1$=$e_1$,$\cdots$,$p_n$=$e_n$) = for ($e$) = $e'$ in $e''$
       | $\id{soac}$ $f$ $e_1 \cdots e_n$
 \end{lstlisting}
 
 \section{Futhark Type System}
-The type system for Futhark is quite simple. Types ($\tau$) follow the following grammar---slightly simplified:
+Without considering Futhark's uniqueness type system, Futhark's type system is simple. Types ($\tau$) follow the following grammar---slightly simplified:
 \begin{lstlisting}[mathescape=true]
   $\tau$ ::= i32 | f32 | bool | []$\tau$ | ($\tau_1$,...,$\tau_n$)
       |   $\tau \rarr \tau'$ | $\alpha$
 \end{lstlisting}
 
+\noindent We shall refer to the types \kw{i32}, \kw{f32}, \kw{bool} as
+\emph{basic types}. Futhark supports more basic types than those
+presented here; consult Section~\ref{sec:baselang} for a complete list.
+
+In practice, Futhark requires a programmer to provide explicit
+parameter types and an explicit result type for top-level function
+declarations. Similarly, in practice, Futhark requires explicit types
+for top-level \kw{val} bindings. In such explicit types, type
+variables are not allowed; at present, Futhark does not allow for a
+programmer to declare polymorphic functions.
+
 Futhark's second order array combinators and some of its primitive
-operations have \emph{polymorphic} types, which we specify by
+operations do have \emph{polymorphic} types, which we specify by
 introducing the concept of type schemes, ranged over by $\sigma$,
 which are basically quantified types with $\alpha$ and $\beta$ ranging
 over ordinary types. When $\sigma=\forall\vec{\alpha}.\tau$ is some
 type scheme, we say that $\tau'$ is an instance of $\sigma$, written
 $\sigma \geq \tau'$ if there exists a substitution
 $[\vec{\tau}/\vec{\alpha}]$ such that $\tau[\vec{\tau}/\vec{\alpha}] =
-\tau'$. The type schemes for Futhark's second-order array combinators
-are given in Figure~\ref{fig:soactypeschemes}. The type schemes for
+\tau'$. We require all substitutions to be \emph{simple} in the sense
+that substitutions do not allow for function types, product types, or
+type variables to be substituted. Other restrictions may apply, which
+will be specified using a \emph{type variable constraint} $\alpha
+\triangleright T$, where $T$ is a set of basic types.
+
+The type schemes for Futhark's second-order array combinators are
+given in Figure~\ref{fig:soactypeschemes}. The type schemes for
 Futhark's built-in first-order operations are given in
-Figure~\ref{fig:foactypeschemes}. The type schemes for
-Futhark's built-in infix scalar operations are given in
+Figure~\ref{fig:foactypeschemes}. The type schemes for Futhark's
+built-in infix scalar operations are given in
 Figure~\ref{fig:primtypeschemes}
 
 \begin{figure}
@@ -1357,23 +1377,42 @@ MEMO: Add rules for rearrange, shape, and reshape
   }
 }
 
+\twopart{
+  \fraccc{\Gamma \vd e : \tau_1 \\
+  \mathrm{TypeOf}(\id{binop}) \geq \tau_1 \rarr \tau_2 \rarr \tau}{\Gamma \vd e ~\id{binop} : \tau_2 \rarr \tau
+  }
+}{
+  \fraccc{\Gamma \vd e : \tau_2 \\
+  \mathrm{TypeOf}(\id{binop}) \geq \tau_1 \rarr \tau_2 \rarr \tau}{\Gamma \vd \id{binop}~e : \tau_1 \rarr \tau
+  }
+}
+
+
 \subsubsection*{Programs \sembox{\Gamma \vd P : \Gamma'}}
 
 \twopart{
-\fraccc{\Gamma \vd e : \tau}{\Gamma \vd \kw{val}~x~\kw{=} ~e : \{x:\tau\}}
+\fraccc{\Gamma \vd e : \tau ~~~~~ x \not \in \Dom(\Gamma)}{\Gamma \vd \kw{val}~x~\kw{=} ~e : \{x:\tau\}}
 }{
 \fraccc{\Gamma \vd P_1 : \Gamma_1 ~~~~ \Gamma + \Gamma_1 \vd P_2 : \Gamma_2}
        {\Gamma \vd P_1~P_2 : \Gamma_1 + \Gamma_2}
 }
 
 \onepart{
-\fraccc{\Gamma,x_1:\tau_1,\cdots,x_n:\tau_n \vd e : \tau}{\Gamma \vd \kw{fun}~f~\kw{(}x_1,\cdots,x_n\kw{)}~\kw{=} ~e : \{f:\kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau\}}
+  \fraccc{\Gamma,x_1:\tau_1,\cdots,x_n:\tau_n \vd e : \tau  ~~~~~ f \not \in \Dom(\Gamma)}
+         {\Gamma \vd \kw{fun}~f~\kw{(}x_1,\cdots,x_n\kw{)}~\kw{=} ~e : \{f:\kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau\}}
 }
 
 \section{Futhark Evaluation Semantics}
 
-In this section we develop a simple big-step semantics for Futhark programs. Besides from the notion of values, which has already been introduced in the previous section
+In this section we develop a simple big-step semantics for Futhark
+programs. Besides from the notion of value, which has already been
+introduced in the previous section, we need a notion of \emph{dynamic
+  environment}, which maps identifiers to values
 
+\newcommand{\Eval}{\mathrm{Eval}}
+\begin{eqnarray*}
+  \Eval(P,v) & = & \Eval_p(\id{main}(v))
+\end{eqnarray*}
 
 \section{Work}
 

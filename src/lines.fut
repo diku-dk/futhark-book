@@ -69,7 +69,7 @@ fun drawlines_par (grid:*[h][w]i32) (lines:[n]line) :[h][w]i32 =
   let idxs = replIdx lens
   let iotan = iota n
   let nums = map (fn i => iotan[i]) idxs
-  let nn = reduce (+) 0 lens
+  let nn = reduce (+) 0 lens                -- total number of points
   let flags = map (fn i => i != 0 && nums[i] != nums[i-1]) (iota nn)
   let (ps1,ps2) = unzip lines
   let (xs1,ys1) = unzip ps1
