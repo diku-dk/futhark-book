@@ -13,8 +13,8 @@
 \input{futhark.tex}
 \input{util.tex}
 \usepackage{color}
-\definecolor{eclipseBlue}{RGB}{42,0.0,255}
-\newcommand{\soac}[1]{\texttt{\color{eclipseBlue}#1}}
+
+\newtheorem{proposition}{Proposition}
 
 \title{\bf Parallel Programming in Futhark}
 \author{HIPERFIT \\ Department of Computer Science \\ University of Copenhagen (DIKU)}
@@ -580,7 +580,7 @@ The functional argument can also be an operator, which must be
 enclosed in parentheses:
 
 \begin{lstlisting}
-map (!) [True, False, True] == [False, True, False]
+map (!) [true, false, true] == [false, true, false]
 \end{lstlisting}
 
 Currying for operators is also supported using a syntax taken from
@@ -1163,6 +1163,47 @@ entering the \texttt{map}.
 
 \chapter{A Parallel Cost Model for Futhark Programs}
 \label{chap:costmodel}
+In this chapter we develop a more formal model for Futhark and provide
+an ideal cost model for the language in terms of the concepts of work
+and span. Before we present the cost model for the language, we
+present a simple type system for Futhark and an evaluation
+semantics. In the initial development, we shall not consider Futhark's
+more advanced features such as loops and uniqueness types, but we
+shall return to these constructs later in the chapter.
+
+Futhark supports certain kinds of nested parallelism. For instance,
+Futhark can in many cases map two nested maps into fully parallel
+code. Consider the following Futhark function:
+\lstinputlisting[firstline=3]{src/multable.fut}
+
+\noindent
+In the case of this program, Futhark will flatten the code to make a
+single flat kernel. We shall return to the concept of flattening in a
+later chapter.
+
+When we shall understand how efficient an algorithm is, we shall build
+our analysis around the two concepts of work and span. These concepts
+are defined inductively over the various Futhark language constructs
+and we may therefore argue about work and span in a compositional
+way. For instance, if we want to know about the work required to
+execute the \kw{multable} function, we need to know about how to
+compute the work for a call to the \fop{map} SOAC, how to compute the
+work for the \fop{iota} operation, how to compute the work for the
+multiply operation, and, finally, how to combine the work. The way to
+determine the work for a \fop{map} SOAC instance is to multiply the
+size of the argument array with the work of body of the argument
+function. Thus, we have
+$$ W(\fop{map}~\kw{(}\fw{fn}~\kw{j => i * j) (}\fop{iota}~\kw{$n$))}) = n+1 $$
+Applying a similar agument to the outer map, we get
+$$W(\fop{map}~\kw{(}\fw{fn}~\kw{i => $\cdots$) (}\fop{iota}~\kw{$n$))}) = (n+1)^2 $$
+
+\noindent
+Most often we are interested in finding the asymptotical complexity of
+the algorithm we are analyzing, in which case we will simply write
+$$W(\fop{map}~\kw{(}\fw{fn}~\kw{i => $\cdots$) (}\fop{iota}~\kw{$n$))}) = O(n^2) $$
+
+In a similar way we shall be able to derive that the span of a call $\kw{multable}~n$, written $S(\kw{multable}~n)$, is $O(1)$.
+
 \begin{enumerate}
 \item motivation
 \item memory vs compute bound
@@ -1201,10 +1242,10 @@ pattern matching and we do not, in this section, consider uniqueness types.
   $F$ ::= fn $\id{ps}$ => $e$  |  $e$ $\id{op}$  |  $\id{op}$ $e$
   $P$ ::= fun $f$ $\id{ps}$ = $e$  |  $P_1$ $P_2$  |  val $p$ = $e$
   $v$ ::= true  |  false  |  $n$  |  $r$  |  [$v_1$,...,$v_n$]  |  ($v_1$,...,$v_n$)
-  $e$ ::= $v$  |  let $\id{ps}$ = $e$ in $e$
+  $e$ ::= $v$  |  let $\id{ps}$ = $e$ in $e$  |  $e$[$e$]
       | [$e_1$,...,$e_n$]  |  ($v_1$,...,$v_n$)
       | f $e_1$ ... $e_n$  |  $e_1$ $\id{op}$ $e_2$
-      | loop ($p_1$=$e_1$,$\cdots$,$p_n$=$e_n$) = for ($e$) = $e'$ in $e''$
+      | loop ($p_1$=$e_1$,$\cdots$,$p_n$=$e_n$) = for ($e$) do $e'$ in $e''$
       | $\id{soac}$ $f$ $e_1 \cdots e_n$
 \end{lstlisting}
 
@@ -1250,11 +1291,11 @@ Figure~\ref{fig:primtypeschemes}
 \begin{figure}
   \begin{eqnarray*}
 \id{soac} & : & \mathrm{TypeOf}(\id{soac}) \\
-    \kw{filter} & : & \forall \alpha. (\alpha \rarr \mathtt{bool}) \rarr []\alpha \rarr []\alpha\\
-    \kw{map} & : & \forall \alpha\beta. (\alpha \rarr \beta) \rarr []\alpha \rarr []\beta\\
-    \kw{reduce} & : & \forall \alpha. (\alpha \rarr \alpha \rarr \alpha) \rarr \alpha \rarr []\alpha \rarr \alpha\\
-    \kw{scan} & : & \forall \alpha. (\alpha \rarr \alpha \rarr \alpha) \rarr \alpha \rarr []\alpha \rarr []\alpha\\
-    \kw{zipWith} & : & \forall \alpha_1\cdots\alpha_n\beta. (\alpha_1\rarr\cdots\rarr\alpha_n \rarr \beta) \rarr []\alpha_1 \rarr\cdots\rarr []\alpha_n \rarr []\beta
+    \fop{filter} & : & \forall \alpha. (\alpha \rarr \mathtt{bool}) \rarr []\alpha \rarr []\alpha\\
+    \fop{map} & : & \forall \alpha\beta. (\alpha \rarr \beta) \rarr []\alpha \rarr []\beta\\
+    \fop{reduce} & : & \forall \alpha. (\alpha \rarr \alpha \rarr \alpha) \rarr \alpha \rarr []\alpha \rarr \alpha\\
+    \fop{scan} & : & \forall \alpha. (\alpha \rarr \alpha \rarr \alpha) \rarr \alpha \rarr []\alpha \rarr []\alpha\\
+    \fop{zipWith} & : & \forall \alpha_1\cdots\alpha_n\beta. (\alpha_1\rarr\cdots\rarr\alpha_n \rarr \beta) \rarr []\alpha_1 \rarr\cdots\rarr []\alpha_n \rarr []\beta
   \end{eqnarray*}
   \caption{Type schemes for Futhark's second-order array combinators (SOACs). The relation $\mathrm{TypeOf}(\id{soac}) = \sigma$.}
   \label{fig:soactypeschemes}
@@ -1263,15 +1304,15 @@ Figure~\ref{fig:primtypeschemes}
 \begin{figure}
   \begin{eqnarray*}
 \id{op} & : & \mathrm{TypeOf}(\id{op}) \\
-    \kw{concat} & : & \forall \alpha. []\alpha \rarr \cdots \rarr []\alpha \rarr []\alpha \\
-    \kw{empty} & : & \forall \alpha. []\alpha \\
-    \kw{iota} & : & \kw{int} \rarr []\kw{int} \\
-    \kw{replicate} & : & \forall \alpha. \kw{int} \rarr \alpha \rarr []\alpha\\
-    \kw{rotate} & : & \forall \alpha. \kw{int} \rarr []\alpha \rarr []\alpha\\
-    \kw{transpose} & : & \forall \alpha. [][]\alpha \rarr [][]\alpha\\
-    \kw{unzip} & : & \forall \alpha_1\cdots\alpha_n. [](\alpha_1,\cdots,\alpha_n) \rarr ([]\alpha_1,\cdots,[]\alpha_n) \\
-    \kw{write} & : & \forall \alpha. []\kw{int} \rarr []\alpha \rarr []\alpha \rarr []\alpha \\
-    \kw{zip} & : & \forall \alpha_1\cdots\alpha_n. []\alpha_1\rarr\cdots\rarr[]\alpha_n \rarr [](\alpha_1,\cdots,\alpha_n)
+    \fop{concat} & : & \forall \alpha. []\alpha \rarr \cdots \rarr []\alpha \rarr []\alpha \\
+    \fop{empty} & : & \forall \alpha. []\alpha \\
+    \fop{iota} & : & \kw{int} \rarr []\kw{int} \\
+    \fop{replicate} & : & \forall \alpha. \kw{int} \rarr \alpha \rarr []\alpha\\
+    \fop{rotate} & : & \forall \alpha. \kw{int} \rarr []\alpha \rarr []\alpha\\
+    \fop{transpose} & : & \forall \alpha. [][]\alpha \rarr [][]\alpha\\
+    \fop{unzip} & : & \forall \alpha_1\cdots\alpha_n. [](\alpha_1,\cdots,\alpha_n) \rarr ([]\alpha_1,\cdots,[]\alpha_n) \\
+    \fop{write} & : & \forall \alpha. []\kw{int} \rarr []\alpha \rarr []\alpha \rarr []\alpha \\
+    \fop{zip} & : & \forall \alpha_1\cdots\alpha_n. []\alpha_1\rarr\cdots\rarr[]\alpha_n \rarr [](\alpha_1,\cdots,\alpha_n)
   \end{eqnarray*}
   \caption{Type schemes for Futhark's first-order array operations. The relation $\mathrm{TypeOf}(\id{op}) = \sigma$.}
   \label{fig:foactypeschemes}
@@ -1317,9 +1358,9 @@ type environment $\Gamma'$.''
 }
 
 \twopart{
-\fraccc{}{\vd \kw{true} : \kw{bool}}
+\fraccc{}{\vd \fop{true} : \kw{bool}}
 }{
-\fraccc{}{\vd \kw{false} : \kw{bool}}
+\fraccc{}{\vd \fop{false} : \kw{bool}}
 }
 
 \twopart{
@@ -1332,10 +1373,10 @@ type environment $\Gamma'$.''
 
 \twopart{
 \fraccc{\Gamma \vd e : \tau ~~~~
-\Gamma, x:\tau \vd e' : \tau'}{\Gamma \vd \kw{let}~x~\kw{=} ~e~ \kw{in}~e' : \tau'}
+\Gamma, x:\tau \vd e' : \tau'}{\Gamma \vd \fw{let}~x~\kw{=} ~e~ \fw{in}~e' : \tau'}
 }{
 \fraccc{\Gamma \vd e : \kw{(}\tau_1,\cdots,\tau_n\kw{)} \\
-\Gamma, x_1:\tau_1,\cdots,x_n:\tau_n \vd e' : \tau}{\Gamma \vd \kw{let}~\kw{(}x_1,\cdots,x_n\kw{)} ~\kw{=} ~e~ \kw{in}~e' : \tau}
+\Gamma, x_1:\tau_1,\cdots,x_n:\tau_n \vd e' : \tau}{\Gamma \vd \fw{let}~\kw{(}x_1,\cdots,x_n\kw{)} ~\kw{=} ~e~ \fw{in}~e' : \tau}
 }
 
 \twopart{
@@ -1352,16 +1393,18 @@ type environment $\Gamma'$.''
 
 \twopart{
   \fraccc{\Gamma \vd e_i : \tau_i ~~ i = [1;2] \\
-  \mathrm{TypeOf}(\id{binop}) \geq \tau_1 \rarr \tau_2 \rarr \tau}{\Gamma \vd e_1 ~\id{binop}~ e_n : \tau
+  \mathrm{TypeOf}(\id{binop}) \geq \tau ~~~~ \tau = \tau_1 \rarr \tau_2 \rarr \tau'}{\Gamma \vd e_1 ~\id{binop}_\tau~ e_n : \tau'
   }
 }{
   \fraccc{\Gamma \vd e_i : \tau_i ~~ i = [1;n] \\
-  \mathrm{TypeOf}(\id{op}) \geq \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau}{\Gamma \vd \id{op}~ e_1~\cdots~e_n : \tau
+  \mathrm{TypeOf}(\id{op}) \geq \tau \\ \tau =  \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau'}{\Gamma \vd \id{op}_\tau~ e_1~\cdots~e_n : \tau'
   }
 }
 
-\onepart{
-  \fraccc{\Gamma \vd F : \tau_\mathrm{f} ~~~ \Gamma \vd e_i : \tau_i ~~ i = [1;n] ~~~~
+\twopart{
+\fraccc{\Gamma \vd e : []\tau ~~~~~~\Gamma \vd e' : \kw{int}}{ \Gamma \vd e\kw{[}e'\kw{]} : \tau}
+}{
+  \fraccc{\Gamma \vd F : \tau_\mathrm{f} ~~~ \Gamma \vd e_i : \tau_i ~~ i = [1;n] \\
   \mathrm{TypeOf}(\id{soac}) \geq \tau_\mathrm{f} \rarr \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau}{
     \Gamma \vd \id{soac} ~F~e_1~\cdots~e_n : \tau
   }
@@ -1399,47 +1442,159 @@ MEMO: Add rules for rearrange, shape, and reshape
 
 \onepart{
   \fraccc{\Gamma,x_1:\tau_1,\cdots,x_n:\tau_n \vd e : \tau  ~~~~~ f \not \in \Dom(\Gamma)}
-         {\Gamma \vd \kw{fun}~f~\kw{(}x_1,\cdots,x_n\kw{)}~\kw{=} ~e : \{f:\kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau\}}
+         {\Gamma \vd \fw{fun}~f~\kw{(}x_1,\cdots,x_n\kw{)}~\kw{=} ~e : \{f:\kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau\}}
 }
 
 \section{Futhark Evaluation Semantics}
 
-In this section we develop a simple big-step semantics for Futhark
-programs. Besides from the notion of value, which has already been
-introduced in the previous section, we need a notion of \emph{dynamic
-  environment}, which maps identifiers to values
+In this section we develop a simple evaluation semantics for Futhark
+programs. The semantics is presented as a \emph{big step} evaluation
+function that takes as parameter an expression and gives as a result a
+value. A \emph{soundness property} states that if a program $P$ is
+well-typed and contains a function \emph{main} of type $() \rightarrow
+\tau$, then, if evaluation of the program results in a value $v$, the
+value $v$ has type $\tau$.
 
-\newcommand{\Eval}{\mathrm{Eval}}
-\begin{eqnarray*}
-  \Eval(P,v) & = & \Eval_p(\id{main}(v))
-\end{eqnarray*}
+To ease the presentation, we treat the evaluation function as being
+implicitly parameterised by the program $P$. %The evaluation function
+%$\Eval$ is overloaded in the sense that it applies to both programs
+%and expressions:
 
-\section{Work}
-
-\newcommand{\Eval}{\mathrm{Eval}}
+\newcommand{\Eval}[1]{\,\sem{\,#1\,}\,}
+\newcommand{\extractF}[1]{\langle\,#1\,\rangle}
 \newcommand{\Let}{\mathrm{let}}
 \newcommand{\Where}[1]{\mathrm{where} \begin{array}[t]{l} #1 \end{array}}
 \newcommand{\In}{\mathrm{in}}
+\newcommand{\N}{N}
+\newcommand{\Z}{Z}
+\newcommand{\R}{R}
+The semantics of types yields their natural set interpretations:
+\begin{eqnarray*}
+  \Eval{\kw{i32}} & = & \Z \\
+  \Eval{\kw{i32}} & = & \R \\
+  \Eval{\kw{bool}} & = & \{\fop{true},\fop{false}\} \\
+  \Eval{\kw{(}\tau_1,\cdots,\tau_n\kw{)}} & = & \Eval{\tau_1} \times \cdots \times \Eval{\tau_n} \\
+  \Eval{\kw{[]}\tau} & = & \N \rightarrow \Eval{\tau} \\
+  \Eval{\tau_1 \rightarrow \tau_2} & = & \Eval{\tau_1} \rightarrow \Eval{\tau_2}
+\end{eqnarray*}
+
+For ease of presentation, we consider a syntactic vector value $\kw{[}v_1,\cdots,v_n\kw{]}$ equal to the projection function on the vector, returning a default value of the underlying type for indexes greater than $n-1$ (zero-based interpretation).
+
+For built-in operators $\id{op}_\tau$, annotated with their type
+instance $\tau$ according to the typing rules, we assume a semantic
+function $\Eval{\id{op}_\tau} : \Eval{\tau}$. As an examples, we assume
+$\Eval{\kw{+}_{\kw{i32}\rightarrow\kw{i32}\rightarrow\kw{i32}}} : \Z \rightarrow \Z \rightarrow \Z$.
+
+When $e$ is some expression, we write $e[v_1/x_1,\cdots,v_n/x_n]$ to
+denote the simultaneous substitution of $v_1,\cdots,v_n$ for
+$x_1,\cdots,x_n$ (after appropriate renaming of bound variables) in
+$e$.
+
+%\begin{eqnarray*}
+%  \Eval{\kw{+}} & = & \lambda x.\lambda y. x + y
+%\end{eqnarray*}
+
+% \kw{+}, \kw{*}, and \kw{-}, we assume
+
+Evaluation of an expression $e$ is defined by an evaluation function
+$\Eval{\cdot} : \mathrm{Exp} \rightarrow \mathrm{Val}$. The function
+is defined in a mutually recursive fashion with an auxiliary utility
+function $\extractF{F}$ for extracting SOAC function parameters. We
+first give the definition for $\Eval{\cdot}$:
+\begin{eqnarray*}
+%  \Eval(P,v) & = & \Evalp(\id{main}(v)) \\
+  \Eval{f~e_1~\cdots~e_n} & = & \Eval{e[\Eval{e_1}/x_1\cdots \Eval{e_n}/x_n]} \\ & & ~~~ \mathrm{where}~\fw{fun}~f~x_1~ \cdots x_n ~\kw{=}~ e \in P \\
+  \Eval{v} & = & v \\
+  \Eval{e\kw{[}e'\kw{]}} & = & \Eval{e}(\Eval{e'}) \\
+  \Eval{\fw{let}~x~\kw{=}~e~\fw{in}~e'} & = & \Eval{e'[\Eval{e}/x]} \\
+  \Eval{\fw{let}~\kw{(}x_1,\cdots,x_n\kw{)}~\kw{=}~e~\fw{in}~e'} & = & \Eval{e'[v_1/x_1\cdots v_n/x_n]} \\ & & ~~~ \mathrm{where}~ \Eval{e} = \kw{(}v_1,\cdots,v_n\kw{)} \\
+  \Eval{\kw{[}e_1,\cdots,e_n\kw{]}} & = & \kw{[}\Eval{e_1},\cdots,\Eval{e_n}\kw{]} \\
+  \Eval{\kw{(}e_1,\cdots,e_n\kw{)}} & = & \kw{(}\Eval{e_1},\cdots,\Eval{e_n}\kw{)} \\
+  \Eval{e_1~\id{op}_\tau~e_2} & = & \sem{\id{op}_\tau}~\Eval{e_1}~\Eval{e_2} \\
+  \Eval{\id{op}_\tau~e_1\cdots e_n} & = & \sem{\id{op}_\tau}~\Eval{e_1}~\cdots~\Eval{e_n} \\
+  \Eval{\fop{map}~F~e} & = & \Eval{\kw{[}e'[v_1/x],\cdots,e'[v_n/x]\kw{]}} \\
+    & & ~~~\mathrm{where}~\lambda x . e' = \extractF{F} \\
+    & & ~~~~~\mathrm{and}~ \kw{[}v_1,\cdots,v_n\kw{]} = \Eval{e}
+\end{eqnarray*}
+
+Given a SOAC function parameter $F$, we define the utility \emph{extraction function}, $\extractF{F}$, as follows:
+\begin{eqnarray*}
+  \extractF{\fw{fn}~x_1\cdots x_n~\kw{=>}~ e} & = & \lambda x_1 \cdots x_n . e \\
+  \extractF{\id{binop}~e} & = & \lambda x . x~\id{binop}~v \\
+    & & ~~~\mathrm{where}~v = \Eval{e} \\
+  \extractF{e~\id{binop}} & = & \lambda x . v~\id{binop}~x \\
+    & & ~~~\mathrm{where}~v = \Eval{e}
+\end{eqnarray*}
+
+Type soundness is expressed by the following proposition:
+
+\begin{proposition}[Futhark Type Soundness]
+  If $~\vd P : \Gamma$ and $\Gamma(\id{main}) = () \rightarrow \tau$ and
+  $\Eval{\id{main}~\kw{()}} = v$ then $~\vd v : \tau$.
+\end{proposition}
+
+Notice that we have glanced over the concept of bounds checking by
+assuming that arrays with elements of type $\tau$ are implemented as
+total functions from $N$ to $\Eval{\tau}$.
+
+\section{Work and Span}
+
+In this section we give a cost model for Futhark in terms of functions
+for determining the total \emph{work} done by a program, in terms of
+operations done by the big-step evalutation semantics, and the
+\emph{span} of the program execution, in terms of the maximum depth of
+the computation, assuming an infinite amount of parallelism in the
+SOAC computations. The functions for work and span, denoted by $W :
+\mathrm{Exp} \rightarrow \N$ and $S : \mathrm{Exp} \rightarrow \N$ are
+given in Figure~\ref{fig:work} and Figure~\ref{fig:span}, respectively. The functions are defined
+independently, although they make use of the evaluation function
+$\Eval{\cdot}$.
+
+\begin{figure}
 \begin{lstlisting}[mathescape=true]
   $W(v)$ = $1$
-  $W($let $x_1$,...,$x_n$ = $e$ in $e')$ =
-    $\Let$ [$v_1$,...,$v_n$] = $\Eval(e)$
-    $\In$ $W(e) + W(e'[v_1/x_1,\cdots,v_n/x_n])$
-  $W($[$e_1,\cdots,e_n$]$)$ = $W(e_1) + \ldots + W(e_n)$
+  $W($let $x$ = $e$ in $e')$ = $W(e) + W(e'[\Eval{e}/x]) + 1$
+  $W($let ($x_1$,...,$x_n$) = $e$ in $e')$ =
+    $\Let$ [$v_1$,...,$v_n$] = $\Eval{e}$
+    $\In$ $W(e) + W(e'[v_1/x_1,\cdots,v_n/x_n]) + 1$
+  $W($[$e_1,\cdots,e_n$]$)$ = $W(e_1) + \ldots + W(e_n) + 1$
+  $W($($e_1,\cdots,e_n$)$)$ = $W(e_1) + \ldots + W(e_n) + 1$
   $W(f$ $e_1 \cdots e_n)$ =
-    $W(e_1) + \ldots + W(e_n) + W(e[v_1/x_1,\cdots v_n/x_n])$
-    $\Where{P(f) = \lambda x_1 \cdots x_n . e \\
-            v_1 = \Eval(e_1), \cdots, v_n = \Eval(e_n)}$
+    $W(e_1) + \ldots + W(e_n) + W(e[\Eval{e_1}/x_1,\cdots \Eval{e_n}/x_n]) + 1$
+    $\mathrm{where}$ $($fun $f$ $x_1 \cdots x_n$ = $e) ~\in~ P$
   $W(e_1$ $\id{op}$ $e_2)$ = $W(e_1) + W(e_2) + 1$
-  $W($map (fn $x$ => $e'$) $e)$ =
-    $\Let$ [$v_1,\cdots,v_n$] = $\Eval(e)$
+  $W($map $F$ $e)$ =
+    $\Let$ [$v_1,\cdots,v_n$] = $\Eval{e}$
+       $\lambda x. e' = \extractF{F}$
     $\In$ $W(e) + W(e'[v_1/x]) + \ldots + W(e'[v_n/x])$
 \end{lstlisting}
 
-\section{Span}
+\caption{Work ($W$).}
+\label{fig:work}
+\end{figure}
+
+\begin{figure}
 \begin{lstlisting}[mathescape=true]
-  $S(b)$ = $1$
+  $S(v)$ = $1$
+  $S($let $x$ = $e$ in $e')$ = $S(e) + S(e'[\Eval{e}/x]) + 1$
+  $S($let ($x_1$,...,$x_n$) = $e$ in $e')$ =
+    $\Let$ [$v_1$,...,$v_n$] = $\Eval{e}$
+    $\In$ $S(e) + S(e'[v_1/x_1,\cdots,v_n/x_n])$
+  $S($[$e_1,\cdots,e_n$]$)$ = $S(e_1) + \ldots + S(e_n) + 1$
+  $S($($e_1,\cdots,e_n$)$)$ = $S(e_1) + \ldots + S(e_n) + 1$
+  $S(f$ $e_1 \cdots e_n)$ =
+    $S(e_1) + \ldots + S(e_n) + S(e[\Eval{e_1}/x_1,\cdots \Eval{e_n}/x_n]) + 1$
+    $\mathrm{where}$ $($fun $f$ $x_1 \cdots x_n$ = $e) ~\in~ P$
+  $S(e_1$ $\id{op}$ $e_2)$ = $S(e_1) + S(e_2) + 1$
+  $S($map $F$ $e)$ =
+    $\Let$ [$v_1,\cdots,v_n$] = $\Eval{e}$
+       $\lambda x. e' = \extractF{F}$
+    $\In$ $S(e) + \id{max}(S(e'[v_1/x]), \ldots , S(e'[v_n/x]))$
 \end{lstlisting}
+
+\caption{Span ($S$).}
+\label{fig:span}
+\end{figure}
 
 \chapter{Algebraic Properties of SOACs}
 \label{chap:soac-algebra}
@@ -1462,9 +1617,9 @@ introduced in the previous section, we need a notion of \emph{dynamic
 In this chapter, we will present a number of parallel algorithms for
 solving a number of problems. We will make effective use of the
 SOAC parallel array combinators. In particular, it turns out that the
-\soac{scan} operator is critical for writing parallel algorithms. In
+\fop{scan} operator is critical for writing parallel algorithms. In
 fact, we shall first develop the notion of a \emph{segmented scan}
-operation, which, as we shall see, can be implemented using Futhark's \soac{scan}
+operation, which, as we shall see, can be implemented using Futhark's \fop{scan}
 operator, and which in its own right is essential to many of the later
 algorithms.
 
