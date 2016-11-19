@@ -1251,12 +1251,10 @@ pattern matching and we do not, in this section, consider uniqueness types.
 
 \section{Futhark Type System}
 Without considering Futhark's uniqueness type system, Futhark's type system is simple. Types ($\tau$) follow the following grammar---slightly simplified:
-\begin{lstlisting}[mathescape=true]
-  $\tau$ ::= i32 | f32 | bool | []$\tau$ | ($\tau_1$,...,$\tau_n$)
-      |   $\tau \rarr \tau'$ | $\alpha$
-\end{lstlisting}
 
-\noindent We shall refer to the types \kw{i32}, \kw{f32}, \kw{bool} as
+$$\tau ~~::=~~ \kw{i32} ~~|~~ \kw{f32} ~~|~~ \kw{bool} ~~|~~ \kw{[]}\tau ~~|~~ \kw{(}\tau_1,\cdots,\tau_n\kw{)} ~~|~~ \tau \rarr \tau' ~~|~~ \alpha$$
+
+\noindent We shall refer to the types \kw{i32}, \kw{f32}, and \kw{bool} as
 \emph{basic types}. Futhark supports more basic types than those
 presented here; consult Section~\ref{sec:baselang} for a complete list.
 
@@ -1269,7 +1267,7 @@ programmer to declare polymorphic functions.
 
 Futhark's second order array combinators and some of its primitive
 operations do have \emph{polymorphic} types, which we specify by
-introducing the concept of type schemes, ranged over by $\sigma$,
+introducing the concept of \emph{type schemes}, ranged over by $\sigma$,
 which are basically quantified types with $\alpha$ and $\beta$ ranging
 over ordinary types. When $\sigma=\forall\vec{\alpha}.\tau$ is some
 type scheme, we say that $\tau'$ is an instance of $\sigma$, written
@@ -1624,7 +1622,7 @@ elements of type $A$. If $\mathrm{size}(v) = 1$, the algorithm returns
 the single element. Otherwise, the algorithm performs a contraction by
 splitting the vector in two and applies the reduction operator
 elementwise on the two subvectors, thereby obtaining a contracted
-vectorm, which is then used as input to a recursive call to the
+vector, which is then used as input to a recursive call to the
 algorithm. In Futhark, the funcion \kw{red} can be implemented as
 follows:
 
