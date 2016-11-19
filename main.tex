@@ -208,7 +208,7 @@ programming perspective. The development in the book is made through
 the introduction of the Futhark data-parallel functional language
 \cite{henriksen2014size,henriksen2016design,henriksen2014bounds,henriksen2013t2},
 which readily will generate GPU-executable code for a Futhark program
-by first compiling the program into a number of OpenCL kernels and
+by compiling the program into a number of OpenCL kernels and
 coordinating host code for spawning the kernels. Besides the OpenCL
 backend, Futhark also features a C backend and Futhark has been
 demonstrated to compile quite complex data-parallel programs into
@@ -1567,6 +1567,12 @@ $\Eval{\cdot}$.
     $\Let$ [$v_1,\cdots,v_n$] = $\Eval{e}$
        $\lambda x. e' = \extractF{F}$
     $\In$ $W(e) + W(e'[v_1/x]) + \ldots + W(e'[v_n/x])$
+  $W($reduce $F$ $e'$ $e'')$ =
+    $\Let$ [$v_1,\cdots,v_n$] = $\Eval{e''}$
+       $\lambda x~x'. e = \extractF{F}$
+    $\In$ $W(e') + W(e'') + W(e[v_1/x,v_n/x']) \times n\,\mathrm{ln}\,n  + 1$
+    $\mathrm{assuming} ~ W(e[v_1/x,v_n/x']) ~\mathrm{indifferent~to} ~v_1~ \mathrm{and} ~v_n$
+  $W($iota $e)$ = $W(e) + n$         $\mathrm{where} ~ n = \Eval{e}$
 \end{lstlisting}
 
 \caption{Work ($W$).}
@@ -1589,13 +1595,59 @@ $\Eval{\cdot}$.
   $S($map $F$ $e)$ =
     $\Let$ [$v_1,\cdots,v_n$] = $\Eval{e}$
        $\lambda x. e' = \extractF{F}$
-    $\In$ $S(e) + \id{max}(S(e'[v_1/x]), \ldots , S(e'[v_n/x]))$
+    $\In$ $S(e) + \id{max}(S(e'[v_1/x]), \ldots , S(e'[v_n/x])) + 1$
+  $S($reduce $F$ $e'$ $e'')$ =
+    $\Let$ [$v_1,\cdots,v_n$] = $\Eval{e''}$
+       $\lambda x~x'. e = \extractF{F}$
+    $\In$ $S(e') + S(e'') + S(e[v_1/x,v_n/x']) \times \mathrm{ln}\,n + 1$
+    $\mathrm{assuming} ~ S(e[v_1/x,v_n/x']) ~\mathrm{indifferent~to} ~v_1~ \mathrm{and} ~v_n$
+  $S($iota $e)$ = $S(e) + 1$
 \end{lstlisting}
 
 \caption{Span ($S$).}
 \label{fig:span}
 \end{figure}
 
+\section{Reduction by Contraction}
+
+In this section, we shall investigate an implementation of reduction
+using the general concept of \emph{contraction}, which is the general
+algorithmic trick of solving a particular problem by first making a
+\emph{contraction step}, which simplifies the problem size, and then
+repeating the contraction algorithm until a final result is reached
+\cite{algdesign:parseq2016}.
+
+The reduction algorithm that we shall implement assumes an associative
+reduction operator $\oplus : A \rightarrow A \rightarrow A$, a neutral
+element of type $A$, and a vector $v$ of size $2^n$, containing
+elements of type $A$. If $\mathrm{size}(v) = 1$, the algorithm returns
+the single element. Otherwise, the algorithm performs a contraction by
+splitting the vector in two and applies the reduction operator
+elementwise on the two subvectors, thereby obtaining a contracted
+vectorm, which is then used as input to a recursive call to the
+algorithm. In Futhark, the funcion \kw{red} can be implemented as
+follows:
+
+\lstinputlisting[firstline=16]{src/reduce_contract.fut}
+
+\noindent
+The function specializes the reduction operator $\oplus$ to be \kw{+}
+and the neutral element to be \kw{0}. The function first pads the
+argument vector \kw{xs} with neutral elements to ensure that its size
+is a power of two. It then implements a sequential loop with the
+contraction step as its loop body, implemented by an appropriate
+parallel $\fop{map}$ over an $\fop{iota}$ to create an index space.
+
+The auxiliary function for padding the input vector is implemented by the following code:
+
+\lstinputlisting[firstline=7,lastline=13]{src/reduce_contract.fut}
+
+\subsection{Determining work and span}
+
+To determine the work of the algorithm, we first determine the work
+done by \kw{padpow2}. MEMO: to come...
+
+It is an exercise for the reader to compare the performance of the reduction code to the performance of the built-in
 \chapter{Algebraic Properties of SOACs}
 \label{chap:soac-algebra}
 

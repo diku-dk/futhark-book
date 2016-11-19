@@ -2,11 +2,12 @@ FUTHARKC ?= futhark-c
 FUTHARKOPENCL ?= futhark-opencl
 
 #FUTFILES=$(wildcard *.fut)
-SRCFILES=radix_sort sgm_scan
-FUTFILES=$(SRCFILES:%=%.fut)
-FUTEXECS=$(FUTFILES:%.fut=%.exe)
-RESFILES=$(FUTFILES:%.fut=%.res)
-RESOPENCLFILES=$(FUTFILES:%.fut=%.resopencl)
+
+SRCFILES=radix_sort sgm_scan reduce_contract
+SRCFILES_INPUT=dotprod multable
+
+RESFILES=$(SRCFILES:%=%.res) $(SRCFILES_INPUT:%=%_inp.res)
+RESOPENCLFILES=$(SRCFILES:%=%.resopencl)
 
 OPENCL_DEVICE ?= GeForce
 
@@ -32,39 +33,46 @@ testopencl: $(RESOPENCLFILES)
 	@echo "-----------------------------------------------------"
 	@exit `grep "ERR" $(RESOPENCLFILES) | wc -l`
 
+# Generate executables
 %.exe: %.fut
 	$(FUTHARKC) -o $@ $<
 
 %.exeopencl: %.fut
 	$(FUTHARKOPENCL) -o $@ $<
 
+# Generate output for standard executables (no input)
 %.out: %.exe
 	./$< > $@
 
 %.outopencl: %.exeopencl
 	./$< -d $(OPENCL_DEVICE) > $@
 
+# Generate output for executables that take input
+%_inp.out: %.exe
+	cat $*.inp | ./$< > $@
+
+
 %.res: %.out
 	@(diff -aq $< $*.ok > /dev/null 2>&1; \
          if [ $$? -eq 0 ]; then \
-             echo "Test $*.fut: OK" > $@ \
+             echo "Test $*: OK" > $@ \
          ; else \
              if [ -e $*.ok ]; then \
-                echo "Test $*.fut: *** ERR: file $< differs from $*.ok ***" > $@ \
+                echo "Test $*: *** ERR: file $< differs from $*.ok ***" > $@ \
              ; else \
-                echo "Test $*.fut: *** ERR: file $*.ok does not exist ***" > $@ \
+                echo "Test $*: *** ERR: file $*.ok does not exist ***" > $@ \
              ; fi \
          ; fi)
 
 %.resopencl: %.outopencl
 	@(diff -aq $< $*.ok > /dev/null 2>&1; \
          if [ $$? -eq 0 ]; then \
-             echo "OpenCL Test $*.fut: OK" > $@ \
+             echo "OpenCL Test $*: OK" > $@ \
          ; else \
              if [ -e $*.ok ]; then \
-                echo "OpenCL Test $*.fut: *** ERR: file $< differs from $*.ok ***" > $@ \
+                echo "OpenCL Test $*: *** ERR: file $< differs from $*.ok ***" > $@ \
              ; else \
-                echo "OpenCL Test $*.fut: *** ERR: file $*.ok does not exist ***" > $@ \
+                echo "OpenCL Test $*: *** ERR: file $*.ok does not exist ***" > $@ \
              ; fi \
          ; fi)
 
