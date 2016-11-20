@@ -38,12 +38,16 @@ be written in the language and executed in parallel on real parallel
 GPU hardware.
 
 The book is Open Source, maintained on github, and distributed under
-an XXX license. We will appreciate pull-requests for fixing any kinds
-of typos and errors in the text and in the enclosed
-programs. Regarding errors in the programs, most of the programs
-written in the book can be run and tested against an expected result;
-this execution and test can be done by typing \texttt{make} in the
-\texttt{src/} directory of the repository.
+the Creative Commons Attribution (By) 4.0 license. All code snippets
+in the book, including code in the book's repository directory is
+distributed under the MIT license. We will appreciate pull-requests
+for fixing any kinds of typos and errors in the text and in the
+enclosed programs. The book's main repository is \url{https://github.com/HIPERFIT/futhark-book}.
+
+Regarding errors in the programs, most of the
+programs written in the book can be run and tested against an expected
+result; this execution and test can be done by typing \texttt{make} in
+the \texttt{src/} directory of the repository.
 
 \section*{Acknowledgments}
 This work has been partially supported by the Danish Strategic Research
@@ -1013,11 +1017,29 @@ Consider an implementation of dot product:
 
 \lstinputlisting{src/dotprod.fut}
 
-We earlier mentioned that, for small data sets, sequential execution
-is likely to be much faster than parallel execution.  But how much
-faster?  To answer this question, we need to perform some simple
-\textit{benchmarking}.  First, let us compile \texttt{dotprod.fut} to
-two different executables, one for each compiler:
+We previously mentioned that, for small data sets, sequential
+execution is likely to be much faster than parallel execution.  But
+how much faster?  To answer this question, we need to measure measure
+the run time of the program on some data sets.  This is called
+\textit{benchmarking}.  There are many properties one can benchmark:
+memory usage, size of compiled executable, robustness to errors, and
+so forth.  In this section, we are only concerned with run time.
+Specifically, we wish to measure \textit{wall time}, which is how much
+time elapses in the real world from the time the computation starts,
+to the time it ends.
+
+There is still some wiggle room in how we benchmark --- for example,
+should we measure the time it takes to load the input data from disk?
+Initialise various devices and drivers?  Perform a clean shutdown?
+How many times should we run the program, and should we report
+maximum, minimum, or average run time?  We will not try to answer all
+of these questions, but instead merely describe the benchmarking tools
+provided by Futhark.
+
+\subsection{Simple Measurements}
+
+First, let us compile \texttt{dotprod.fut} to two different
+executables, one for each compiler:
 
 \begin{verbatim}
 $ futhark-c dotprod.fut -o dotprod-c
@@ -1055,7 +1077,7 @@ $ echo [2,2,3] [4,5,6] | \
 0
 \end{verbatim}
 
-In this case, I ask for the runtime to be printed to the screen, and
+In this case, we ask for the runtime to be printed to the screen, and
 for the normal evaluation result to be thrown away.  Apparently it
 takes less than one microsecond to compute the dot product of two
 three-element vectors on a CPU (this is not very surprising).  On an
@@ -1067,10 +1089,10 @@ $ echo [2,2,3] [4,5,6] | \
 575
 \end{verbatim}
 
-Almost half a millisecond!  GPUs have fairly high launch cost, and so
-are not particularly suited for this small problem.  We can use the
-\texttt{futhark-dataset(1)} tool to generate random test data of a
-desired size:
+Almost half a millisecond!  This particular GPU has fairly high launch
+cost, and so is not particularly suited for this small problem.  We
+can use the \texttt{futhark-dataset(1)} tool to generate random test
+data of a desired size:
 
 \begin{verbatim}
 $ futhark-dataset -g [10000000]int -g [10000000]int > input
@@ -1088,8 +1110,88 @@ $ cat input | ./dotprod-c -t /dev/stderr > /dev/null
 
 That's more like it - parallel execution is now more than seven times
 faster than sequential execution.  This program is entirely
-memory-bound - on a compute-bound algorithm we can expect much greater
+memory-bound - on a compute-bound algorithm we can expect much larger
 speedups.
+
+\subsection{Multiple Measurements}
+
+The technique presented in the previous section is sufficient, but
+impractical if you want several measurements on the same dataset.
+While you can just repeat the above line the desired number of times,
+this has two problems:
+
+\begin{enumerate}
+\item The input file will be read multiple times, which can be slow
+  for large data sets.
+\item It prevents the device from "warming up", as every run
+  re-initialises the GPU and re-uploads code.
+\end{enumerate}
+
+Compiled Futhark executables support an \texttt{-r N} option that asks
+the program to perform \texttt{N} runs internally, and report runtime
+for each.  Additionally, a non-measured warmup run is performed
+initially.  We can use it like this:
+
+\begin{verbatim}
+$ cat input | ./dotprod-opencl -t /dev/stderr -r 10
+891
+1074
+1239
+1170
+1312
+1079
+1146
+1273
+1216
+1085
+\end{verbatim}
+
+These runtimes are now much better.  And importantly --- there are
+more of them, so we can perform analyses like determine the variance,
+to figure out how predictable the performance is.
+
+However, we can do better still.  Futhark comes with a tool for
+performing automated benchmark runs of programs, called
+\texttt{futhark-bench}.  This tool relies on a specially formatted
+header comment that contains input/output pairs.  The reference manual
+contains a full description, but here is a quick taste.  First, we
+introduce a new program, texttt{sumsquares.fut}, with smaller data
+sets for convenience:
+
+\lstinputlisting{src/sumsquares.fut}
+
+The line containing \texttt{==} is used to separate the human-readable
+benchmark description from input-output pairs.  We can use
+\texttt{futhark-bench} to measure its performance as such:
+
+\begin{verbatim}
+$ futhark-bench sumsquares.fut
+sumsquares.fut:
+dataset #0: 2.30us (average; relative standard deviation: 0.20)
+dataset #1: 1307.40us (average; relative standard deviation: 0.38)
+dataset #2: 982640.30us (average; relative standard deviation: 0.00)
+\end{verbatim}
+
+These are measurements using the default compiler, which is
+\texttt{futhark-c}.  If we want to see how our program performs when
+compiled with \texttt{futhark-opencl}, we can invoke
+\texttt{futhark-bench} as such:
+
+\begin{verbatim}
+$ futhark-bench --compiler=futhark-opencl sumsquares.fut
+sumsquares.fut:
+dataset #0: 832.60us (average; relative standard deviation: 0.44)
+dataset #1: 970.60us (average; relative standard deviation: 0.56)
+dataset #2: 5950.50us (average; relative standard deviation: 0.02)
+\end{verbatim}
+
+We can now compare the performance of CPU execution with GPU
+execution.  The tool takes care of the mechanics of run-time
+measurements, and even computes the standard deviation of the
+measurements for us.  The correctness of the output is also
+automatically checked.  By default, \texttt{futhark-bench} performs
+ten runs for every data set, but this can be modified using command
+line options.  See the manual page for more information.
 
 \section{When Things Go Wrong}
 
@@ -1196,14 +1298,14 @@ multiply operation, and, finally, how to combine the work. The way to
 determine the work for a \fop{map} SOAC instance is to multiply the
 size of the argument array with the work of body of the argument
 function. Thus, we have
-$$ W(\fop{map}~\kw{(}\fw{fn}~\kw{j => i * j) (}\fop{iota}~\kw{$n$))}) = n+1 $$
+$$ W(\fop{map}~\kw{(}\fw{fn}~\kw{j => i * j) (}\fop{iota}~\kw{$n$)}) = n+1 $$
 Applying a similar agument to the outer map, we get
-$$W(\fop{map}~\kw{(}\fw{fn}~\kw{i => $\cdots$) (}\fop{iota}~\kw{$n$))}) = (n+1)^2 $$
+$$W(\fop{map}~\kw{(}\fw{fn}~\kw{i => $\cdots$) (}\fop{iota}~\kw{$n$)}) = (n+1)^2 $$
 
 \noindent
 Most often we are interested in finding the asymptotical complexity of
 the algorithm we are analyzing, in which case we will simply write
-$$W(\fop{map}~\kw{(}\fw{fn}~\kw{i => $\cdots$) (}\fop{iota}~\kw{$n$))}) = O(n^2) $$
+$$W(\fop{map}~\kw{(}\fw{fn}~\kw{i => $\cdots$) (}\fop{iota}~\kw{$n$)}) = O(n^2) $$
 
 In a similar way we shall be able to derive that the span of a call $\kw{multable}~n$, written $S(\kw{multable}~n)$, is $O(1)$.
 
