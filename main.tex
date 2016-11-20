@@ -1758,8 +1758,8 @@ The function specializes the reduction operator $\oplus$ to be \kw{+}
 and the neutral element to be \kw{0}. The function first pads the
 argument vector \kw{xs} with neutral elements to ensure that its size
 is a power of two. It then implements a sequential loop with the
-contraction step as its loop body, implemented by an appropriate
-parallel $\fop{map}$ over an $\fop{iota}$ to create an index space.
+contraction step as its loop body, implemented by a
+parallel $\fop{zipWith}$ over an appropriately splitted input vector.
 
 The auxiliary function for padding the input vector is implemented by the following code:
 
