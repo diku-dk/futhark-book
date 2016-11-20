@@ -4,7 +4,7 @@ FUTHARKOPENCL ?= futhark-opencl
 #FUTFILES=$(wildcard *.fut)
 
 SRCFILES=radix_sort sgm_scan reduce_contract
-SRCFILES_INPUT=dotprod multable
+SRCFILES_INPUT=dotprod multable primes
 
 RESFILES=$(SRCFILES:%=%.res) $(SRCFILES_INPUT:%=%_inp.res)
 RESOPENCLFILES=$(SRCFILES:%=%.resopencl)

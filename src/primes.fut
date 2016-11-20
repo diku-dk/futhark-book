@@ -1,8 +1,5 @@
 
--- primes
-
-fun max (x:i32) (y:i32) : i32 = if x > y then x else y
-
+-- Finding the first n primes
 fun primes (n:i32) : []i32 =
   if n <= 3 then [2,3]
   else let sqrtn = i32(sqrt32(f32(n)))
@@ -14,5 +11,7 @@ fun primes (n:i32) : []i32 =
        let new = filter (fn i => 0 == unsafe fs[i-sqrtn]) is
   in concat first new
 
+-- main(n) returns the number of primes less than n
 fun main (n:i32) : i32 =
-  reduce max 0 (primes n)
+  let ps = primes n
+  in (shape ps)[0]
