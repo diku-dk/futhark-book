@@ -19,6 +19,10 @@
 
 \newtheorem{proposition}{Proposition}
 
+% Avoid breaking lstlistings environments across pages.
+\BeforeBeginEnvironment{lstlisting}{\vspace{\topskip}\begin{minipage}{\linewidth}}
+\AfterEndEnvironment{lstlisting}{\end{minipage}\par}
+
 \title{\bf Parallel Programming in Futhark}
 \author{HIPERFIT \\ Department of Computer Science \\ University of Copenhagen (DIKU)}
 \date{\today}
