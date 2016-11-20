@@ -20,8 +20,10 @@
 \newtheorem{proposition}{Proposition}
 
 % Avoid breaking lstlistings environments across pages.
-\BeforeBeginEnvironment{lstlisting}{\vspace{\topskip}\begin{minipage}{\linewidth}}
+\BeforeBeginEnvironment{lstlisting}{\vspace{\topskip}\par\noindent\begin{minipage}{\linewidth}}
 \AfterEndEnvironment{lstlisting}{\end{minipage}\par}
+\newenvironment{wrap}{\vspace{\topskip}\par\noindent\begin{minipage}{\linewidth}}{\end{minipage}\par}
+\newcommand{\inplisting}[1]{\begin{wrap}\lstinputlisting{#1}\end{wrap}}
 
 \title{\bf Parallel Programming in Futhark}
 \author{HIPERFIT \\ Department of Computer Science \\ University of Copenhagen (DIKU)}
@@ -279,10 +281,7 @@ likely be able to read and modify most Futhark code.  For example,
 this program computes the dot product $\Sigma_{i} x_{i}\cdot{}y_{i}$
 of two vectors of integers:
 
-\noindent
-\begin{minipage}{\textwidth}
-\lstinputlisting{src/dotprod.fut}
-\end{minipage}
+\inplisting{src/dotprod.fut}
 
 In Futhark, the notation for an array of element type $t$ is
 \texttt{[]$t$}.  The program declares a function called \texttt{main}
@@ -542,6 +541,7 @@ A value definition is very similar:
 val name: value_type = definition
 \end{lstlisting}
 
+\noindent
 For example:
 
 \begin{lstlisting}
@@ -689,7 +689,7 @@ fun fibhelper(x: int, y: int, n: int): int =
   if n == 1 then x else fibhelper(y, x+y, n-1)
 \end{lstlisting}
 
-We can rewrite this using \texttt{loop} syntax:
+We can rewrite this looping using \texttt{loop} syntax:
 
 \begin{lstlisting}
 fun fib(n: int): int =
@@ -698,15 +698,16 @@ fun fib(n: int): int =
   in x
 \end{lstlisting}
 
-The semantics of this is precisely as in the tail-recursive function
-formulation.  In general, a loop---
+The semantics of this loop is precisely as in the tail-recursive function
+formulation.  In general, a loop
 
 \begin{lstlisting}
 loop (pat = initial) = for i < bound do loopbody
 in body
 \end{lstlisting}
 
----has the following the semantics:
+\noindent
+has the following semantics:
 
 \begin{enumerate}
 \item Bind \texttt{pat} to the initial values given in
@@ -721,8 +722,8 @@ in body
 Semantically, a \texttt{loop} expression is completely equivalent to a
 call to its corresponding tail-recursive function.
 
-For example, denoting by \texttt{t} the type of \texttt{x}, this
-loop:
+For example, denoting by \texttt{t} the type of \texttt{x}, the
+loop
 
 \begin{lstlisting}
 loop (x = a) =
@@ -731,7 +732,8 @@ loop (x = a) =
   in body
 \end{lstlisting}
 
-has the semantics of a call to this tail-recursive function:
+\noindent
+has the semantics of a call to the following tail-recursive function:
 
 \begin{lstlisting}
 fun f(i: int, n: int, x: t): t =
@@ -772,12 +774,13 @@ fun main(x: i32, bound: i32): i32 =
   in x
 \end{lstlisting}
 
+\noindent
 In all respects other than termination criteria, \texttt{while}-loops
 behave identically to \texttt{for}-loops.
 
 For brevity, the initial value expression can be elided, in which case
 an expression equivalent to the pattern is implied.  This is easier to
-understand with an example.  The loop---
+understand with an example.  The loop
 
 \begin{lstlisting}
 fun fib(n: i32): i32 =
@@ -787,7 +790,8 @@ fun fib(n: i32): i32 =
   in x
 \end{lstlisting}
 
----can also be written:
+\noindent
+can also be written:
 
 \begin{lstlisting}
 fun fib(n: i32): i32 =
@@ -797,7 +801,8 @@ fun fib(n: i32): i32 =
   in x
 \end{lstlisting}
 
-This can sometimes make imperative code look more natural.
+\noindent
+This style of code can sometimes make imperative code look more natural.
 
 \section{In-Place Updates}
 \label{sec:in-place-updates}
@@ -807,7 +812,7 @@ may occasionally prove useful to express certain algorithms in an
 imperative style.  Consider a function for computing the $n$ first
 Fibonacci numbers:
 
-\lstinputlisting{src/fib_sequential.fut}
+\inplisting{src/fib_sequential.fut}
 
 If the array \texttt{arr} is copied for each iteration of the loop, we
 would put enormous pressure on memory, and spend a lot of time moving
@@ -890,10 +895,13 @@ i.e. overlap in memory.  As the most trivial case, after evaluating
 the binding \texttt{let b = a}, the variable \texttt{b} will alias
 \texttt{$a$}.  As another example, if we extract a row from a
 two-dimensional array, the row will alias its source:
+
 \begin{lstlisting}
 let b = a[0] -- b is aliased to a
              -- (assuming a is not one-dimensional)
 \end{lstlisting}
+
+\noindent
 Most array combinators produce fresh arrays that initially alias no
 other arrays in the program.  In particular, the result of \texttt{map
   f a} does not alias \texttt{a}.  One exception is \texttt{split},
@@ -990,15 +998,18 @@ is the array combinator \texttt{write}, which writes to several
 positions in an array in parallel.  Suppose we have an array
 \texttt{is} of type \texttt{[$n$]i32}, an array \texttt{vs} of type
 \texttt{[$n$]$t$} (for some \texttt{$t$}), and an array \texttt{as}
-of type \texttt{[$m$]$t$} Then the expression \texttt{write is vs
-  as} morally computes---
+of type \texttt{[$m$]$t$}. Then the expression \texttt{write is vs
+  as} morally computes
+
 \begin{lstlisting}[language=ruby,mathescape=true]
   for i in 0..$n$-1:
     j = is[i]
     v = vs[i]
     as[j] = v
 \end{lstlisting}
----and returns the modified \texttt{as} array.  The old \texttt{as}
+
+\noindent
+and returns the modified \texttt{as} array.  The old \texttt{as}
 array is marked as consumed and may not be used anymore.
 
 \begin{lstlisting}
@@ -1019,7 +1030,7 @@ fun radix_sort_up(xs: [n]u32) : ([n]u32,[n]i32) =
 
 Consider an implementation of dot product:
 
-\lstinputlisting{src/dotprod.fut}
+\inplisting{src/dotprod.fut}
 
 We previously mentioned that, for small data sets, sequential
 execution is likely to be much faster than parallel execution.  But
@@ -1162,7 +1173,7 @@ contains a full description, but here is a quick taste.  First, we
 introduce a new program, \texttt{sumsquares.fut}, with smaller data
 sets for convenience:
 
-\lstinputlisting{src/sumsquares.fut}
+\inplisting{src/sumsquares.fut}
 
 The line containing \texttt{==} is used to separate the human-readable
 benchmark description from input-output pairs.  We can use
@@ -1283,7 +1294,10 @@ shall return to these constructs later in the chapter.
 Futhark supports certain kinds of nested parallelism. For instance,
 Futhark can in many cases map two nested maps into fully parallel
 code. Consider the following Futhark function:
+
+\begin{wrap}
 \lstinputlisting[firstline=3]{src/multable.fut}
+\end{wrap}
 
 \noindent
 In the case of this program, Futhark will flatten the code to make a
@@ -1735,7 +1749,9 @@ vector, which is then used as input to a recursive call to the
 algorithm. In Futhark, the funcion \kw{red} can be implemented as
 follows:
 
+\begin{wrap}
 \lstinputlisting[firstline=16]{src/reduce_contract.fut}
+\end{wrap}
 
 \noindent
 The function specializes the reduction operator $\oplus$ to be \kw{+}
@@ -1747,7 +1763,9 @@ parallel $\fop{map}$ over an $\fop{iota}$ to create an index space.
 
 The auxiliary function for padding the input vector is implemented by the following code:
 
+\begin{wrap}
 \lstinputlisting[firstline=7,lastline=13]{src/reduce_contract.fut}
+\end{wrap}
 
 \subsection{Determining Work and Span}
 
@@ -1801,12 +1819,16 @@ algorithms.
 
 \section{Segmented Scan}
 
+\begin{wrap}
 \lstinputlisting[firstline=7]{src/sgm_scan.fut}
+\end{wrap}
 
 \begin{enumerate}
 \item segmented scan
 \item radix sort
+\begin{wrap}
 \lstinputlisting[firstline=18]{src/radix_sort.fut}
+\end{wrap}
 \item pseudo random numbers and sobol
 \item trees
 \item graphs
