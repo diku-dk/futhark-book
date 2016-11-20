@@ -1133,7 +1133,7 @@ for each.  Additionally, a non-measured warmup run is performed
 initially.  We can use it like this:
 
 \begin{verbatim}
-$ cat input | ./dotprod-opencl -t /dev/stderr -r 10
+$ cat input | ./dotprod-opencl -t /dev/stderr -r 10 > /dev/null
 891
 1074
 1239
@@ -1146,7 +1146,7 @@ $ cat input | ./dotprod-opencl -t /dev/stderr -r 10
 1085
 \end{verbatim}
 
-These runtimes are now much better.  And importantly --- there are
+Our runtimes are now much better.  And importantly---there are
 more of them, so we can perform analyses like determine the variance,
 to figure out how predictable the performance is.
 
@@ -1155,7 +1155,7 @@ performing automated benchmark runs of programs, called
 \texttt{futhark-bench}.  This tool relies on a specially formatted
 header comment that contains input/output pairs.  The reference manual
 contains a full description, but here is a quick taste.  First, we
-introduce a new program, texttt{sumsquares.fut}, with smaller data
+introduce a new program, \texttt{sumsquares.fut}, with smaller data
 sets for convenience:
 
 \lstinputlisting{src/sumsquares.fut}
