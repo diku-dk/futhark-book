@@ -238,13 +238,15 @@ to compile and execute Futhark programs using both the sequential C
 backend and the parallel GPU backend. In Chapter~\ref{chap:costmodel}, we introduce
 an ``ideal'' cost model for the Futhark language based on the notions
 of work and span. In Chapter~\ref{chap:soac-algebra}, we present to
-the reader the underlying algebraic reasoning principles that lye
+the reader the underlying algebraic reasoning principles that lie
 behind the Futhark internal fusion technology. In particular, we
 introduce the reader to the list-homorphism theorem, which forms the
 basis of map-reduce reasoning and which turns out to play an important
 role in the fusion engine of Futhark.
 
-In Part~2 of the book, ...
+In Part~2 of the book, we present a number of parallel algorithms that
+can be used as building blocks for programming more complex parallel
+programs.
 
 \chapter{The Futhark Language}
 \label{chap:futlang}
@@ -642,8 +644,8 @@ can define a function to compute the dot product of two vectors of
 integers:
 
 \begin{lstlisting}
-fun dotProd (xs: []int) (ys: []int): []int =
-  reduce (+) 0 (zipWith (+) xs ys)
+fun dotProd (xs: []int) (ys: []int): int =
+  reduce (+) 0 (zipWith (*) xs ys)
 \end{lstlisting}
 
 A close cousin of \texttt{reduce} is \texttt{scan}, often called
@@ -655,10 +657,10 @@ input array.  This is perhaps best understood with an example:
 scan (+) 0 [1,2,3] == [0+1, 0+1+2, 0+1+2+3] == [1, 3, 6]
 \end{lstlisting}
 
-Intuitively, the result of \texttt{scan} is an array of calling
+Intuitively, the result of \texttt{scan} is an array of the results of calling
 \texttt{reduce} on increasing prefixes of the input array.  The last
 element of the returned array is equivalent to the result of calling
-\texttt{reduce} Like with \texttt{reduce}, the operator given to
+\texttt{reduce}. Like with \texttt{reduce}, the operator given to
 \texttt{scan} must be associative and have a neutral element.
 
 There are two main ways to compute scans: \textit{exclusive} and
