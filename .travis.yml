@@ -22,8 +22,8 @@ cache:
 
 before_install:
  - sudo apt-get update
- - sudo apt-get install texlive-full
- #- sudo apt-get install texlive-fonts-recommended texlive-latex-extra texlive-fonts-extra texlive-latex-recommended dvipng
+ #- sudo apt-get install texlive-full
+ - sudo apt-get install texlive-fonts-recommended texlive-latex-extra texlive-fonts-extra texlive-latex-recommended dvipng
  # install Haskell stack
  - export PATH=$HOME/.local/bin:$PATH
  - ./.travis-setup.sh
