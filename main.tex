@@ -1367,15 +1367,15 @@ pattern matching and we do not, in this section, consider uniqueness types.
 \begin{lstlisting}[mathescape=true]
   $p$ ::= $x$  |  ($x_1$,...,$x_n$)
   $\id{ps}$ ::= $p_1 \cdots p_n$
-  $F$ ::= fn $\id{ps}$ => $e$  |  $e$ $\id{op}$  |  $\id{op}$ $e$
+  $F$ ::= fn $\id{ps}$ => $e$  |  $e$ $\id{binop}$  |  $\id{binop}$ $e$
   $P$ ::= fun $f$ $\id{ps}$ = $e$  |  $P_1$ $P_2$  |  val $p$ = $e$
   $v$ ::= true  |  false  |  $n$  |  $r$  |  [$v_1$,...,$v_n$]  |  ($v_1$,...,$v_n$)
-  $e$ ::= $v$  |  let $\id{ps}$ = $e$ in $e'$  |  $e$[$e'$]  |  $e$[$e'$:$e''$]
+  $e$ ::= $x$  |  $v$  |  let $\id{ps}$ = $e$ in $e'$  |  $e$[$e'$]  |  $e$[$e'$:$e''$]
       | [$e_1$,...,$e_n$]  |  ($v_1$,...,$v_n$)
       | f $e_1$ ... $e_n$  |  $\id{op}$ $e_1$ ... $e_n$  |  $e_1$ $\id{binop}$ $e_2$
-      | loop ($p_1$=$e_1$,$\cdots$,$p_n$=$e_n$) = for $e$ do $e'$ in $e''$
+      | loop ($p_1$=$e_1$,$\cdots$,$p_n$=$e_n$) = for $x$ < $e$ do $e'$ in $e''$
       | loop ($p_1$=$e_1$,$\cdots$,$p_n$=$e_n$) = while $e$ do $e'$ in $e''$
-      | $\id{soac}$ $f$ $e_1 \cdots e_n$
+      | $\id{soac}$ $F$ $e_1 \cdots e_n$
 \end{lstlisting}
 
 \section{Futhark Type System}
@@ -1497,6 +1497,12 @@ type environment $\Gamma'$.''
 }
 
 \subsubsection*{Expressions \sembox{\Gamma \vd e : \tau}}
+
+\twopart{
+  \fraccc{\Gamma(x) = \tau}{\Gamma \vd x : \tau}
+}{
+\fraccc{\Gamma \vd e : []\tau ~~~~\Gamma \vd e_i : \kw{int}~~i=[1,2]}{ \Gamma \vd e\kw{[}e_1:e_2\kw{]} : \tau}
+}
 
 \twopart{
 \fraccc{\Gamma \vd e : \tau ~~~~
@@ -1642,7 +1648,7 @@ first give the definition for $\Eval{\cdot}$:
   \Eval{\fw{let}~\kw{(}x_1,\cdots,x_n\kw{)}~\kw{=}~e~\fw{in}~e'} & = & \Eval{e'[v_1/x_1\cdots v_n/x_n]} \\ & & ~~~ \mathrm{where}~ \Eval{e} = \kw{(}v_1,\cdots,v_n\kw{)} \\
   \Eval{\kw{[}e_1,\cdots,e_n\kw{]}} & = & \kw{[}\Eval{e_1},\cdots,\Eval{e_n}\kw{]} \\
   \Eval{\kw{(}e_1,\cdots,e_n\kw{)}} & = & \kw{(}\Eval{e_1},\cdots,\Eval{e_n}\kw{)} \\
-  \Eval{e_1~\id{op}_\tau~e_2} & = & \sem{\id{op}_\tau}~\Eval{e_1}~\Eval{e_2} \\
+  \Eval{e_1~\id{binop}_\tau~e_2} & = & \sem{\id{binop}_\tau}~\Eval{e_1}~\Eval{e_2} \\
   \Eval{\id{op}_\tau~e_1\cdots e_n} & = & \sem{\id{op}_\tau}~\Eval{e_1}~\cdots~\Eval{e_n} \\
   \Eval{\fop{map}~F~e} & = & \Eval{\kw{[}e'[v_1/x],\cdots,e'[v_n/x]\kw{]}} \\
     & & ~~~\mathrm{where}~\lambda x . e' = \extractF{F} \\
@@ -1700,7 +1706,7 @@ definitions for the essential SOAC functions, namely \fop{map} and
   $W(f$ $e_1 \cdots e_n)$ =
     $W(e_1) + \ldots + W(e_n) + W(e[\Eval{e_1}/x_1,\cdots \Eval{e_n}/x_n]) + 1$
     $\mathrm{where}$ $($fun $f$ $x_1 \cdots x_n$ = $e) ~\in~ P$
-  $W(e_1$ $\id{op}$ $e_2)$ = $W(e_1) + W(e_2) + 1$
+  $W(e_1$ $\id{binop}$ $e_2)$ = $W(e_1) + W(e_2) + 1$
   $W($map $F$ $e)$ =
     $\Let$ [$v_1,\cdots,v_n$] = $\Eval{e}$
        $\lambda x. e' = \extractF{F}$
@@ -1729,7 +1735,7 @@ definitions for the essential SOAC functions, namely \fop{map} and
   $S(f$ $e_1 \cdots e_n)$ =
     $S(e_1) + \ldots + S(e_n) + S(e[\Eval{e_1}/x_1,\cdots \Eval{e_n}/x_n]) + 1$
     $\mathrm{where}$ $($fun $f$ $x_1 \cdots x_n$ = $e) ~\in~ P$
-  $S(e_1$ $\id{op}$ $e_2)$ = $S(e_1) + S(e_2) + 1$
+  $S(e_1$ $\id{binop}$ $e_2)$ = $S(e_1) + S(e_2) + 1$
   $S($map $F$ $e)$ =
     $\Let$ [$v_1,\cdots,v_n$] = $\Eval{e}$
        $\lambda x. e' = \extractF{F}$
@@ -1798,14 +1804,58 @@ and
 $$S(\kw{padpow2 ne v}) = O(\log\,\kw{n})$$
 where $\kw{n} = \size~\kw{v}$.
 
-Each iteration of the loop in \kw{red} has work $O(n)$ and span $O(1)$
-and because the loop is iterated at-most $n+1$ times, we have
-$W(\kw{red v}) = O(\kw{n}\,\log\,\kw{n})$ and $S(\kw{red v}) =
-O(\log\,\kw{n})$, where $\kw{n} = \size\,\kw{v}$.
+Each loop iteration in \kw{red} has span $O(1)$. Because the loop is
+iterated at-most $\log(2\,\kw{n})$ times, we have (where $\kw{n} =
+\size\,\kw{v}$)
+\begin{eqnarray*}
+  W(\kw{red v}) & = & O(\kw{n}) + O(\kw{n/2}) + O(\kw{n/4}) + \cdots + O(\kw{n}) ~~=~~ O(\kw{n}) \\
+  S(\kw{red v}) & = & O(\log\,\kw{n})
+\end{eqnarray*}
 
 It is an exercise for the reader to compare the performance of the
 reduction code to the performance of Futhark's built-in \kw{reduce}
 SOAC (see Section~\ref{sec:benchmarking}).
+
+\section{Radix-Sort by Contraction}
+
+Another example of a contraction-based algorithm is
+radix-sort. Radix-sort is a non-comparison based sorting routine,
+which implements sorting by iteratively moving elements with a
+particular bit set to the beginning (or end) in the array. It turns
+out that this move of elements with the same bit set can be
+parallelised. Thus, for arrays containing 32-bit unsigned integers,
+the sorting routine needs only 32 loop-iterations to sort the array. A
+central property of each step is that elements with identical bit
+values will not shift position. Depending on whether the algorithm
+consistently moves elements with the bit set to the end of the array
+or to the beginning of the array results in the array being sorted in
+either ascending or descending order.
+
+\subsection{Radix-Sort in Futhark}
+
+A radix-sort algorithm that sorts the argument vector in ascending
+order is shown in Figure~\ref{fig:radix_sort}.
+
+\begin{figure}
+\begin{wrap}
+\lstinputlisting[firstline=18]{src/rsort.fut}
+\end{wrap}
+\caption{An Implementation of Radix-Sort (ascending) in Futhark.}
+\label{fig:radix_sort}
+\end{figure}
+
+The function \kw{rsort\_step} implements the contraction step that
+takes care of moving all elements with the \kw{bit\_n} set to the end
+of the array. The main function \kw{rsort} takes care of iterating the
+contraction step until the array is sorted (i.e., when the contraction
+step has been executed for all bits.)
+
+By a straightforward analysis, we can argue that $W(\kw{rsort}~\kw{v})
+= O(\kw{n})$, where $n = \size\,\kw{v}$; each of the operations in
+\kw{rsort\_step} takes time $O(\kw{n})$ and $\kw{rsort\_step}$ is called
+a constant number of times (i.e., 32 times). Similarly, we can argue
+that $S(\kw{rsort}~\kw{v}) = O(\log\,\kw{n})$, dominated by the
+\fop{scan} SOAC calls in $\kw{rsort\_step}$.
 
 \chapter{Algebraic Properties of SOACs}
 \label{chap:soac-algebra}
