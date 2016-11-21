@@ -6,7 +6,7 @@ fun main () : bool =
 
 -- Find the smallest power of two greater than n
 fun nextpow2 (n:i32) : i32 =
-  loop (a=2) = while a < n do a*a in a
+  loop (a=2) = while a < n do 2*a in a
 
 -- Pad a vector to make its size a power of two
 fun padpow2 (ne: i32) (v:[n]i32) : []i32 =

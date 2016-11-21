@@ -1372,7 +1372,7 @@ pattern matching and we do not, in this section, consider uniqueness types.
   $v$ ::= true  |  false  |  $n$  |  $r$  |  [$v_1$,...,$v_n$]  |  ($v_1$,...,$v_n$)
   $e$ ::= $v$  |  let $\id{ps}$ = $e$ in $e'$  |  $e$[$e'$]  |  $e$[$e'$:$e''$]
       | [$e_1$,...,$e_n$]  |  ($v_1$,...,$v_n$)
-      | f $e_1$ ... $e_n$  |  $e_1$ $\id{op}$ $e_2$
+      | f $e_1$ ... $e_n$  |  $\id{op}$ $e_1$ ... $e_n$  |  $e_1$ $\id{binop}$ $e_2$
       | loop ($p_1$=$e_1$,$\cdots$,$p_n$=$e_n$) = for $e$ do $e'$ in $e''$
       | loop ($p_1$=$e_1$,$\cdots$,$p_n$=$e_n$) = while $e$ do $e'$ in $e''$
       | $\id{soac}$ $f$ $e_1 \cdots e_n$
@@ -1515,7 +1515,7 @@ type environment $\Gamma'$.''
 \twopart{
 \fraccc{\vd v : \tau}{\Gamma \vd v : \tau}
 }{
-\fraccc{\Gamma(f) = \kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau ~~~~ \Gamma \vd e_i : \tau_n ~~ i = [1;n]}{\Gamma \vd f~e_1\cdots e_n : \tau}
+\fraccc{\Gamma(f) = \kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau ~~~~ \Gamma \vd e_i : \tau_i ~~ i = [1;n]}{\Gamma \vd f~e_1\cdots e_n : \tau}
 }
 
 \twopart{
@@ -1790,7 +1790,7 @@ To determine the work and span of the algorithm \kw{red}, we first
 determine the work and span for \kw{padpow2}, for which we again need
 to determine the work and span for \kw{nextpow2}. From simple
 inspection we have $W(\kw{nextpow2 n}) = S(\kw{nextpow2 n}) =
-\mathrm{log}\,\kw{n}$. Now, from the definition of $W$ and $S$ and
+O(\mathrm{log}\,\kw{n})$. Now, from the definition of $W$ and $S$ and
 because $\kw{nextpow2 n} \leq 2\,\kw{n}$, we have
 
 $$W(\kw{padpow2 ne v}) = W(\fop{concat}~v~\kw{(}\fop{replicate}~\kw{(nextpow2 n - n) ne)}) = O(\kw{n})$$
