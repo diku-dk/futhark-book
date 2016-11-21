@@ -26,8 +26,8 @@
 \newcommand{\inplisting}[1]{\begin{wrap}\lstinputlisting{#1}\end{wrap}}
 
 \title{\bf Parallel Programming in Futhark}
-\author{HIPERFIT \\ Department of Computer Science \\ University of Copenhagen (DIKU)}
-\date{\today}
+\author{Troels Henriksen, Martin Elsman, and Cosmin E. Oancea \\[2mm] HIPERFIT \\[2mm] Department of Computer Science \\ University of Copenhagen (DIKU)}
+\date{\today \\[5mm] Edition \\ 0.1}
 
 \begin{document}
 \frontmatter
@@ -1027,6 +1027,8 @@ fun radix_sort_up(xs: [n]u32) : ([n]u32,[n]i32) =
 \section{Modules}
 \label{sec:modules}
 
+Yet to be written...
+
 \section{Benchmarking}
 \label{sec:benchmarking}
 
@@ -1327,15 +1329,16 @@ Most often we are interested in finding the asymptotical complexity of
 the algorithm we are analyzing, in which case we will simply write
 $$W(\fop{map}~\kw{(}\fw{fn}~\kw{i => $\cdots$) (}\fop{iota}~\kw{$n$)}) = O(n^2) $$
 
-In a similar way we shall be able to derive that the span of a call $\kw{multable}~n$, written $S(\kw{multable}~n)$, is $O(1)$.
+In a similar way we can derive that the span of a call
+$\kw{multable}~n$, written $S(\kw{multable}~n)$, is $O(1)$.
 
-\begin{enumerate}
-\item motivation
-\item memory vs compute bound
-\item nested parallism and flattening
-\item work and depth
-\item Futhark specifics and limitations
-\end{enumerate}
+%\begin{enumerate}
+%\item motivation
+%\item memory vs compute bound
+%\item nested parallism and flattening
+%\item work and depth
+%\item Futhark specifics and limitations
+%\end{enumerate}
 
 \section{Futhark---the Language}
 
@@ -1367,10 +1370,11 @@ pattern matching and we do not, in this section, consider uniqueness types.
   $F$ ::= fn $\id{ps}$ => $e$  |  $e$ $\id{op}$  |  $\id{op}$ $e$
   $P$ ::= fun $f$ $\id{ps}$ = $e$  |  $P_1$ $P_2$  |  val $p$ = $e$
   $v$ ::= true  |  false  |  $n$  |  $r$  |  [$v_1$,...,$v_n$]  |  ($v_1$,...,$v_n$)
-  $e$ ::= $v$  |  let $\id{ps}$ = $e$ in $e$  |  $e$[$e$]
+  $e$ ::= $v$  |  let $\id{ps}$ = $e$ in $e'$  |  $e$[$e'$]  |  $e$[$e'$:$e''$]
       | [$e_1$,...,$e_n$]  |  ($v_1$,...,$v_n$)
       | f $e_1$ ... $e_n$  |  $e_1$ $\id{op}$ $e_2$
-      | loop ($p_1$=$e_1$,$\cdots$,$p_n$=$e_n$) = for ($e$) do $e'$ in $e''$
+      | loop ($p_1$=$e_1$,$\cdots$,$p_n$=$e_n$) = for $e$ do $e'$ in $e''$
+      | loop ($p_1$=$e_1$,$\cdots$,$p_n$=$e_n$) = while $e$ do $e'$ in $e''$
       | $\id{soac}$ $f$ $e_1 \cdots e_n$
 \end{lstlisting}
 
@@ -1533,8 +1537,6 @@ type environment $\Gamma'$.''
   }
 }
 
-MEMO: Add rules for rearrange, shape, and reshape
-
 \subsubsection*{Functions \sembox{\Gamma \vd F : \tau}}
 
 \onepart{
@@ -1567,6 +1569,13 @@ MEMO: Add rules for rearrange, shape, and reshape
   \fraccc{\Gamma,x_1:\tau_1,\cdots,x_n:\tau_n \vd e : \tau  ~~~~~ f \not \in \Dom(\Gamma)}
          {\Gamma \vd \fw{fun}~f~\kw{(}x_1,\cdots,x_n\kw{)}~\kw{=} ~e : \{f:\kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau\}}
 }
+
+For brewity, we have eluded some of the typing rules and we leave it
+to the reader to create typing rules for \kw{rearrange}, \kw{shape},
+\kw{reshape}, \kw{loop-for}, \kw{loop-while}, and array ranging
+($e\kw{[}e':e''\kw{]}$).
+
+
 
 \section{Futhark Evaluation Semantics}
 
@@ -1637,7 +1646,10 @@ first give the definition for $\Eval{\cdot}$:
   \Eval{\id{op}_\tau~e_1\cdots e_n} & = & \sem{\id{op}_\tau}~\Eval{e_1}~\cdots~\Eval{e_n} \\
   \Eval{\fop{map}~F~e} & = & \Eval{\kw{[}e'[v_1/x],\cdots,e'[v_n/x]\kw{]}} \\
     & & ~~~\mathrm{where}~\lambda x . e' = \extractF{F} \\
-    & & ~~~~~\mathrm{and}~ \kw{[}v_1,\cdots,v_n\kw{]} = \Eval{e}
+    & & ~~~~~\mathrm{and}~ \kw{[}v_1,\cdots,v_n\kw{]} = \Eval{e} \\
+  \Eval{\fop{zipWith}~F~e_1\cdots e_m} & = & \Eval{\kw{[}e'[v_1^1/x_1\cdots v_1^m/x_m],\cdots,e'[v_n^1/x_n\cdots v_n^m/x_m]\kw{]}} \\
+    & & ~~~\mathrm{where}~\lambda x_1\cdots x_m . e' = \extractF{F} \\
+    & & ~~~~~\mathrm{and}~ \kw{[}v_1^i,\cdots,v_n^i\kw{]} = \Eval{e_i} ~~~ i=[1..m]
 \end{eqnarray*}
 
 Given a SOAC function parameter $F$, we define the utility \emph{extraction function}, $\extractF{F}$, as follows:
@@ -1669,9 +1681,12 @@ operations done by the big-step evalutation semantics, and the
 the computation, assuming an infinite amount of parallelism in the
 SOAC computations. The functions for work and span, denoted by $W :
 \mathrm{Exp} \rightarrow \N$ and $S : \mathrm{Exp} \rightarrow \N$ are
-given in Figure~\ref{fig:work} and Figure~\ref{fig:span}, respectively. The functions are defined
-independently, although they make use of the evaluation function
-$\Eval{\cdot}$.
+given in Figure~\ref{fig:work} and Figure~\ref{fig:span},
+respectively. The functions are defined independently, although they
+make use of the evaluation function $\Eval{\cdot}$. We have given the
+definitions for the essential SOAC functions, namely \fop{map} and
+\fop{reduce}. The definitions for the remaining SOACs, such as
+\fop{zipWith}, follow the same lines as the definitions for \fop{map} and \fop{reduce}.
 
 \begin{figure}
 \begin{lstlisting}[mathescape=true]
@@ -1841,13 +1856,13 @@ algorithms.
 \item line drawing
 \end{enumerate}
 
-\chapter{Bigger Applications}
-\begin{enumerate}
-\item monte carlo
-\item learning with stochastic gradient descent
-\item stencils
-\item convolutions
-\end{enumerate}
+%\chapter{Bigger Applications}
+%\begin{enumerate}
+%\item monte carlo
+%\item learning with stochastic gradient descent
+%\item stencils
+%\item convolutions
+%\end{enumerate}
 
 \chapter{Interoperability}
 \label{chap:interoperability}
