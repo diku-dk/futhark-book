@@ -1852,7 +1852,7 @@ step has been executed for all bits.)
 
 By a straightforward analysis, we can argue that $W(\kw{rsort}~\kw{v})
 = O(\kw{n})$, where $n = \size\,\kw{v}$; each of the operations in
-\kw{rsort\_step} takes time $O(\kw{n})$ and $\kw{rsort\_step}$ is called
+\kw{rsort\_step} has work $O(\kw{n})$ and $\kw{rsort\_step}$ is called
 a constant number of times (i.e., 32 times). Similarly, we can argue
 that $S(\kw{rsort}~\kw{v}) = O(\log\,\kw{n})$, dominated by the
 \fop{scan} SOAC calls in $\kw{rsort\_step}$.
