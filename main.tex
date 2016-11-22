@@ -1826,18 +1826,18 @@ either ascending or descending order.
 \label{sec:radixsort}
 
 A radix-sort algorithm that sorts the argument vector in ascending
-order is shown in Figure~\ref{fig:radix_sort}.
+order is shown in Figure~\ref{fig:rsort}.
 
 \begin{figure}
 \begin{wrap}
 \lstinputlisting[firstline=18]{src/rsort.fut}
 \end{wrap}
 \caption{An Implementation of Radix-Sort (ascending) in Futhark.}
-\label{fig:radix_sort}
+\label{fig:rsort}
 \end{figure}
 
 The function \kw{rsort\_step} implements the contraction step that
-takes care of moving all elements with the \kw{bit\_n} set to the end
+takes care of moving all elements with the \kw{bitn} set to the end
 of the array. The main function \kw{rsort} takes care of iterating the
 contraction step until the array is sorted (i.e., when the contraction
 step has been executed for all bits.)
@@ -1876,18 +1876,130 @@ operation, which, as we shall see, can be implemented using Futhark's \fop{scan}
 operator, and which in its own right is essential to many of the later
 algorithms.
 
+Based on the segmented scan operator and the other Futhark SOAC
+operations, but before investigating more challenges algorithms, we
+also present a set of utility functions as well as their parallel
+implementations.
+
 \section{Segmented Scan}
+\label{sec:sgmscan}
+
+The segmented scan operator is quite essential as we shall see
+demonstrated in many of algorithms explained later. The segmented scan
+operator can be implemented with a simple scan using an associative
+function that operates on pairs of values. Here is the definition of
+the segmented scan operation:
 
 \begin{wrap}
 \lstinputlisting[firstline=7]{src/sgm_scan.fut}
 \end{wrap}
 
-\begin{enumerate}
-\item segmented scan
-\item radix sort
+
+
+\section{Parallel Utility Functions}
+For use by other algorithms a set of utility functions for
+manipulating and managing arrays is an important part of the tool
+box. We present a number of utility functions here, ranging from
+finding elements in an array to .. memo.
+
+\subsection{Finding the Index of an Element in an Array}
+We device two different functions for finding an index in an array for
+which the content is identical to some given value. The first function,
+\kw{find\_idx\_first}, takes a value \kw{e} and an array \kw{xs} and
+returns the smallest index $i$ into $\kw{xs}$ for which $\kw{xs[}i\kw{]} =
+\kw{e}$:
+
 \begin{wrap}
-\lstinputlisting[firstline=18]{src/radix_sort.fut}
+\lstinputlisting[firstline=9,lastline=13]{src/find_idx.fut}
 \end{wrap}
+
+The second function,
+\kw{find\_idx\_last}, also takes a value \kw{e} and an array \kw{xs} but
+returns the largest index $i$ into $\kw{xs}$ for which $\kw{xs[}i\kw{]} =
+\kw{e}$:
+
+\begin{wrap}
+\lstinputlisting[firstline=15]{src/find_idx.fut}
+\end{wrap}
+
+The above two functions make use of the auxiliary functions \kw{min} and
+\kw{max}, which are not included in Futhark's basis library:
+
+\begin{lstlisting}
+fun max (a:i32) (b:i32) : i32 = if a > b then a else b
+fun min (a:i32) (b:i32) : i32 = if a < b then a else b
+\end{lstlisting}
+
+
+\section{Radix Sort}
+A simple radix sort algorithm was presented already in
+Figure~\ref{fig:rsort}. In this section, we present two generalized
+versions of radix sort, one for ascending sorting and one for
+descending sorting. As a bonus, the sorting routines return both the
+sorted arrays and an index array that can be used together with
+\fop{write} to sort an array with respect to a permutation obtained by
+sorting another array. The generalised ascending radix sort is shown
+in Figure~\ref{fig:rsort_idx_asc}. The descending version is shown in
+Figure~\ref{fig:rsort_idx_desc}. Notice that in case of identical
+elements in the source vector, one cannot simply implement the
+ascending version by reversing the arrays resulting from calling the
+descending version.
+
+\begin{figure}
+\lstinputlisting[firstline=23,lastline=40]{src/rsort_idx.fut}
+\caption{Generalised Ascending Version of Radix Sort.}
+\label{fig:rsort_idx_asc}
+\end{figure}
+
+\begin{figure}
+\lstinputlisting[firstline=42,lastline=58]{src/rsort_idx.fut}
+\caption{Generalised Descending Version of Radix Sort.}
+\label{fig:rsort_idx_desc}
+\end{figure}
+
+
+\section{Finding the Longest Streak}
+In this section we shall demonstrate two different methods of finding
+the longest streak of increasing numbers. One method makes use
+directly of a segmented scan and the other method implicitly encodes
+the segmented scan as an integrated part of the algorithm. We start by
+showing the latter version of the longest streak problem:
+
+\begin{wrap}
+\lstinputlisting[firstline=27,lastline=40]{src/streak.fut}
+\end{wrap}
+
+The following derivation shows how the algorithm works for a
+particular input, namely when \kw{streak} is given the argument array
+\kw{[1,5,3,4,2,6,7,8]}, in which case the algorithm should return the value 3:
+
+\vspace*{3mm}
+\begin{tabular}{lc*{8}{p{8mm}}}
+Variable & : & Value \\ \hline
+\kw{xs}   & : & 1 & 5 & 3 & 4 & 2 & 6 & 7 & 8 \\
+\kw{ys}   & : & 5 & 3 & 4 & 2 & 6 & 7 & 8 & 1 \\
+\kw{is}   & : & 1 & 0 & 1 & 0 & 1 & 1 & 1 \\
+\kw{ss}   & : & 1 & 1 & 2 & 2 & 3 & 4 & 5 \\
+\kw{ss1}  & : & 0 & 1 & 0 & 2 & 0 & 0 & 0 \\
+\kw{ss2}  & : & 0 & 1 & 1 & 2 & 2 & 2 & 2 \\
+\kw{ss3}  & : & 1 & 0 & 1 & 0 & 1 & 2 & 3 \\
+\kw{res}  & : & 3
+\end{tabular}
+\vspace*{3mm}
+
+A simpler algorithm builds directly on the segmented scan operation as
+defined earlier. The algorithm first constructs the \kw{is} array as
+in the previous algorithm and then uses a segmented scan over a
+negation of this array over the unit-array to create the \kw{ss3} vector
+directly.
+
+\begin{wrap}
+\lstinputlisting[firstline=36]{src/sgm_streak.fut}
+\end{wrap}
+
+
+
+\begin{enumerate}
 \item pseudo random numbers and sobol
 \item trees
 \item graphs
