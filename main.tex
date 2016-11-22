@@ -27,7 +27,7 @@
 
 \title{\bf Parallel Programming in Futhark}
 \author{Troels Henriksen, Martin Elsman, and Cosmin E. Oancea \\[2mm] HIPERFIT \\[2mm] Department of Computer Science \\ University of Copenhagen (DIKU)}
-\date{\today \\[5mm] Edition \\ 0.3}
+\date{\today \\[5mm] Edition \\ 0.4}
 
 \begin{document}
 \frontmatter
@@ -92,7 +92,7 @@ same chip. Thus, for programs to run faster on ever new
 architectures, programs will have to make use of algorithms and data
 structures that benefit from simultaneous, that is \emph{parallel},
 execution on multiple cores. Newer architectures, such as Graphical
-Processing Unis (GPUs), host a high number of cores that are designed
+Processing Units (GPUs), host a high number of cores that are designed
 for parallel processing and over the coming decade, we will see a
 drastic increase in the number of cores hosted in each chip.
 
@@ -103,9 +103,9 @@ processes. Such processes may in principle run on the same physical
 processor (using for instance time sharing) or they may run on
 multiple processors. Controlling the communication and dependencies
 between multiple processes turns out to be immensely difficult and
-programmers need to deal with problems such as unforseen
+programmers need to deal with problems such as unforeseen
 non-determinism and dead-locks, collectively named \emph{race
-  conditions}, issues that emerges when two or more processes (and
+  conditions}, issues that emerge when two or more processes (and
 their interaction with an external environment) interleave. By
 \emph{parallelism}, on the other hand, we simply refer to the notion
 of speeding up a program by making it run on multiple
@@ -120,14 +120,14 @@ parallel with multiple processors will execute faster than if only one
 processor is used. As we shall see, making predictable models for
 determining whether a given program will run efficiently on a parallel
 machine can be difficult, in particular in cases where the program is
-inhomogenerously parallel at several levels, simultaneously.
+inhomogeneously parallel at several levels, simultaneously.
 
 Parallelism can be divided into the notions of \emph{task
   parallelism}, which emphasizes the concept of executing multiple
 independent tasks in parallel, and \emph{data parallelism}, which
 focuses on executing the same program on a number of different data
 objects in parallel. At the hardware side, multiple instruction
-multiple data (MIMD) processor designs, coined after Flynns's taxonomy
+multiple data (MIMD) processor designs, coined after Flynn's taxonomy
 \cite{Flynn1972}, directly allow for different tasks to be executed in
 parallel. For such designs, each processor is quite complex and in
 terms of fitting most processors on a single chip, so as to increase
@@ -143,7 +143,7 @@ purpose'' graphics processing units (GPGPUs).
 
 The notions of parallel processing and parallel programming are not
 new. Concepts in these areas have emerged over a period of more than three
-decades and today the notion of parallism appears in many
+decades and today the notion of parallelism appears in many
 disguises. For example, the internet as we know it can be understood
 as a giant parallel processing unit and whenever some user is browsing
 and searching the internet, a large number of processing units are
@@ -158,7 +158,7 @@ sequential Random Access Machine (RAM) model.\footnote{Following
   Flynn's taxonomy, this model fits within a single instruction single
   data (SISD) design \cite{Flynn1972}.} With ever more complex chip
 circuits, introducing speculative instruction scheduling and advanced
-memory cache hierarcies for leveraging the far from constant-time
+memory cache hierarchies for leveraging the far from constant-time
 access to random memory, reasoning about performance has become
 difficult even for programs running on sequential hardware. The
 consequence is that, even for sequential programs, programmers and
@@ -208,12 +208,12 @@ subset of a data-parallel language and discuss benefits and
 limitations of the approach. The cost model is based on the
 language-based cost model developed for NESL, but in contrary to the
 cost model for NESL, we shall not base our reasoning on an automatic
-flattening technique for dealing with nested parallism. Instead, we
+flattening technique for dealing with nested parallelism. Instead, we
 shall require the programmer to perform certain kinds of flattening
 manually. The cost model developed for Futhark has been adapted from
 the cost model developed for the SPARC parallel functional programming
 language developed for the Carnegie Mellon University (CMU) Fall 2016
-course ``15-210: Parallel and Sequenctial Data Structures and
+course ``15-210: Parallel and Sequential Data Structures and
 Algorithms'' \cite{algdesign:parseq2016}.
 
 We shall primarily look at parallelism from a data-parallel functional
@@ -407,7 +407,7 @@ putting the size in between the brackets.
 Multi-dimensional arrays are supported in Futhark, but they must be
 \textit{regular}, meaning that all inner arrays must have the same
 shape.  For example, \texttt{[[1,2], [3,4], [5,6]]} is a valid array
-of type \texttt{[2][3]i32}, but \texttt{[[1,2], [3,4,5], [6,7]]} is
+of type \texttt{[3][2]i32}, but \texttt{[[1,2], [3,4,5], [6,7]]} is
 not, because there we cannot determine integers $m$ and $n$ such that
 \texttt{[$m$][$n$]i32} describes the array.  The restriction to
 regular arrays is rooted in low-level concerns about efficient
@@ -504,7 +504,7 @@ latter is desired, enclose the literal array with parentheses, as in
 
 Futhark also supports array \textit{slices}.  The expression
 \texttt{a[i:j]} returns a slice of the array \texttt{a} from index
-\texttt{i} to \texttt{j}, the latter inclusive and the latter
+\texttt{i} to \texttt{j}, the former inclusive and the latter
 exclusive.  Slicing of multiple dimensions can be done by separating
 with commas, and may be intermixed freely with indexing.  It is an
 error if \texttt{j < n}.
@@ -600,7 +600,7 @@ Currying for operators is also supported using a syntax taken from
 Haskell:
 
 \begin{lstlisting}
-map (2-) [1,2,3] == [-1,0,1]
+map (2-) [1,2,3] == [1,0,-1]
 \end{lstlisting}
 
 While \texttt{map} accepts only a single array argument, there is a
@@ -638,7 +638,7 @@ reduce (+) 0 [1,2,3] == 6
 
 It turns out that combining \texttt{map} and \texttt{reduce} is both
 powerful and has remarkable optimisation properties, as we will
-discuss in chapter~\ref{chap:soac-algebra}.  Many Futhark programs are
+discuss in Chapter~\ref{chap:soac-algebra}.  Many Futhark programs are
 primarly \texttt{map}-\texttt{reduce} compositions.  For example, we
 can define a function to compute the dot product of two vectors of
 integers:
