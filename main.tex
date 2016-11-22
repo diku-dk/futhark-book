@@ -1011,18 +1011,9 @@ of type \texttt{[$m$]$t$}. Then the expression \texttt{write is vs
 \end{lstlisting}
 
 \noindent
-and returns the modified \texttt{as} array.  The old \texttt{as}
-array is marked as consumed and may not be used anymore.
-
-\begin{lstlisting}
--- A least significant digit radix sort to test out `write`.
-fun radix_sort_up(xs: [n]u32) : ([n]u32,[n]i32) =
-  let is = iota(n) in
-  loop (p:([n]u32,[n]i32) = (xs,is)) = for i < 32 do
-    radix_sort_step_up(p,i)
-  in p
-\end{lstlisting}
-
+and returns the modified \texttt{as} array.  The old \texttt{as} array
+is marked as consumed and may not be used anymore.  Parallel
+\texttt{write} can be used to efficiently implement the radix sort algorithm, as demonstrated in Section~\ref{sec:radixsort}.
 
 \section{Modules}
 \label{sec:modules}
@@ -1832,6 +1823,7 @@ or to the beginning of the array results in the array being sorted in
 either ascending or descending order.
 
 \subsection{Radix-Sort in Futhark}
+\label{sec:radixsort}
 
 A radix-sort algorithm that sorts the argument vector in ascending
 order is shown in Figure~\ref{fig:radix_sort}.
