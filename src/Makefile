@@ -78,7 +78,7 @@ testopencl: $(RESOPENCLFILES)
 
 .PHONY: clean
 clean:
-	rm -f *~ *.c *.exe *.res *.out *.exeopencl *.resopencl *.outopencl
+	rm -f *~ *.c *.exe *.res *.out *.exeopencl *.resopencl *.outopencl *-c *-opencl
 
 .PHONY: viz
 viz:

@@ -2,3 +2,5 @@
 *.res
 *.exe
 *.out
+*-opencl
+*-c
