@@ -1881,6 +1881,35 @@ a constant number of times (i.e., 32 times). Similarly, we can argue
 that $S(\kw{rsort}~\kw{v}) = O(\log\,\kw{n})$, dominated by the
 \fop{scan} SOAC calls in $\kw{rsort\_step}$.
 
+\section{Counting Primes}
+A variant of a contraction algorithm is an algorithm that first solves
+a smaller problem, recursively, and then uses this result to provide a
+solution to the larger problem. One such algorithm is a version of the
+Sieve of Eratosthenes that, to find the primes smaller than some $n$,
+first calculates the primes smaller than $\sqrt n$. It then uses this
+intermediate result for sieving away the integers in the range $\sqrt
+n$ up to $n$ that are multiples of the primes smaller than $\sqrt n$.
+
+A Futhark program calculating the number of primes below some number
+$n$, also denoted in the literature as the $\pi$ function, is shown in
+Figure~\ref{fig:primes}.
+
+\begin{figure}
+\begin{wrap}
+\lstinputlisting{src/primes.fut}
+\end{wrap}
+\caption{An Implementation of the Sieve of Eratosthenes.}
+\label{fig:primes}
+\end{figure}
+
+Notice that the algorithm applies a parallel sieve for each step,
+using a combination of maps and reductions. The work done by the
+algorithm is $O(n\,\log\,\log\,n)$ and the span is
+$O(\log\,\log\,n)$. The $\log\,\log\,n$ factor appears because the
+size of the problem is reduced at each step by applying the square
+root, which is identical to halving the exponent size at each
+step (i.e., the sequence $n, \ldots, 2^{16}, 2^8, 2^4, 2^2$, where $n=2^{2^m}$, for some positive $m$, has $m = \log\,\log\,n$ elements.)
+
 \chapter{Algebraic Properties of SOACs}
 \label{chap:soac-algebra}
 
@@ -1917,16 +1946,15 @@ implementations.
 \label{sec:sgmscan}
 
 The segmented scan operator is quite essential as we shall see
-demonstrated in many of the algorithms explained later. The segmented scan
-operator can be implemented with a simple scan using an associative
-function that operates on pairs of values. Here is the definition of
-the segmented scan operation:
+demonstrated in many of the algorithms explained later. The segmented
+scan operator can be implemented with a simple scan using an
+associative function that operates on pairs of values
+\cite{Schwartz:1980:ULT:357114.357116,blelloch1990vector}. Here is the
+definition of the segmented scan operation:
 
 \begin{wrap}
 \lstinputlisting[firstline=7]{src/sgm_scan.fut}
 \end{wrap}
-
-
 
 \section{Parallel Utility Functions}
 For use by other algorithms, a set of utility functions for
