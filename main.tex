@@ -1825,7 +1825,7 @@ and \fop{reduce}.
   $W($reduce $F$ $e'$ $e'')$ =
     $\Let$ [$v_1,\cdots,v_n$] = $\Eval{e''}$
        $\lambda x~x'. e = \extractF{F}$
-    $\In$ $W(e') + W(e'') + W(e[v_1/x,v_n/x']) \times n\,\mathrm{ln}\,n  + 1$
+    $\In$ $W(e') + W(e'') + W(e[v_1/x,v_n/x']) \times n + 1$
     $\mathrm{assuming} ~ W(e[v_1/x,v_n/x']) ~\mathrm{indifferent~to} ~v_1~ \mathrm{and} ~v_n$
   $W($iota $e)$ = $W(e) + n$         $\mathrm{where} ~ n = \Eval{e}$
 \end{lstlisting}
