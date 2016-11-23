@@ -28,7 +28,7 @@
 
 \title{\bf Parallel Programming in Futhark}
 \author{Troels Henriksen, Martin Elsman, and Cosmin E. Oancea \\[2mm] HIPERFIT \\[2mm] Department of Computer Science \\ University of Copenhagen (DIKU)}
-\date{\today \\[5mm] Edition \\ 0.4}
+\date{\today \\[5mm] Edition \\ 0.5}
 
 \begin{document}
 \frontmatter
@@ -2120,7 +2120,7 @@ index in an array:
 \lstinputlisting[firstline=4]{src/maxidx.fut}
 
 \noindent The function \kw{maxidx} is a \emph{homomorphism} \cite{BirdListTh}: For any
-$x$ and $y$, there exists and operator $\oplus$ such that
+$x$ and $y$, there exists an associative operator $\oplus$ such that
 
 $$\kw{maxidx}(x \pp\, y) = \kw{maxidx}(x) \oplus \kw{maxidx}(y)$$
 
