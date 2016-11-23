@@ -34,7 +34,7 @@ fun max (a:i32) (b:i32) : i32 = if a > b then a else b
 -- Longest streak of increasing numbers
 fun sgm_streak (xs: [n]i32) : i32  =
   let ys = rotate 1 xs
-  let is = (zipWith (fn x y => if x < y then 1 else 0) xs ys)[0:n-1]
+  let is = (map (fn x y => if x < y then 1 else 0) xs ys)[0:n-1]
   let fs = map (==0) is
   let ss = sgm_scan_add is fs
   let res = reduce max 0 ss

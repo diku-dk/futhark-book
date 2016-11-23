@@ -13,7 +13,7 @@ fun sgmScanSum_i32 (vals:[n]i32) (flags:[n]bool) : [n]i32 =
 
 fun replIdx (reps:[n]i32) : []i32 =
   let tmp = scan (+) 0 reps
-  let sers = zipWith (fn i t => if i == 0 then 0 else t) (iota n) tmp
+  let sers = map (fn i t => if i == 0 then 0 else t) (iota n) tmp
   let m = tmp[n-1]
   let tmp2 = write sers (iota(n)) (replicate m 0)
   let flags = map (>0) tmp2
@@ -47,7 +47,7 @@ fun drawlines_par (grid:*[h][w]i32) (lines:[n]line) :[h][w]i32 =
   let iotan = iota n
   let nums = map (fn i => iotan[i]) idxs
   let nums2 = rotate 1 nums
-  let flags = zipWith (!=) nums nums2
+  let flags = map (!=) nums nums2
   let lines1 = map (fn i => unsafe lines[i]) idxs
   let dirxs = map (fn ((x1,_),(x2,_)) =>
                      if x2 > x1 then 1
@@ -58,11 +58,11 @@ fun drawlines_par (grid:*[h][w]i32) (lines:[n]line) :[h][w]i32 =
    	    	       if y2 > y1 then f32(1) else f32(-1)
 		     else f32(y2-y1) / abs(f32(x2-x1))) lines1
   let iotas = sgmIota flags
-  let xs = zipWith (fn ((x1,_),_) dirx i =>
+  let xs = map (fn ((x1,_),_) dirx i =>
                      x1+dirx*i) lines1 dirxs iotas
-  let ys = zipWith (fn ((_,y1),_) slop i =>
+  let ys = map (fn ((_,y1),_) slop i =>
                      y1+i32(slop*f32(i))) lines1 slops iotas
-  let is = zipWith (fn x y => w*y+x) xs ys
+  let is = map (fn x y => w*y+x) xs ys
   let flatgrid = reshape (h*w) grid
   let ones = map (fn _ => 1) is
   in reshape (h,w) (write is ones flatgrid)

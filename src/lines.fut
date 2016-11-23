@@ -78,19 +78,19 @@ fun drawlines_par (grid:*[h][w]i32) (lines:[n]line) :[h][w]i32 =
   let ys1 = map (fn i => ys1[i]) idxs
   let xs2 = map (fn i => xs2[i]) idxs
   let ys2 = map (fn i => ys2[i]) idxs
-  let dirxs = zipWith (fn x1 x2 =>
+  let dirxs = map (fn x1 x2 =>
                         if x2 > x1 then 1
 		        else if x1 > x2 then -1
 		        else 0) xs1 xs2
-  let slops = zipWith (fn x1 y1 x2 y2 =>
+  let slops = map (fn x1 y1 x2 y2 =>
                         if x2 == x1 then
    	   	        if y2 > y1 then f32(1) else f32(-1)
 		        else f32(y2-y1) / abs(f32(x2-x1))) xs1 ys1 xs2 ys2
   let iotas = sgmIota flags
-  let xs = zipWith (fn x1 dirx i =>
+  let xs = map (fn x1 dirx i =>
                      x1+dirx*i) xs1 dirxs iotas
-  let ys = zipWith (fn y1 slop i =>
+  let ys = map (fn y1 slop i =>
                      y1+i32(slop*f32(i))) ys1 slops iotas
-  let is = zipWith (fn x y => w*y+x) xs ys
+  let is = map (fn x y => w*y+x) xs ys
   let flatgrid = reshape (h*w) grid
   in reshape (h,w) (write is (replicate nn 1) flatgrid)

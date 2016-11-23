@@ -16,5 +16,5 @@ fun padpow2 (ne: i32) (v:[n]i32) : []i32 =
 fun red (xs : []i32) : i32 =
   loop (xs=padpow2 0 xs) = while (shape xs)[0] > 1 do
     let n = (shape xs)[0] / 2
-    in zipWith (+) xs[0:n] xs[n:2*n]
+    in map (+) xs[0:n] xs[n:2*n]
   in xs[0]

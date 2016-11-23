@@ -604,14 +604,13 @@ Haskell:
 map (2-) [1,2,3] == [1,0,-1]
 \end{lstlisting}
 
-While \texttt{map} accepts only a single array argument, there is a
-variation called \texttt{zipWith}, that takes any nonzero number of
-array arguments, and requires a function with the same number of
-parameters.  For example, we can perform an element-wise sum of two
-arrays:
+In contrast to other languages, the \texttt{map} in Futhark takes any
+nonzero number of array arguments, and requires a function with the
+same number of parameters.  For example, we can perform an
+element-wise sum of two arrays:
 
 \begin{lstlisting}
-zipWith (+) [1,2,3] [4,5,6] == [5,7,9]
+map (+) [1,2,3] [4,5,6] == [5,7,9]
 \end{lstlisting}
 
 While \texttt{map} is an array transformer, the \texttt{reduce} SOAC
@@ -646,7 +645,7 @@ integers:
 
 \begin{lstlisting}
 fun dotProd (xs: []int) (ys: []int): int =
-  reduce (+) 0 (zipWith (*) xs ys)
+  reduce (+) 0 (map (*) xs ys)
 \end{lstlisting}
 
 A close cousin of \texttt{reduce} is \texttt{scan}, often called
@@ -1348,7 +1347,7 @@ second order array combinators are given as follows:
        | partition | rearrange | replicate | reshape
        | rotate | shape | split | transpose | unzip | write | zip
   $\id{soac}$ ::= map | reduce | reduceComm | scan | filter
-       | partition | zipWith
+       | partition
 \end{lstlisting}
 
 In the grammar for the Futhark language below, we have eluded both the
@@ -1411,10 +1410,9 @@ Figure~\ref{fig:primtypeschemes}
   \begin{eqnarray*}
 \id{soac} & : & \mathrm{TypeOf}(\id{soac}) \\
     \fop{filter} & : & \forall \alpha. (\alpha \rarr \mathtt{bool}) \rarr []\alpha \rarr []\alpha\\
-    \fop{map} & : & \forall \alpha\beta. (\alpha \rarr \beta) \rarr []\alpha \rarr []\beta\\
+    \fop{map} & : & \forall \alpha_1\cdots\alpha_n\beta. (\alpha_1\rarr\cdots\rarr\alpha_n \rarr \beta) \rarr []\alpha_1 \rarr\cdots\rarr []\alpha_n \rarr []\beta\\
     \fop{reduce} & : & \forall \alpha. (\alpha \rarr \alpha \rarr \alpha) \rarr \alpha \rarr []\alpha \rarr \alpha\\
     \fop{scan} & : & \forall \alpha. (\alpha \rarr \alpha \rarr \alpha) \rarr \alpha \rarr []\alpha \rarr []\alpha\\
-    \fop{zipWith} & : & \forall \alpha_1\cdots\alpha_n\beta. (\alpha_1\rarr\cdots\rarr\alpha_n \rarr \beta) \rarr []\alpha_1 \rarr\cdots\rarr []\alpha_n \rarr []\beta
   \end{eqnarray*}
   \caption{Type schemes for Futhark's second-order array combinators (SOACs). The relation $\mathrm{TypeOf}(\id{soac}) = \sigma$.}
   \label{fig:soactypeschemes}
@@ -1642,10 +1640,7 @@ first give the definition for $\Eval{\cdot}$:
   \Eval{\kw{(}e_1,\cdots,e_n\kw{)}} & = & \kw{(}\Eval{e_1},\cdots,\Eval{e_n}\kw{)} \\
   \Eval{e_1~\id{binop}_\tau~e_2} & = & \sem{\id{binop}_\tau}~\Eval{e_1}~\Eval{e_2} \\
   \Eval{\id{op}_\tau~e_1\cdots e_n} & = & \sem{\id{op}_\tau}~\Eval{e_1}~\cdots~\Eval{e_n} \\
-  \Eval{\fop{map}~F~e} & = & \Eval{\kw{[}e'[v_1/x],\cdots,e'[v_n/x]\kw{]}} \\
-    & & ~~~\mathrm{where}~\lambda x . e' = \extractF{F} \\
-    & & ~~~~~\mathrm{and}~ \kw{[}v_1,\cdots,v_n\kw{]} = \Eval{e} \\
-  \Eval{\fop{zipWith}~F~e_1\cdots e_m} & = & \Eval{\kw{[}e'[v_1^1/x_1\cdots v_1^m/x_m],\cdots,e'[v_n^1/x_n\cdots v_n^m/x_m]\kw{]}} \\
+  \Eval{\fop{map}~F~e_1\cdots e_m} & = & \Eval{\kw{[}e'[v_1^1/x_1\cdots v_1^m/x_m],\cdots,e'[v_n^1/x_n\cdots v_n^m/x_m]\kw{]}} \\
     & & ~~~\mathrm{where}~\lambda x_1\cdots x_m . e' = \extractF{F} \\
     & & ~~~~~\mathrm{and}~ \kw{[}v_1^i,\cdots,v_n^i\kw{]} = \Eval{e_i} ~~~ i=[1..m]
 \end{eqnarray*}
@@ -1677,14 +1672,15 @@ for determining the total \emph{work} done by a program, in terms of
 operations done by the big-step evalutation semantics, and the
 \emph{span} of the program execution, in terms of the maximum depth of
 the computation, assuming an infinite amount of parallelism in the
-SOAC computations. The functions for work and span, denoted by $W :
-\mathrm{Exp} \rightarrow \N$ and $S : \mathrm{Exp} \rightarrow \N$ are
-given in Figure~\ref{fig:work} and Figure~\ref{fig:span},
-respectively. The functions are defined independently, although they
-make use of the evaluation function $\Eval{\cdot}$. We have given the
-definitions for the essential SOAC functions, namely \fop{map} and
-\fop{reduce}. The definitions for the remaining SOACs, such as
-\fop{zipWith}, follow the same lines as the definitions for \fop{map} and \fop{reduce}.
+SOAC computations. The functions for work and span, denoted by
+$W : \mathrm{Exp} \rightarrow \N$ and
+$S : \mathrm{Exp} \rightarrow \N$ are given in Figure~\ref{fig:work}
+and Figure~\ref{fig:span}, respectively. The functions are defined
+independently, although they make use of the evaluation function
+$\Eval{\cdot}$. We have given the definitions for the essential SOAC
+functions, namely \fop{map} and \fop{reduce}. The definitions for the
+remaining SOACs follow the same lines as the definitions for \fop{map}
+and \fop{reduce}.
 
 \begin{figure}
 \begin{lstlisting}[mathescape=true]
@@ -1774,7 +1770,7 @@ and the neutral element to be \kw{0}. The function first pads the
 argument vector \kw{xs} with neutral elements to ensure that its size
 is a power of two. It then implements a sequential loop with the
 contraction step as its loop body, implemented by a
-parallel $\fop{zipWith}$ over an appropriately splitted input vector.
+parallel $\fop{map}$ over an appropriately splitted input vector.
 
 The auxiliary function for padding the input vector is implemented by the following code:
 
