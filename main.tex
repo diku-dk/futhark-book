@@ -284,7 +284,7 @@ likely be able to read and modify most Futhark code.  For example,
 this program computes the dot product $\Sigma_{i} x_{i}\cdot{}y_{i}$
 of two vectors of integers:
 
-\inplisting{src/dotprod.fut}
+\lstinputlisting[firstline=5]{src/dotprod.fut}
 
 In Futhark, the notation for an array of element type $t$ is
 \texttt{[]$t$}.  The program declares a function called \texttt{main}
@@ -796,7 +796,7 @@ filter (fn x => x != 0) [0,5,2,0,1] ==
 But what are the corresponding indices?  We can solve this using a
 combination of \texttt{zip}, \texttt{filter}, and \texttt{unzip}:
 
-\lstinputlisting[firstline=2]{src/indices_of_nonzero.fut}
+\lstinputlisting[firstline=7]{src/indices_of_nonzero.fut}
 
 Be aware that \texttt{filter} is a somewhat expensive SOAC,
 corresponding roughly to a \texttt{scan} plus a \texttt{map}.
@@ -1148,7 +1148,7 @@ Yet to be written...
 
 Consider an implementation of dot product:
 
-\inplisting{src/dotprod.fut}
+\lstinputlisting[firstline=5]{src/dotprod.fut}
 
 We previously mentioned that, for small data sets, sequential
 execution is likely to be much faster than parallel execution.  But

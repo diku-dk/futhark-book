@@ -4,3 +4,4 @@
 *.out
 *-opencl
 *-c
+*.bin
