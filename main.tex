@@ -284,7 +284,7 @@ likely be able to read and modify most Futhark code.  For example,
 this program computes the dot product $\Sigma_{i} x_{i}\cdot{}y_{i}$
 of two vectors of integers:
 
-\inplisting{src/dotprod.fut}
+\lstinputlisting[firstline=5]{src/dotprod.fut}
 
 In Futhark, the notation for an array of element type $t$ is
 \texttt{[]$t$}.  The program declares a function called \texttt{main}
@@ -572,6 +572,71 @@ designed to resemble higher-order functions that may be familiar from
 functional languages, they have implicitly parallel semantics, and
 some restrictions to preserve those semantics.
 
+In addition to the array combinators, there are constructs for
+\textit{constructing} arrays.  We already demonstrated literal arrays.
+Additionally, there is \texttt{iota}, which creates an array of a
+range of integers starting from zero:
+
+\begin{lstlisting}
+iota 10 == [0,1,2,3,4,5,6,7,8,9]
+\end{lstlisting}
+
+The name \texttt{iota} comes from APL, one of the earliest array
+programming languages, and is supposed to be mnemonic for creating
+\textit{index spaces} of arrays.  Put another way, \texttt{iota n}
+produces an array of valid indices into an array of size \texttt{n}.
+
+The \texttt{replicate} construct is used to create an array of some
+size, with all elements having the same given value:
+
+\begin{lstlisting}
+replicate 3 42 == [42,42,42]
+\end{lstlisting}
+
+We can use \texttt{concat} to combine several arrays:
+
+\begin{lstlisting}
+concat (iota 2) ([1,2,3]) (replicate 4 1) ==
+  [0,1,1,2,3,1,1,1,1i32]
+\end{lstlisting}
+
+Note that the parentheses around the literal array are necessary - if
+they were not present, this expression would be parsed as an attempt
+to index the expression \texttt{iota 2} using \texttt{[1,2,3]} as the
+indices.  This would of course result in a type error.
+
+We can use \texttt{zip} to transform $n$ arrays to a single array of
+$n$-tuples:
+
+\begin{lstlisting}
+zip [1,2,3] [true,false,true] [7.0,8.0,9.0] ==
+  [(1,true,7.0),(2,false,8.0),(3,true,9.0)]
+\end{lstlisting}
+
+That the input arrays may have different types.  We can use
+\texttt{unzip} to perform the inverse transformation:
+
+\begin{lstlisting}
+unzip [(1,true,7.0),(2,false,8.0),(3,true,9.0)] ==
+  ([1,2,3], [true,false,true], [7.0,8.0,9.0])
+\end{lstlisting}
+
+Be aware that \texttt{zip} requires all of the input arrays to have
+the same size.  Transforming between arrays of tuples and tuples of
+arrays is common in Futhark programs, as many array operations accept
+only one array as input.  Due to a clever implementation technique,
+\texttt{zip} and \texttt{unzip} also have no runtime cost (no copying
+or allocation whatsoever), so you should not shy away from using them
+out of efficiency concerns.\footnote{This is enabled via storing all
+  arrays in ``unzipped'' form.  That is, at runtime, arrays of tuples
+  do not exist, but have always been decomposed into multiple arrays.
+  This is a common practice for high-performance computing, usually
+  called ``structs of arrays'' versus ``arrays of structs'', and
+  serves to permit memory access patterns more friendly to vectorised
+  operations.}
+
+\subsection{Map}
+
 The simplest SOAC is probably \texttt{map}.  It takes two arguments: a
 function and an array.  The function argument can be a function name,
 or an anonymous function using \texttt{fn} syntax.  The function is
@@ -604,15 +669,41 @@ Haskell:
 map (2-) [1,2,3] == [1,0,-1]
 \end{lstlisting}
 
-While \texttt{map} accepts only a single array argument, there is a
-variation called \texttt{zipWith}, that takes any nonzero number of
-array arguments, and requires a function with the same number of
-parameters.  For example, we can perform an element-wise sum of two
-arrays:
+In contrast to other languages, the \texttt{map} in Futhark takes any
+nonzero number of array arguments, and requires a function with the
+same number of parameters.  For example, we can perform an
+element-wise sum of two arrays:
 
 \begin{lstlisting}
-zipWith (+) [1,2,3] [4,5,6] == [5,7,9]
+map (+) [1,2,3] [4,5,6] == [5,7,9]
 \end{lstlisting}
+
+Be careful when writing \texttt{map} expressions where the function
+returns an array.  Futhark requires regular arrays, so a map with
+\texttt{iota} is unlikely to go well:
+
+\begin{lstlisting}
+map (fn n => iota n) ns
+\end{lstlisting}
+
+Unless the array \texttt{ns} consisted of identical values, the
+program would fail at runtime.
+
+We can use \texttt{map} and \texttt{iota} to duplicate many other
+language constructs.  For example, if we have two arrays
+\texttt{xs:[n]int} and \texttt{ys:[m]int}---that is, two integer
+arrays of sizes \texttt{n} and \texttt{m}---we can concatenate them
+using:
+
+\lstinputlisting[firstline=2]{src/concat_with_map.fut}
+
+However, it is not a good idea to write code like this, as it hinders
+the compiler from using high-level properties to do optimisation.
+Using \texttt{map}s over \texttt{iota}s with explicit indexing is
+usually only necessary when solving complicated irregular problems
+that cannot be represented directly.
+
+\subsection{Scan and Reduce}
 
 While \texttt{map} is an array transformer, the \texttt{reduce} SOAC
 is an array aggregator: it uses some function of type \texttt{t -> t
@@ -646,7 +737,7 @@ integers:
 
 \begin{lstlisting}
 fun dotProd (xs: []int) (ys: []int): int =
-  reduce (+) 0 (zipWith (*) xs ys)
+  reduce (+) 0 (map (*) xs ys)
 \end{lstlisting}
 
 A close cousin of \texttt{reduce} is \texttt{scan}, often called
@@ -678,6 +769,37 @@ While the idea behind \texttt{reduce} is probably familiar,
 for handling algorithms that do not seem parallel at first glance.
 Several examples are discussed in
 Chapter~\ref{chap:parallel-algorithms}.
+
+\subsection{Filtering}
+
+We have seen \texttt{map}, which permits us to change all the elements
+of an array.  We have seen \texttt{reduce}, which lets us collapse all
+the elements of an array.  But we still need something that lets us
+remove some, but not all, of the elements of an array.  This SOAC is
+\texttt{filter}, which behaves much like a filter in any other
+functional language:
+
+\begin{lstlisting}
+filter (<3) [1,5,2,3,4] == [1,2]
+\end{lstlisting}
+
+The use of \texttt{filter} is mostly straightforward, but there are
+some patterns that may appear subtle at first glance.  For example,
+how do we find the \textit{indices} of all nonzero entries in an array
+of integers?  Finding the values is simple enough:
+
+\begin{lstlisting}
+filter (fn x => x != 0) [0,5,2,0,1] ==
+  [5,2,1]
+\end{lstlisting}
+
+But what are the corresponding indices?  We can solve this using a
+combination of \texttt{zip}, \texttt{filter}, and \texttt{unzip}:
+
+\lstinputlisting[firstline=7]{src/indices_of_nonzero.fut}
+
+Be aware that \texttt{filter} is a somewhat expensive SOAC,
+corresponding roughly to a \texttt{scan} plus a \texttt{map}.
 
 \section{Sequential Loops}
 \label{sec:sequential-loops}
@@ -1026,7 +1148,7 @@ Yet to be written...
 
 Consider an implementation of dot product:
 
-\inplisting{src/dotprod.fut}
+\lstinputlisting[firstline=5]{src/dotprod.fut}
 
 We previously mentioned that, for small data sets, sequential
 execution is likely to be much faster than parallel execution.  But
@@ -1348,7 +1470,7 @@ second order array combinators are given as follows:
        | partition | rearrange | replicate | reshape
        | rotate | shape | split | transpose | unzip | write | zip
   $\id{soac}$ ::= map | reduce | reduceComm | scan | filter
-       | partition | zipWith
+       | partition
 \end{lstlisting}
 
 In the grammar for the Futhark language below, we have eluded both the
@@ -1411,10 +1533,9 @@ Figure~\ref{fig:primtypeschemes}
   \begin{eqnarray*}
 \id{soac} & : & \mathrm{TypeOf}(\id{soac}) \\
     \fop{filter} & : & \forall \alpha. (\alpha \rarr \mathtt{bool}) \rarr []\alpha \rarr []\alpha\\
-    \fop{map} & : & \forall \alpha\beta. (\alpha \rarr \beta) \rarr []\alpha \rarr []\beta\\
+    \fop{map} & : & \forall \alpha_1\cdots\alpha_n\beta. (\alpha_1\rarr\cdots\rarr\alpha_n \rarr \beta) \rarr []\alpha_1 \rarr\cdots\rarr []\alpha_n \rarr []\beta\\
     \fop{reduce} & : & \forall \alpha. (\alpha \rarr \alpha \rarr \alpha) \rarr \alpha \rarr []\alpha \rarr \alpha\\
     \fop{scan} & : & \forall \alpha. (\alpha \rarr \alpha \rarr \alpha) \rarr \alpha \rarr []\alpha \rarr []\alpha\\
-    \fop{zipWith} & : & \forall \alpha_1\cdots\alpha_n\beta. (\alpha_1\rarr\cdots\rarr\alpha_n \rarr \beta) \rarr []\alpha_1 \rarr\cdots\rarr []\alpha_n \rarr []\beta
   \end{eqnarray*}
   \caption{Type schemes for Futhark's second-order array combinators (SOACs). The relation $\mathrm{TypeOf}(\id{soac}) = \sigma$.}
   \label{fig:soactypeschemes}
@@ -1642,10 +1763,7 @@ first give the definition for $\Eval{\cdot}$:
   \Eval{\kw{(}e_1,\cdots,e_n\kw{)}} & = & \kw{(}\Eval{e_1},\cdots,\Eval{e_n}\kw{)} \\
   \Eval{e_1~\id{binop}_\tau~e_2} & = & \sem{\id{binop}_\tau}~\Eval{e_1}~\Eval{e_2} \\
   \Eval{\id{op}_\tau~e_1\cdots e_n} & = & \sem{\id{op}_\tau}~\Eval{e_1}~\cdots~\Eval{e_n} \\
-  \Eval{\fop{map}~F~e} & = & \Eval{\kw{[}e'[v_1/x],\cdots,e'[v_n/x]\kw{]}} \\
-    & & ~~~\mathrm{where}~\lambda x . e' = \extractF{F} \\
-    & & ~~~~~\mathrm{and}~ \kw{[}v_1,\cdots,v_n\kw{]} = \Eval{e} \\
-  \Eval{\fop{zipWith}~F~e_1\cdots e_m} & = & \Eval{\kw{[}e'[v_1^1/x_1\cdots v_1^m/x_m],\cdots,e'[v_n^1/x_n\cdots v_n^m/x_m]\kw{]}} \\
+  \Eval{\fop{map}~F~e_1\cdots e_m} & = & \Eval{\kw{[}e'[v_1^1/x_1\cdots v_1^m/x_m],\cdots,e'[v_n^1/x_n\cdots v_n^m/x_m]\kw{]}} \\
     & & ~~~\mathrm{where}~\lambda x_1\cdots x_m . e' = \extractF{F} \\
     & & ~~~~~\mathrm{and}~ \kw{[}v_1^i,\cdots,v_n^i\kw{]} = \Eval{e_i} ~~~ i=[1..m]
 \end{eqnarray*}
@@ -1677,14 +1795,15 @@ for determining the total \emph{work} done by a program, in terms of
 operations done by the big-step evalutation semantics, and the
 \emph{span} of the program execution, in terms of the maximum depth of
 the computation, assuming an infinite amount of parallelism in the
-SOAC computations. The functions for work and span, denoted by $W :
-\mathrm{Exp} \rightarrow \N$ and $S : \mathrm{Exp} \rightarrow \N$ are
-given in Figure~\ref{fig:work} and Figure~\ref{fig:span},
-respectively. The functions are defined independently, although they
-make use of the evaluation function $\Eval{\cdot}$. We have given the
-definitions for the essential SOAC functions, namely \fop{map} and
-\fop{reduce}. The definitions for the remaining SOACs, such as
-\fop{zipWith}, follow the same lines as the definitions for \fop{map} and \fop{reduce}.
+SOAC computations. The functions for work and span, denoted by
+$W : \mathrm{Exp} \rightarrow \N$ and
+$S : \mathrm{Exp} \rightarrow \N$ are given in Figure~\ref{fig:work}
+and Figure~\ref{fig:span}, respectively. The functions are defined
+independently, although they make use of the evaluation function
+$\Eval{\cdot}$. We have given the definitions for the essential SOAC
+functions, namely \fop{map} and \fop{reduce}. The definitions for the
+remaining SOACs follow the same lines as the definitions for \fop{map}
+and \fop{reduce}.
 
 \begin{figure}
 \begin{lstlisting}[mathescape=true]
@@ -1774,7 +1893,7 @@ and the neutral element to be \kw{0}. The function first pads the
 argument vector \kw{xs} with neutral elements to ensure that its size
 is a power of two. It then implements a sequential loop with the
 contraction step as its loop body, implemented by a
-parallel $\fop{zipWith}$ over an appropriately splitted input vector.
+parallel $\fop{map}$ over an appropriately splitted input vector.
 
 The auxiliary function for padding the input vector is implemented by the following code:
 

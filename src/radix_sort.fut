@@ -27,11 +27,11 @@ fun radix_sort_step(xs: [n]u32, digit_n: i32): [n]u32 =
                               & 1u32)) xs
   let bits_inv   = map (fn (b: i32): i32 => 1 - b) bits
   let ps0        = scan (+) 0 (bits_inv)
-  let ps0_clean  = zipWith (*) bits_inv ps0
+  let ps0_clean  = map (*) bits_inv ps0
   let ps1        = scan (+) 0 bits
   let ps0_offset = reduce (+) 0 (bits_inv)
   let ps1_clean  = map (+ps0_offset) ps1
-  let ps1_clean' = zipWith (*) bits ps1_clean
-  let ps         = zipWith (+) ps0_clean ps1_clean'
+  let ps1_clean' = map (*) bits ps1_clean
+  let ps         = map (+) ps0_clean ps1_clean'
   let ps_actual  = map (fn (p: i32): i32  => p - 1) ps
   in write ps_actual xs (copy xs)

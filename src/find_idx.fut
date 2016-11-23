@@ -8,11 +8,11 @@ fun min (a:i32) (b:i32) : i32 = if a < b then a else b
 
 -- Return the first index i into xs for which xs[i] == e
 fun find_idx_first (e:i32) (xs:[n]i32) : i32 =
-  let es = zipWith (fn x i => if x==e then i else n) xs (iota n)
+  let es = map (fn x i => if x==e then i else n) xs (iota n)
   let res = reduce min n es
   in if res == n then -1 else res
 
 -- Return the last index i into xs for which xs[i] == e
 fun find_idx_last (e:i32) (xs:[n]i32) : i32 =
-  let es = zipWith (fn x i => if x==e then i else -1) xs (iota n)
+  let es = map (fn x i => if x==e then i else -1) xs (iota n)
   in reduce max (-1) es

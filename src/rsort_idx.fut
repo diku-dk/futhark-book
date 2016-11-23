@@ -13,7 +13,7 @@
 -- output @ data/radix_sort_100.out
 
 fun eq_vec (v1: [n]i32) (v2: [n]i32) : bool =
-  reduce (&&) true (zipWith (==) v1 v2)
+  reduce (&&) true (map (==) v1 v2)
 
 fun main() : []bool =
   let xs = map (fn i => u32(i)) ([83,1,4,99,33,0,6,5])
@@ -31,11 +31,11 @@ fun rsort_asc(xs: [n]u32) : ([n]u32,[n]i32) =
 fun rs_step_asc((xs:[n]u32,is:[n]i32),bitn:i32) : ([n]u32,[n]i32) =
   let bits1 = map (fn x => i32((x >> u32(bitn)) & 1u32)) xs
   let bits0 = map (1-) bits1
-  let idxs0 = zipWith (*) bits0 (scan (+) 0 bits0)
+  let idxs0 = map (*) bits0 (scan (+) 0 bits0)
   let idxs1 = scan (+) 0 bits1
   let offs  = reduce (+) 0 bits0    -- store idxs1 last
-  let idxs1 = zipWith (*) bits1 (map (+offs) idxs1)
-  let idxs  = map (-1) (zipWith (+) idxs0 idxs1)
+  let idxs1 = map (*) bits1 (map (+offs) idxs1)
+  let idxs  = map (-1) (map (+) idxs0 idxs1)
   in (write idxs xs (copy xs),
       write idxs is (copy is))
 
@@ -49,11 +49,11 @@ fun rsort_desc(xs: [n]u32) : ([n]u32,[n]i32) =
 fun rs_step_desc((xs:[n]u32,is:[n]i32),bitn:i32) : ([n]u32,[n]i32) =
   let bits1 = map (fn x => i32((x >> u32(bitn)) & 1u32)) xs
   let bits0 = map (1-) bits1
-  let idxs1 = zipWith (*) bits1 (scan (+) 0 bits1)
+  let idxs1 = map (*) bits1 (scan (+) 0 bits1)
   let idxs0 = scan (+) 0 bits0
   let offs  = reduce (+) 0 bits1    -- store idxs0 last
-  let idxs0 = zipWith (*) bits0 (map (+offs) idxs0)
-  let idxs  = map (-1) (zipWith (+) idxs1 idxs0)
+  let idxs0 = map (*) bits0 (map (+offs) idxs0)
+  let idxs  = map (-1) (map (+) idxs1 idxs0)
   in (write idxs xs (copy xs),
       write idxs is (copy is))
 
