@@ -3,7 +3,7 @@
 fun primes (n:i32) : []i32 =
   if n <= 3 then [2,3]
   else let sqrtn = i32(sqrt32(f32(n)))
-       let first = primes sqrtn
+       let first = primes (sqrtn+1)
        let is = map (+sqrtn) (iota(n-sqrtn))
        let fs = map (fn i =>
                        let xs = map (fn p => if i%p == 0 then 1 else 0) first

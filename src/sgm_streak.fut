@@ -27,17 +27,15 @@ fun max (a:i32) (b:i32) : i32 = if a > b then a else b
 -- xs   : [1, 5, 3, 4, 2, 6, 7, 8]
 -- ys   : [5, 3, 4, 2, 6, 7, 8, 1]
 -- is   : [1, 0, 1, 0, 1, 1, 1]
--- ss   : [1, 1, 2, 2, 3, 4, 5]
--- ss1  : [0, 1, 0, 2, 0, 0, 0]
--- ss2  : [0, 1, 1, 2, 2, 2, 2]
--- ss3  : [1, 0, 1, 0, 1, 2, 3]
+-- fs   : [0, 1, 0, 1, 0, 0, 0]
+-- ss   : [1, 0, 1, 0, 1, 2, 3]
 -- res  : 3
 
 -- Longest streak of increasing numbers
 fun sgm_streak (xs: [n]i32) : i32  =
   let ys = rotate 1 xs
   let is = (zipWith (fn x y => if x < y then 1 else 0) xs ys)[0:n-1]
-  let isn = map (==0) is
-  let ss3 = sgm_scan_add is isn
-  let res = reduce max 0 ss3
+  let fs = map (==0) is
+  let ss = sgm_scan_add is fs
+  let res = reduce max 0 ss
   in res

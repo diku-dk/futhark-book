@@ -24,6 +24,7 @@
 \AfterEndEnvironment{lstlisting}{\end{minipage}\par}
 \newenvironment{wrap}{\vspace{\topskip}\par\noindent\begin{minipage}{\linewidth}}{\end{minipage}\par}
 \newcommand{\inplisting}[1]{\begin{wrap}\lstinputlisting{#1}\end{wrap}}
+\newcommand{\pp}{+\!\!\!+}
 
 \title{\bf Parallel Programming in Futhark}
 \author{Troels Henriksen, Martin Elsman, and Cosmin E. Oancea \\[2mm] HIPERFIT \\[2mm] Department of Computer Science \\ University of Copenhagen (DIKU)}
@@ -1799,7 +1800,7 @@ Each loop iteration in \kw{red} has span $O(1)$. Because the loop is
 iterated at-most $\log(2\,\kw{n})$ times, we have (where $\kw{n} =
 \size\,\kw{v}$)
 \begin{eqnarray*}
-  W(\kw{red v}) & = & O(\kw{n}) + O(\kw{n/2}) + O(\kw{n/4}) + \cdots + O(\kw{n}) ~~=~~ O(\kw{n}) \\
+  W(\kw{red v}) & = & O(\kw{n}) + O(\kw{n/2}) + O(\kw{n/4}) + \cdots + O(1) ~~=~~ O(\kw{n}) \\
   S(\kw{red v}) & = & O(\log\,\kw{n})
 \end{eqnarray*}
 
@@ -1837,10 +1838,41 @@ order is shown in Figure~\ref{fig:rsort}.
 \end{figure}
 
 The function \kw{rsort\_step} implements the contraction step that
-takes care of moving all elements with the \kw{bitn} set to the end
-of the array. The main function \kw{rsort} takes care of iterating the
+takes care of moving all elements with the \kw{bitn} set to the end of
+the array. The main function \kw{rsort} takes care of iterating the
 contraction step until the array is sorted (i.e., when the contraction
-step has been executed for all bits.)
+step has been executed for all bits.) To appreciate the purpose of
+each data-parallel operation in the \kw{rsort\_step} function,
+Figure~\ref{fig:rsortex} illustrates how \kw{rsort\_step} takes care
+of moving elements with a particular bit set (bit 2) to the end of the
+array. The example assumes the current array (\kw{xs}) contains the
+array \kw{[2,0,6,4,2,1,5,9]}. Notice that the last three values all
+have their 0-bit set whereas the first five values have not.
+
+\begin{figure}
+\vspace*{3mm}
+\begin{tabular}{lc*{8}{p{7mm}}}
+Variable & : & Array \\ \hline
+\kw{xs}                          & : & 2$^\dagger$ & 0 & 6$^\dagger$ & 4 & 2$^\dagger$ & 1 & 5 & 9 \\
+\kw{bits1}                       & : & 1 & 0 & 1 & 0 & 1 & 0 & 0 & 0 \\
+\kw{bits0}                       & : & 0 & 1 & 0 & 1 & 0 & 1 & 1 & 1 \\
+\fop{scan} \kw{(+)\,0\,bits0}    & : & 0 & 1 & 1 & 2 & 2 & 3 & 4 & 5 \\
+\kw{idxs0}                       & : & 0 & 1 & 0 & 2 & 0 & 3 & 4 & 5 \\
+\kw{idxs1}                       & : & 1 & 1 & 2 & 2 & 3 & 3 & 3 & 3 \\
+\kw{idxs1'}                      & : & 6 & 6 & 7 & 7 & 8 & 8 & 8 & 8 \\
+\kw{idxs1''}                     & : & 6 & 0 & 7 & 0 & 8 & 0 & 0 & 0 \\
+\kw{idxs}                        & : & 6 & 1 & 7 & 2 & 8 & 3 & 4 & 5 \\
+\fop{map} \kw{(-1)} \kw{idxs}    & : & 5 & 0 & 6 & 1 & 7 & 2 & 3 & 4 \\ \hline
+\kw{xs'}                         & : & 0 & 4 & 1 & 5 & 9 & 2$^\dagger$ & 6$^\dagger$ & 2$^\dagger$
+\end{tabular}
+\vspace*{3mm}
+\caption{Example execution of a second radix sort step. The step moves
+  elements with their second bit set (indicated with $\dagger$) to the
+  end of the array and keeps the relative order of individual elements
+  in the two groups (those with the second bit set and those
+  without).}
+\label{fig:rsortex}
+\end{figure}
 
 By a straightforward analysis, we can argue that $W(\kw{rsort}~\kw{v})
 = O(\kw{n})$, where $n = \size\,\kw{v}$; each of the operations in
@@ -1885,7 +1917,7 @@ implementations.
 \label{sec:sgmscan}
 
 The segmented scan operator is quite essential as we shall see
-demonstrated in many of algorithms explained later. The segmented scan
+demonstrated in many of the algorithms explained later. The segmented scan
 operator can be implemented with a simple scan using an associative
 function that operates on pairs of values. Here is the definition of
 the segmented scan operation:
@@ -1897,10 +1929,11 @@ the segmented scan operation:
 
 
 \section{Parallel Utility Functions}
-For use by other algorithms a set of utility functions for
+For use by other algorithms, a set of utility functions for
 manipulating and managing arrays is an important part of the tool
 box. We present a number of utility functions here, ranging from
-finding elements in an array to .. memo.
+finding elements in an array to finding the maximum element and its
+index in an array.
 
 \subsection{Finding the Index of an Element in an Array}
 We device two different functions for finding an index in an array for
@@ -1930,6 +1963,22 @@ fun max (a:i32) (b:i32) : i32 = if a > b then a else b
 fun min (a:i32) (b:i32) : i32 = if a < b then a else b
 \end{lstlisting}
 
+\subsection{Finding the Largest Element and its Index in an Array}
+
+Futhark allows for reduction operators to take tuples as
+arguments. This feature is exploited in the following function, which
+implements a homomorphism for finding the largest element and its
+index in an array:
+
+\lstinputlisting[firstline=4]{src/maxidx.fut}
+
+\noindent The function \kw{maxidx} is a \emph{homomorphism} \cite{BirdListTh}: For any
+$x$ and $y$, there exists and operator $\oplus$ such that
+
+$$\kw{maxidx}(x \pp\, y) = \kw{maxidx}(x) \oplus \kw{maxidx}(y)$$
+
+\noindent
+The operator $\oplus = \kw{mx}$.
 
 \section{Radix Sort}
 A simple radix sort algorithm was presented already in
@@ -1994,16 +2043,33 @@ negation of this array over the unit-array to create the \kw{ss3} vector
 directly.
 
 \begin{wrap}
-\lstinputlisting[firstline=36]{src/sgm_streak.fut}
+\lstinputlisting[firstline=34]{src/sgm_streak.fut}
 \end{wrap}
 
+\noindent
+Here is a derivation of how the segmented-scan based algorithm works:
 
+\vspace*{3mm}
+\begin{tabular}{lc*{8}{p{8mm}}}
+Variable & : & Value \\ \hline
+\kw{xs}   & : & 1 & 5 & 3 & 4 & 2 & 6 & 7 & 8 \\
+\kw{ys}   & : & 5 & 3 & 4 & 2 & 6 & 7 & 8 & 1 \\
+\kw{is}   & : & 1 & 0 & 1 & 0 & 1 & 1 & 1 \\
+\kw{fs}   & : & 0 & 1 & 0 & 1 & 0 & 0 & 0 \\
+\kw{ss}   & : & 1 & 0 & 1 & 0 & 1 & 2 & 3 \\
+\kw{res}  & : & 3
+\end{tabular}
+\vspace*{3mm}
+
+\noindent
+The morale here is that the segmented scan operation provides us with a
+great abstraction. However, for now, we have to get by with Futhark not
+providing us with proper polymorphism.
 
 \begin{enumerate}
 \item pseudo random numbers and sobol
 \item trees
 \item graphs
-\item longest streak
 \item segmented replication
 \item histograms
 \item parenthesis matching

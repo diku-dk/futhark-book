@@ -21,15 +21,15 @@ fun rsort(xs: [n]u32): [n]u32 =
   in xs
 
 -- The rsort_step contraction function takes care of moving
--- all elements with bit_n set to the end of the array (and
+-- all elements with bitn set to the end of the array (and
 -- otherwise preserve the order of elements)
-fun rsort_step(xs: [n]u32, bit_n: i32): [n]u32 =
-  let bits1 = map (fn x => i32((x >> u32(bit_n)) & 1u32)) xs
-  let bits0 = map (fn b => 1 - b) bits1
+fun rsort_step(xs: [n]u32, bitn: i32): [n]u32 =
+  let bits1 = map (fn x => i32((x >> u32(bitn)) & 1u32)) xs
+  let bits0 = map (1-) bits1
   let idxs0 = zipWith (*) bits0 (scan (+) 0 bits0)
   let idxs1 = scan (+) 0 bits1
   let offs  = reduce (+) 0 bits0
   let idxs1 = zipWith (*) bits1 (map (+offs) idxs1)
   let idxs  = zipWith (+) idxs0 idxs1
-  let idxs  = map (fn p => p - 1) idxs
+  let idxs  = map (-1) idxs
   in write idxs xs (copy xs)

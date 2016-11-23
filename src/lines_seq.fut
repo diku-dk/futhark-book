@@ -1,25 +1,4 @@
 -- Utilities
-fun sgmScanSum (vals:[n]i32) (flags:[n]bool) : [n]i32 =
-  let pairs = scan ( fn (v1,f1) (v2,f2) =>
-                       let f = f1 || f2
-                       let v = if f2 then v2 else v1+v2
-                       in (v,f) ) (0,False) (zip vals flags)
-  let (res,_) = unzip pairs
-  in res
-
-fun replIdx (reps:[n]i32) : []i32 =
-  let tmp = scan (+) 0 reps
-  let sers = map (fn i => if i == 0 then 0 else tmp[i-1]) (iota(n))
-  let m = tmp[n-1]
-  let tmp2 = write sers (iota(n)) (replicate m 0)
-  let flags = map (>0) tmp2
-  let res = sgmScanSum tmp2 flags
-  in res
-
-fun sgmIota (flags:[n]bool) : [n]i32 =
-  let iotas = sgmScanSum (replicate n 1) flags
-  in map (-1) iotas
-
 fun max (x:i32) (y:i32) : i32 = if x > y then x else y
 
 -- Drawing lines
