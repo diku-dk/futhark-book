@@ -1,38 +1,53 @@
 -- Utilities
 fun max (x:i32) (y:i32) : i32 = if x > y then x else y
 
--- Drawing lines
-type point = (i32,i32)
-type line = (point,point)
-type points = []point
-
 fun main () : [][]i32 =
   let height:i32 = 30
   let width:i32 = 70
   let grid : *[][]i32 = replicate height (replicate width 0)
-  let lines = [((58,20),(2,3)),((27,3),(2,28)),((5,20),(20,20)),((6,10),(6,25)),((26,25),(26,2))]
-  in drawlines_seq grid lines
+  let lines = [((58,20),(2,3)),((27,3),(2,28)),((5,20),(20,20)),((4,10),(6,25)),((26,25),(26,2))]
+  in drawlines grid lines
+
+-- Finding points on a line
+type point = (i32,i32)
+type line = (point,point)
+type points = []point
+
+fun compare (v1:i32) (v2:i32) : i32 =
+  if v2 > v1 then 1 else if v1 > v2 then -1 else 0
+
+-- Compute a slope
+fun sl ((x1,y1):point) ((x2,y2):point) : f32 =
+  if x2==x1 then if y2>y1 then f32(1) else f32(-1)
+		 else f32(y2-y1) / abs(f32(x2-x1))
+
+fun linepoints ((x1,y1):point, (x2,y2):point) : points =
+  let dx = abs(x1-x2)
+  let dy = abs(y1-y2)
+  let len = max dx dy
+  let xmax = dx > dy
+  let dir = if xmax then compare x1 x2
+	    else compare y1 y2
+  let slop =
+    if xmax then sl (x1,y1) (x2,y2)
+    else sl (y1,x1) (y2,x2)
+  in map (fn i =>
+            if xmax then (x1+i*dir,
+			  y1+i32(slop*f32(i)))
+	    else (x1+i32(slop*f32(i)),
+		  y1+i*dir))
+         (iota len)
+
+-- Write to grid
+fun update (grid:*[h][w]i32)(xs:[n]i32)(ys:[n]i32):*[h][w]i32 =
+  let is = map (fn x y => w*y+x) xs ys
+  let flatgrid = reshape (h*w) grid
+  let ones = map (fn _ => 1) is
+  in reshape (h,w) (write is ones flatgrid)
 
 -- Sequential algorithm for drawing multiple lines
-fun linepoints (p1:point, p2:point) : points =
-    let (x1,y1) = p1
-    let (x2,y2) = p2
-    let len = max (abs(x1-x2)) (abs(y1-y2))
-    let dirx = if x2 > x1 then 1 else if x1 > x2 then -1 else 0
-    let slop = if x2==x1 then
-                  if y2 > y1 then f32(1) else f32(-1)
-	       else f32(y2-y1) / abs(f32(x2-x1))
-    in map (fn i =>
-              let x = x1+i*dirx
-	      let y = y1+i32(slop*f32(i))
-	      in (x,y))
-       (iota(len))
-
-fun drawlines_seq (grid: *[h][w]i32) (lines:[n]line) : [h][w]i32 =
-  let flatgrid = reshape (h*w) grid
-  loop (flatgrid) = for i < n do
-    let ps = linepoints (lines[i])   -- find points for line i
-    let is = map (fn (x,y) => y*w+x) ps
-    let ones = map (fn _ => 1) is
-    in (write is ones flatgrid)
-  in reshape (h,w) flatgrid
+fun drawlines (grid: *[h][w]i32) (lines:[n]line) : [h][w]i32 =
+  loop (grid) = for i < n do -- find points for line i
+    let (xs,ys) = unzip (linepoints (lines[i]))
+    in update grid xs ys
+  in grid
