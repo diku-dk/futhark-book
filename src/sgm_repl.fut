@@ -1,0 +1,22 @@
+-- Segmented scan with integer addition
+fun sgm_scan_add (vals:[n]i32) (flags:[n]bool) : [n]i32 =
+  let pairs = scan ( fn (v1,f1) (v2,f2) =>
+                       let f = f1 || f2
+                       let v = if f2 then v2 else v1+v2
+                       in (v,f) ) (0,false) (zip vals flags)
+  let (res,_) = unzip pairs
+  in res
+
+fun main () : []i32 =
+  sgm_repl ([2,1,0,3,0]) ([5,6,9,8,4])  -- [5,5,6,8,8,8]
+
+fun repl_idx (reps:[n]i32) : []i32 =
+  let s1 = scan (+) 0 reps
+  let s2 = map (fn i => if i==0 then 0 else s1[i-1]) (iota n)
+  let tmp = write s2 (iota n) (replicate (s1[n-1]) 0)
+  let flags = map (>0) tmp
+  in sgm_scan_add tmp flags
+
+fun sgm_repl (reps:[n]i32) (vs:[n]i32) : []i32 =
+  let idxs = repl_idx reps
+  in map (fn i => vs[i]) idxs

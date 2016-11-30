@@ -28,7 +28,7 @@
 
 \title{\bf Parallel Programming in Futhark}
 \author{Troels Henriksen, Martin Elsman, and Cosmin E. Oancea \\[2mm] HIPERFIT \\[2mm] Department of Computer Science \\ University of Copenhagen (DIKU)}
-\date{\today \\[5mm] Edition \\ 0.5}
+\date{\today \\[5mm] Edition \\ 0.6}
 
 \begin{document}
 \frontmatter
@@ -2213,14 +2213,55 @@ The morale here is that the segmented scan operation provides us with a
 great abstraction. However, for now, we have to get by with Futhark not
 providing us with proper polymorphism.
 
+\section{Segmented Replication}
+We shall now investigate how to replicate elements in a
+one-dimensional data array according to natural numbers appearing in a
+\emph{replication} array of the same length. We shall call such an
+operation a \emph{segmented replicate} and we shall provide the
+replication array as the first argument and the data vector as the
+second argument. If we call the operation \kw{sgm\_repl}, a call
+\kw{sgm\_repl ([2,1,0,3,0]) ([5,6,9,8,4])} should result in the array
+\kw{[5,5,6,8,8,8]}.
+
+Here is code that implements the function \kw{sgm\_repl} and a more
+general function \kw{sgm\_idx}, which returns an index array providing
+replicating indexes into any argument array of the same length as the
+argument array.
+
+\lstinputlisting[firstline=13]{src/sgm_repl.fut}
+
+An example evaluation of a call to the \kw{repl\_idx} function is
+provided in Figure~\ref{fig:replidxex}. Notice that in order to use
+this Futhark code with \kw{futhark-opencl}, we need to prefix the
+array indexing in line~3, line~4, and line~10 with the \fw{unsafe}
+keyword.
+
+\begin{figure}
+\vspace*{2mm}
+\begin{tabular}{lc*{8}{p{4mm}}}
+Args/Result                       & : & Array \\ \hline
+\kw{reps}                         & : & 2 & 3 & 1 & 1 \\
+\kw{s1}                           & : & 2 & 5 & 6 & 7 \\
+\kw{s2}                           & : & 0 & 2 & 5 & 6 \\
+\fop{replicate}\kw{ (s1[n-1]) 0}  & : & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+\kw{tmp}                          & : & 0 & 0 & 1 & 0 & 0 & 2 & 3 \\
+\kw{flags}                        & : & 0 & 0 & 1 & 0 & 0 & 1 & 1 \\
+\kw{sgm\_scan\_add tmp flags}     & : & 0 & 0 & 1 & 1 & 1 & 2 & 3
+\end{tabular}
+\vspace{3mm}
+\caption{Example evaluation of a call to \kw{repl\_idx}.}
+\label{fig:replidxex}
+\end{figure}
+
+
+\section{Line Drawing}
+
 \begin{enumerate}
 \item pseudo random numbers and sobol
 \item trees
 \item graphs
-\item segmented replication
 \item histograms
 \item parenthesis matching
-\item line drawing
 \end{enumerate}
 
 %\chapter{Bigger Applications}
