@@ -640,20 +640,19 @@ out of efficiency concerns.\footnote{This is enabled via storing all
 
 The simplest SOAC is probably \texttt{map}.  It takes two arguments: a
 function and an array.  The function argument can be a function name,
-or an anonymous function using \texttt{fn} syntax.  The function is
+or an anonymous function.  The function is
 called for every element of the input array, and an array of the result is
 returned.  For example:
 
 \begin{lstlisting}
-map (fn x => x + 2) [1,2,3] == [3,4,5]
+map (\x -> x + 2) [1,2,3] == [3,4,5]
 \end{lstlisting}
 
-Functions defined using \texttt{fn} syntax need not define their
-parameter- or return types, but you are free to do so to increase
-readability:
+Anonymous functions need not define their parameter- or return types,
+but you are free to do so to increase readability:
 
 \begin{lstlisting}
-map (fn (x:int): int => x + 2) [1,2,3]
+map (\(x:int): int -> x + 2) [1,2,3]
 \end{lstlisting}
 
 The functional argument can also be an operator, which must be
@@ -684,7 +683,7 @@ returns an array.  Futhark requires regular arrays, so a map with
 \texttt{iota} is unlikely to go well:
 
 \begin{lstlisting}
-map (fn n => iota n) ns
+map (\n -> iota n) ns
 \end{lstlisting}
 
 Unless the array \texttt{ns} consisted of identical values, the
@@ -790,7 +789,7 @@ how do we find the \textit{indices} of all nonzero entries in an array
 of integers?  Finding the values is simple enough:
 
 \begin{lstlisting}
-filter (fn x => x != 0) [0,5,2,0,1] ==
+filter (\x -> x != 0) [0,5,2,0,1] ==
   [5,2,1]
 \end{lstlisting}
 
@@ -1364,7 +1363,7 @@ For example, consider this program:
 
 \begin{lstlisting}
 fun main(n: int): [][]int =
-  map (fn i =>
+  map (\i ->
          let a = iota i
          let b = iota (n-i)
          in concat a b)
@@ -1388,7 +1387,7 @@ workaround.  We could rewrite the program as:
 \begin{lstlisting}
 fun main(n: int): [][]int =
   let big_iota = iota n
-  in map (fn i =>
+  in map (\i ->
             let res = iota n
             let res[i:n] = big_iota[0:n-i]
             in res)
@@ -1435,14 +1434,14 @@ multiply operation, and, finally, how to combine the work. The way to
 determine the work for a \fop{map} SOAC instance is to multiply the
 size of the argument array with the work of body of the argument
 function. Thus, we have
-$$ W(\fop{map}~\kw{(}\fw{fn}~\kw{j => i * j) (}\fop{iota}~\kw{$n$)}) = n+1 $$
+$$ W(\fop{map}~\kw{(}\fw{fn}~\kw{j -> i * j) (}\fop{iota}~\kw{$n$)}) = n+1 $$
 Applying a similar agument to the outer map, we get
-$$W(\fop{map}~\kw{(}\fw{fn}~\kw{i => $\cdots$) (}\fop{iota}~\kw{$n$)}) = (n+1)^2 $$
+$$W(\fop{map}~\kw{(}\fw{fn}~\kw{i -> $\cdots$) (}\fop{iota}~\kw{$n$)}) = (n+1)^2 $$
 
 \noindent
 Most often we are interested in finding the asymptotical complexity of
 the algorithm we are analyzing, in which case we will simply write
-$$W(\fop{map}~\kw{(}\fw{fn}~\kw{i => $\cdots$) (}\fop{iota}~\kw{$n$)}) = O(n^2) $$
+$$W(\fop{map}~\kw{(}\fw{fn}~\kw{i -> $\cdots$) (}\fop{iota}~\kw{$n$)}) = O(n^2) $$
 
 In a similar way we can derive that the span of a call
 $\kw{multable}~n$, written $S(\kw{multable}~n)$, is $O(1)$.
@@ -1482,7 +1481,7 @@ pattern matching and we do not, in this section, consider uniqueness types.
 \begin{lstlisting}[mathescape=true]
   $p$ ::= $x$  |  ($x_1$,...,$x_n$)
   $\id{ps}$ ::= $p_1 \cdots p_n$
-  $F$ ::= fn $\id{ps}$ => $e$  |  $e$ $\id{binop}$  |  $\id{binop}$ $e$
+  $F$ ::= \backslash $\id{ps}$ -> $e$  |  $e$ $\id{binop}$  |  $\id{binop}$ $e$
   $P$ ::= fun $f$ $\id{ps}$ = $e$  |  $P_1$ $P_2$  |  val $p$ = $e$
   $v$ ::= true  |  false  |  $n$  |  $r$  |  [$v_1$,...,$v_n$]  |  ($v_1$,...,$v_n$)
   $e$ ::= $x$  |  $v$  |  let $\id{ps}$ = $e$ in $e'$  |  $e$[$e'$]  |  $e$[$e'$:$e''$]
@@ -1661,7 +1660,7 @@ type environment $\Gamma'$.''
 
 \onepart{
   \fraccc{\Gamma,x_1:\tau_1~\cdots~x_n:\tau_n \vd e : \tau}{
-    \Gamma \vd \kw{fn} ~x_1:\tau_1~\cdots~x_n:\tau_n ~ \kw{=>} ~e : \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau
+    \Gamma \vd \kw{fn} ~x_1:\tau_1~\cdots~x_n:\tau_n ~ \kw{->} ~e : \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau
   }
 }
 
@@ -1771,7 +1770,7 @@ first give the definition for $\Eval{\cdot}$:
 
 Given a SOAC function parameter $F$, we define the utility \emph{extraction function}, $\extractF{F}$, as follows:
 \begin{eqnarray*}
-  \extractF{\fw{fn}~x_1\cdots x_n~\kw{=>}~ e} & = & \lambda x_1 \cdots x_n . e \\
+  \extractF{\fw{fn}~x_1\cdots x_n~\kw{->}~ e} & = & \lambda x_1 \cdots x_n . e \\
   \extractF{\id{binop}~e} & = & \lambda x . x~\id{binop}~v \\
     & & ~~~\mathrm{where}~v = \Eval{e} \\
   \extractF{e~\id{binop}} & = & \lambda x . v~\id{binop}~x \\
