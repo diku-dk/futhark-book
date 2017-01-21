@@ -14,7 +14,7 @@ fun slo ((x1,y1):point) ((x2,y2):point) : f32 =
                  else f32(y2-y1) / abs(f32(x2-x1))
 
 fun linepoints ((x1,y1):point, (x2,y2):point) : points =
-  let len = max (abs(x2-x1)) (abs(y2-y1))
+  let len = 1 + max (abs(x2-x1)) (abs(y2-y1))
   let xmax = abs(x2-x1) > abs(y2-y1)
   let (dir,slop) =
     if xmax then (compare x1 x2, slo (x1,y1) (x2,y2))

@@ -46,7 +46,7 @@ fun upd_grid (grid:*[h][w]i32)(xs:[n]i32)(ys:[n]i32):[h][w]i32 =
 -- Parallel flattened algorithm for drawing multiple lines
 fun drawlines (grid:*[h][w]i32) (lines:[n]line) :[h][w]i32 =
   let lens = map (fn ((x1,y1),(x2,y2)) =>
-                   max (abs(x1-x2)) (abs(y1-y2))) lines
+                   1 + max (abs(x1-x2)) (abs(y1-y2))) lines
   let idxs = repl_idx lens
   let iotan = iota n
   let nums = map (fn i => iotan[i]) idxs
