@@ -373,10 +373,9 @@ values are classified by their \textit{type}.  The primitive types in
 Futhark are the signed integer types \texttt{i8}, \texttt{i16},
 \texttt{i32}, \texttt{i64}, the unsigned integer types \texttt{u8},
 \texttt{u16}, \texttt{u32}, \texttt{u64}, the floating-point types
-\texttt{f32}, \texttt{f64}, as well as \texttt{bool}.  Furthermore,
-\texttt{int} is an alias for \texttt{i32}.  An \texttt{f32} is always
-a single-precision float and a \texttt{f64} is a double-precision
-float.
+\texttt{f32}, \texttt{f64}, as well as \texttt{bool}.  An \texttt{f32}
+is always a single-precision float and a \texttt{f64} is a
+double-precision float.
 
 Numeric literals can be suffixed with their intended type.  For
 example \texttt{42i8} is of type \texttt{i8}, and \texttt{1337e2f64}
@@ -430,11 +429,10 @@ complete detail.  See the reference manual at
 \url{http://futhark.readthedocs.io} for a comprehensive treatment.
 
 Function calls are written using simple juxtaposition.  For example,
-to apply the predefined \texttt{cos64} function (cosine for
-\texttt{f64} values) to a constant argument, we write:
+to apply a function \texttt{f} to a constant argument, we write:
 
 \begin{lstlisting}
-cos64 1.0
+f 1.0
 \end{lstlisting}
 
 \noindent
