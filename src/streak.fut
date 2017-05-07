@@ -7,13 +7,7 @@
 -- streak [9, 8, 7, 6, 5, 4] == 0
 -- streak [1, 5, 3, 4, 2, 6, 7, 8] == 3
 
-fun main() : []bool =
-  [streak ([1, 2, 3, 4, 5, 6, 7, 8, 9]) == 8,
-   streak ([1]) == 0,
-   streak ([9, 8, 7, 6, 5, 4]) == 0,
-   streak ([1, 5, 3, 4, 2, 6, 7, 8]) == 3]
-
-fun max (a:i32) (b:i32) : i32 = if a > b then a else b
+let max (a:i32) (b:i32) : i32 = if a > b then a else b
 
 -- xs   : [1, 5, 3, 4, 2, 6, 7, 8]
 -- ys   : [5, 3, 4, 2, 6, 7, 8, 1]
@@ -25,16 +19,22 @@ fun max (a:i32) (b:i32) : i32 = if a > b then a else b
 -- res  : 3
 
 -- Longest streak of increasing numbers
-fun streak (xs: [n]i32) : i32  =
+let streak [n] (xs: [n]i32) : i32  =
   -- find increments
   let ys = rotate 1 xs
-  let is = (map (fn x y => if x < y then 1 else 0) xs ys)[0:n-1]
+  let is = (map (\x y -> if x < y then 1 else 0) xs ys)[0:n-1]
   -- scan increments
   let ss = scan (+) 0 is
   -- nullify where there is no increment
-  let ss1 = map (fn s i => s*(1-i)) ss is
+  let ss1 = map (\s i -> s*(1-i)) ss is
   let ss2 = scan max 0 ss1
   -- subtract from increment scan
   let ss3 = map (-) ss ss2
   let res = reduce max 0 ss3
   in res
+
+let main() : []bool =
+  [streak ([1, 2, 3, 4, 5, 6, 7, 8, 9]) == 8,
+   streak ([1]) == 0,
+   streak ([9, 8, 7, 6, 5, 4]) == 0,
+   streak ([1, 5, 3, 4, 2, 6, 7, 8]) == 3]

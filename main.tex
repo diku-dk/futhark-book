@@ -29,7 +29,7 @@
 
 \title{\bf Parallel Programming in Futhark}
 \author{Troels Henriksen, Martin Elsman, and Cosmin E. Oancea \\[2mm] HIPERFIT \\[2mm] Department of Computer Science \\ University of Copenhagen (DIKU)}
-\date{\today \\[5mm] Edition \\ 0.6}
+\date{\today \\[5mm] Edition \\ 0.7}
 
 \begin{document}
 \frontmatter
@@ -517,7 +517,7 @@ which are either \textit{function definitions} or \textit{value
   definitions}.  A function definition has the following form:
 
 \begin{lstlisting}
-fun name params... : return_type = body
+let name params... : return_type = body
 \end{lstlisting}
 
 \noindent
@@ -528,7 +528,7 @@ inference.  As a concrete example, here is the recursive definition of
 the factorial function in Futhark:
 
 \begin{lstlisting}
-fun fact(n: int): int =
+let fact(n: int): int =
   if n == 0 then 1
             else n * fact(n-1)
 \end{lstlisting}
@@ -540,14 +540,14 @@ recommended for readability.
 A value definition is very similar:
 
 \begin{lstlisting}
-val name: value_type = definition
+let name: value_type = definition
 \end{lstlisting}
 
 \noindent
 For example:
 
 \begin{lstlisting}
-val physicists_pi: f64 = 4.0
+let physicists_pi: f64 = 4.0
 \end{lstlisting}
 
 A value definition is semantically similar to a function that ignores
@@ -734,7 +734,7 @@ can define a function to compute the dot product of two vectors of
 integers:
 
 \begin{lstlisting}
-fun dotProd (xs: []int) (ys: []int): int =
+let dotProd (xs: []int) (ys: []int): int =
   reduce (+) 0 (map (*) xs ys)
 \end{lstlisting}
 
@@ -791,11 +791,13 @@ filter (\x -> x != 0) [0,5,2,0,1] ==
   [5,2,1]
 \end{lstlisting}
 
+\noindent
 But what are the corresponding indices?  We can solve this using a
 combination of \texttt{zip}, \texttt{filter}, and \texttt{unzip}:
 
-\lstinputlisting[firstline=7]{src/indices_of_nonzero.fut}
+\lstinputlisting[firstline=5,lastline=9]{src/indices_of_nonzero.fut}
 
+\noindent
 Be aware that \texttt{filter} is a somewhat expensive SOAC,
 corresponding roughly to a \texttt{scan} plus a \texttt{map}.
 
@@ -807,15 +809,15 @@ functions.  Consider the following tail-recursive formulation of a
 function for computing the Fibonacci numbers
 
 \begin{lstlisting}
-fun fib(n: int): int = fibhelper(1,1,n)
-fun fibhelper(x: int, y: int, n: int): int =
+let fib(n: int): int = fibhelper(1,1,n)
+let fibhelper(x: int, y: int, n: int): int =
   if n == 1 then x else fibhelper(y, x+y, n-1)
 \end{lstlisting}
 
 We can rewrite this looping using \texttt{loop} syntax:
 
 \begin{lstlisting}
-fun fib(n: int): int =
+let fib(n: int): int =
   loop ((x, y) = (1,1)) = for i < n do
                             (y, x+y)
   in x
@@ -859,7 +861,7 @@ loop (x = a) =
 has the semantics of a call to the following tail-recursive function:
 
 \begin{lstlisting}
-fun f(i: int, n: int, x: t): t =
+let f(i: int, n: int, x: t): t =
   if i >= n then x
      else f(i+1, n, g(x))
 
@@ -889,10 +891,10 @@ Apart from \texttt{for}-loops, Futhark also supports \texttt{while}
 loops.  These do not provide as much information to the compiler, but
 can be used for convergence loops, where the number of iterations
 cannot be predicted in advance.  For example, the following program
-doubles a given number until it exceeds a given threshold value::
+doubles a given number until it exceeds a given threshold value:
 
 \begin{lstlisting}
-fun main(x: i32, bound: i32): i32 =
+let main(x: i32, bound: i32): i32 =
   loop (x) = while x < bound do x * 2
   in x
 \end{lstlisting}
@@ -906,7 +908,7 @@ an expression equivalent to the pattern is implied.  This is easier to
 understand with an example.  The loop
 
 \begin{lstlisting}
-fun fib(n: i32): i32 =
+let fib(n: i32): i32 =
   let x = 1
   let y = 1
   loop ((x, y) = (x, y)) = for i < n do (y, x+y)
@@ -917,7 +919,7 @@ fun fib(n: i32): i32 =
 can also be written:
 
 \begin{lstlisting}
-fun fib(n: i32): i32 =
+let fib(n: i32): i32 =
   let x = 1
   let y = 1
   loop ((x, y)) = for i < n do (y, x+y)
@@ -970,7 +972,7 @@ The simplest way to introduce uniqueness types is through examples.
 To that end, let us consider the following function definition.
 
 \begin{lstlisting}
-fun modify(a: @@*@@[]i32, i: i32, x: i32): @@*@@[]i32 =
+let modify(a: @@*@@[]i32, i: i32, x: i32): @@*@@[]i32 =
   let a[i] = a[i] + x
   in a
 \end{lstlisting}
@@ -1035,7 +1037,7 @@ being non-overlapping, are not aliased to each other).
 Let us consider the definition of a function returning a unique array:
 
 \begin{lstlisting}[mathescape=true]
-fun f(a: [int]): *[int] = $e$
+let f(a: [int]): *[int] = $e$
 \end{lstlisting}
 
 Note that the argument, \texttt{a}, is non-unique, and hence we cannot
@@ -1089,7 +1091,7 @@ f(b,a) // @@Error:@@ a used after being source in a let-with
 \begin{figure}
 \centering
 \begin{lstlisting}
-fun *[int] broken([[int]] a, int i) =
+let *[int] broken([[int]] a, int i) =
   a[i] // @@Error:@@ Return value aliased with 'a'.
 \end{lstlisting}
 \caption{Violation of Uniqueness Rule 2}
@@ -1117,12 +1119,12 @@ algorithms that are then mapped on some array.  Somewhat
 counter-intuitively, however, in-place updates can also be used for
 expressing irregular nested parallel algorithms (which are otherwise
 not expressible in Futhark), albeit in a low-level way.  The key here
-is the array combinator \texttt{write}, which writes to several
+is the array combinator \texttt{scatter}, which writes to several
 positions in an array in parallel.  Suppose we have an array
 \texttt{is} of type \texttt{[$n$]i32}, an array \texttt{vs} of type
-\texttt{[$n$]$t$} (for some \texttt{$t$}), and an array \texttt{as}
-of type \texttt{[$m$]$t$}. Then the expression \texttt{write is vs
-  as} morally computes
+\texttt{[$n$]$t$} (for some \texttt{$t$}), and an array \texttt{as} of
+type \texttt{[$m$]$t$}. Then the expression \texttt{write as is vs}
+morally computes
 
 \begin{lstlisting}[language=ruby,mathescape=true]
   for i in 0..$n$-1:
@@ -1134,7 +1136,7 @@ of type \texttt{[$m$]$t$}. Then the expression \texttt{write is vs
 \noindent
 and returns the modified \texttt{as} array.  The old \texttt{as} array
 is marked as consumed and may not be used anymore.  Parallel
-\texttt{write} can be used to efficiently implement the radix sort algorithm, as demonstrated in Section~\ref{sec:radixsort}.
+\texttt{scatter} can be used to implement efficiently the radix sort algorithm, as demonstrated in Section~\ref{sec:radixsort}.
 
 \section{Modules}
 \label{sec:modules}
@@ -1155,8 +1157,8 @@ in Standard ML) is merely a collection of declarations
 \begin{lstlisting}
 module AddI32 = {
   type t = i32
-  fun add (x: t) (y: t): t = x + y
-  val zero: t = 0
+  let add (x: t) (y: t): t = x + y
+  let zero: t = 0
 }
 \end{lstlisting}
 
@@ -1175,8 +1177,8 @@ And a \textit{module expression}
 \begin{lstlisting}
 {
   type t = i32
-  fun add (x: t) (y: t): t = x + y
-  val zero: t = 0
+  let add (x: t) (y: t): t = x + y
+  let zero: t = 0
 }
 \end{lstlisting}
 
@@ -1213,8 +1215,8 @@ describes \texttt{AddInt32}
 \begin{lstlisting}
 module type Int32Adder = {
   type t = i32
-  val add: t -> t -> t
-  val zero: t
+  val add : t -> t -> t
+  val zero : t
 }
 \end{lstlisting}
 
@@ -1226,7 +1228,7 @@ type abbreviation, or as an abstract type (which we will return to
 later).
 
 We can assert that some module implements a specific module type via
-module type ascription
+a module type ascription
 
 \begin{lstlisting}
 module Foo = AddInt32 : Int32Adder
@@ -1247,7 +1249,7 @@ the module type
 
 \begin{lstlisting}
 module Bar = AddInt32 : { type t = int
-                          val zero: t }
+                          val zero : t }
 \end{lstlisting}
 
 An attempt to access \texttt{Bar.add} will result in a compilation
@@ -1265,17 +1267,17 @@ of a type from the users of a module
 
 \begin{lstlisting}
 module Speeds: { type thing
-                 val car: thing
-                 val plane: thing
-                 val futhark: thing
-                 val speed: thing -> int } = {
+                 val car : thing
+                 val plane : thing
+                 val futhark : thing
+                 val speed : thing -> int } = {
   type thing = int
 
-  val car: thing = 0
-  val plane: thing = 1
-  val futhark: thing = 2
+  let car: thing = 0
+  let plane: thing = 1
+  let futhark: thing = 2
 
-  fun speed (x: thing): int =
+  let speed (x: thing): int =
     if      x == car     then 120
     else if x == plane   then 800
     else if x == futhark then 10000
@@ -1304,8 +1306,8 @@ module.  For example, given a module type
 \begin{lstlisting}
 module type Monoid = {
   type t
-  val add: t -> t -> t
-  val zero: t
+  val add : t -> t -> t
+  val zero : t
 }
 \end{lstlisting}
 
@@ -1315,7 +1317,7 @@ function for collapsing an array
 
 \begin{lstlisting}
 module Sum(M: Monoid) = {
-  fun sum (a: []M.t): M.t =
+  let sum (a: []M.t): M.t =
     reduce M.add M.zero a
 }
 \end{lstlisting}
@@ -1342,8 +1344,8 @@ another module; this one anonymous
 \begin{lstlisting}
 module Prod64s = Sum({
   type t = 64
-  fun (x: f64) (y: f64): f64 = x * y
-  fun zero: f64 = 1.0
+  let (x: f64) (y: f64): f64 = x * y
+  let zero: f64 = 1.0
 })
 \end{lstlisting}
 
@@ -1369,18 +1371,18 @@ declaration, which brings the names from a module into the current
 scope
 
 \begin{lstlisting}
-  module Linalg(M: {
+  module Linalg(M : {
     type scalar
-    val zero: scalar
-    val add: scalar -> scalar -> scalar
-    val mul: scalar -> scalar -> scalar
+    val zero : scalar
+    val add : scalar -> scalar -> scalar
+    val mul : scalar -> scalar -> scalar
   }) = {
     open M
 
-    fun dotprod (xs: [n]scalar) (ys: [n]scalar): scalar =
+    let dotprod (xs: [n]scalar) (ys: [n]scalar): scalar =
       reduce add zero (zipWith mul xs ys)
 
-    fun matmul (xss: [n][p]scalar) (yss: [p][m]scalar): [n][m]scalar =
+    let matmul (xss: [n][p]scalar) (yss: [p][m]scalar): [n][m]scalar =
       map (\xs -> map (dotprod xs) (transpose yss)) xss
   }
 \end{lstlisting}
@@ -1388,7 +1390,7 @@ scope
 \section{Benchmarking}
 \label{sec:benchmarking}
 
-Consider an implementation of dot product:
+Consider an implementation of the dot product of two vectors:
 
 \lstinputlisting[firstline=5]{src/dotprod.fut}
 
@@ -1604,7 +1606,7 @@ to fall in three different categories:
 For example, consider this program:
 
 \begin{lstlisting}
-fun main(n: int): [][]int =
+let main(n: int): [][]int =
   map (\i ->
          let a = iota i
          let b = iota (n-i)
@@ -1627,7 +1629,7 @@ It is usually possible, sometimes with some pain, to come up with a
 workaround.  We could rewrite the program as:
 
 \begin{lstlisting}
-fun main(n: int): [][]int =
+let main(n: int): [][]int =
   let big_iota = iota n
   in map (\i ->
             let res = iota n
@@ -1656,7 +1658,7 @@ Futhark can in many cases map two nested maps into fully parallel
 code. Consider the following Futhark function:
 
 \begin{wrap}
-\lstinputlisting[firstline=3]{src/multable.fut}
+\lstinputlisting[lastline=4]{src/multable.fut}
 \end{wrap}
 
 \noindent
@@ -1676,14 +1678,14 @@ multiply operation, and, finally, how to combine the work. The way to
 determine the work for a \fop{map} SOAC instance is to multiply the
 size of the argument array with the work of body of the argument
 function. Thus, we have
-$$ W(\fop{map}~\kw{(}\fw{fn}~\kw{j -> i * j) (}\fop{iota}~\kw{$n$)}) = n+1 $$
+$$ W(\fop{map}~\kw{(}\backslash~\kw{j -> i * j) (}\fop{iota}~\kw{$n$)}) = n+1 $$
 Applying a similar agument to the outer map, we get
-$$W(\fop{map}~\kw{(}\fw{fn}~\kw{i -> $\cdots$) (}\fop{iota}~\kw{$n$)}) = (n+1)^2 $$
+$$W(\fop{map}~\kw{(}\backslash~\kw{i -> $\cdots$) (}\fop{iota}~\kw{$n$)}) = (n+1)^2 $$
 
 \noindent
 Most often we are interested in finding the asymptotical complexity of
 the algorithm we are analyzing, in which case we will simply write
-$$W(\fop{map}~\kw{(}\fw{fn}~\kw{i -> $\cdots$) (}\fop{iota}~\kw{$n$)}) = O(n^2) $$
+$$W(\fop{map}~\kw{(}\backslash~\kw{i -> $\cdots$) (}\fop{iota}~\kw{$n$)}) = O(n^2) $$
 
 In a similar way we can derive that the span of a call
 $\kw{multable}~n$, written $S(\kw{multable}~n)$, is $O(1)$.
@@ -1710,7 +1712,7 @@ second order array combinators are given as follows:
   $\id{binop}$ ::= + | - | * | / | $\cdots$
   $\id{op}$ ::= - | abs | copy | concat | empty | iota
        | partition | rearrange | replicate | reshape
-       | rotate | shape | split | transpose | unzip | write | zip
+       | rotate | shape | split | transpose | unzip | scatter | zip
   $\id{soac}$ ::= map | reduce | reduceComm | scan | filter
        | partition
 \end{lstlisting}
@@ -1724,7 +1726,7 @@ pattern matching and we do not, in this section, consider uniqueness types.
   $p$ ::= $x$  |  ($x_1$,...,$x_n$)
   $\id{ps}$ ::= $p_1 \cdots p_n$
   $F$ ::= \backslash $\id{ps}$ -> $e$  |  $e$ $\id{binop}$  |  $\id{binop}$ $e$
-  $P$ ::= fun $f$ $\id{ps}$ = $e$  |  $P_1$ $P_2$  |  val $p$ = $e$
+  $P$ ::= let $f$ $\id{ps}$ = $e$  |  $P_1$ $P_2$  |  let $p$ = $e$
   $v$ ::= true  |  false  |  $n$  |  $r$  |  [$v_1$,...,$v_n$]  |  ($v_1$,...,$v_n$)
   $e$ ::= $x$  |  $v$  |  let $\id{ps}$ = $e$ in $e'$  |  $e$[$e'$]  |  $e$[$e'$:$e''$]
       | [$e_1$,...,$e_n$]  |  ($v_1$,...,$v_n$)
@@ -1746,7 +1748,7 @@ presented here; consult Section~\ref{sec:baselang} for a complete list.
 In practice, Futhark requires a programmer to provide explicit
 parameter types and an explicit result type for top-level function
 declarations. Similarly, in practice, Futhark requires explicit types
-for top-level \kw{val} bindings. In such explicit types, type
+for top-level \kw{let} bindings. In such explicit types, type
 variables are not allowed; at present, Futhark does not allow for a
 programmer to declare polymorphic functions.
 
@@ -1793,7 +1795,7 @@ Figure~\ref{fig:primtypeschemes}
     \fop{rotate} & : & \forall \alpha. \kw{int} \rarr []\alpha \rarr []\alpha\\
     \fop{transpose} & : & \forall \alpha. [][]\alpha \rarr [][]\alpha\\
     \fop{unzip} & : & \forall \alpha_1\cdots\alpha_n. [](\alpha_1,\cdots,\alpha_n) \rarr ([]\alpha_1,\cdots,[]\alpha_n) \\
-    \fop{write} & : & \forall \alpha. []\kw{int} \rarr []\alpha \rarr []\alpha \rarr []\alpha \\
+    \fop{scatter} & : & \forall \alpha. []\alpha \rarr []\kw{int} \rarr []\alpha \rarr []\alpha \\
     \fop{zip} & : & \forall \alpha_1\cdots\alpha_n. []\alpha_1\rarr\cdots\rarr[]\alpha_n \rarr [](\alpha_1,\cdots,\alpha_n)
   \end{eqnarray*}
   \caption{Type schemes for Futhark's first-order array operations. The relation $\mathrm{TypeOf}(\id{op}) = \sigma$.}
@@ -1902,7 +1904,7 @@ type environment $\Gamma'$.''
 
 \onepart{
   \fraccc{\Gamma,x_1:\tau_1~\cdots~x_n:\tau_n \vd e : \tau}{
-    \Gamma \vd \kw{fn} ~x_1:\tau_1~\cdots~x_n:\tau_n ~ \kw{->} ~e : \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau
+    \Gamma \vd \backslash ~x_1:\tau_1~\cdots~x_n:\tau_n ~ \kw{->} ~e : \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau
   }
 }
 
@@ -1920,7 +1922,7 @@ type environment $\Gamma'$.''
 \subsubsection*{Programs \sembox{\Gamma \vd P : \Gamma'}}
 
 \twopart{
-\fraccc{\Gamma \vd e : \tau ~~~~~ x \not \in \Dom(\Gamma)}{\Gamma \vd \kw{val}~x~\kw{=} ~e : \{x:\tau\}}
+\fraccc{\Gamma \vd e : \tau ~~~~~ x \not \in \Dom(\Gamma)}{\Gamma \vd \kw{let}~x~\kw{=} ~e : \{x:\tau\}}
 }{
 \fraccc{\Gamma \vd P_1 : \Gamma_1 ~~~~ \Gamma + \Gamma_1 \vd P_2 : \Gamma_2}
        {\Gamma \vd P_1~P_2 : \Gamma_1 + \Gamma_2}
@@ -1928,7 +1930,7 @@ type environment $\Gamma'$.''
 
 \onepart{
   \fraccc{\Gamma,x_1:\tau_1,\cdots,x_n:\tau_n \vd e : \tau  ~~~~~ f \not \in \Dom(\Gamma)}
-         {\Gamma \vd \fw{fun}~f~\kw{(}x_1,\cdots,x_n\kw{)}~\kw{=} ~e : \{f:\kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau\}}
+         {\Gamma \vd \fw{let}~f~\kw{(}x_1,\cdots,x_n\kw{)}~\kw{=} ~e : \{f:\kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau\}}
 }
 
 For brewity, we have eluded some of the typing rules and we leave it
@@ -1996,7 +1998,7 @@ function $\extractF{F}$ for extracting SOAC function parameters. We
 first give the definition for $\Eval{\cdot}$:
 \begin{eqnarray*}
 %  \Eval(P,v) & = & \Evalp(\id{main}(v)) \\
-  \Eval{f~e_1~\cdots~e_n} & = & \Eval{e[\Eval{e_1}/x_1\cdots \Eval{e_n}/x_n]} \\ & & ~~~ \mathrm{where}~\fw{fun}~f~x_1~ \cdots x_n ~\kw{=}~ e \in P \\
+  \Eval{f~e_1~\cdots~e_n} & = & \Eval{e[\Eval{e_1}/x_1\cdots \Eval{e_n}/x_n]} \\ & & ~~~ \mathrm{where}~\fw{let}~f~x_1~ \cdots x_n ~\kw{=}~ e \in P \\
   \Eval{v} & = & v \\
   \Eval{e\kw{[}e'\kw{]}} & = & \Eval{e}(\Eval{e'}) \\
   \Eval{\fw{let}~x~\kw{=}~e~\fw{in}~e'} & = & \Eval{e'[\Eval{e}/x]} \\
@@ -2012,7 +2014,7 @@ first give the definition for $\Eval{\cdot}$:
 
 Given a SOAC function parameter $F$, we define the utility \emph{extraction function}, $\extractF{F}$, as follows:
 \begin{eqnarray*}
-  \extractF{\fw{fn}~x_1\cdots x_n~\kw{->}~ e} & = & \lambda x_1 \cdots x_n . e \\
+  \extractF{\backslash~x_1\cdots x_n~\kw{->}~ e} & = & \lambda x_1 \cdots x_n . e \\
   \extractF{\id{binop}~e} & = & \lambda x . x~\id{binop}~v \\
     & & ~~~\mathrm{where}~v = \Eval{e} \\
   \extractF{e~\id{binop}} & = & \lambda x . v~\id{binop}~x \\
@@ -2058,7 +2060,7 @@ and \fop{reduce}.
   $W($($e_1,\cdots,e_n$)$)$ = $W(e_1) + \ldots + W(e_n) + 1$
   $W(f$ $e_1 \cdots e_n)$ =
     $W(e_1) + \ldots + W(e_n) + W(e[\Eval{e_1}/x_1,\cdots \Eval{e_n}/x_n]) + 1$
-    $\mathrm{where}$ $($fun $f$ $x_1 \cdots x_n$ = $e) ~\in~ P$
+    $\mathrm{where}$ $($let $f$ $x_1 \cdots x_n$ = $e) ~\in~ P$
   $W(e_1$ $\id{binop}$ $e_2)$ = $W(e_1) + W(e_2) + 1$
   $W($map $F$ $e)$ =
     $\Let$ [$v_1,\cdots,v_n$] = $\Eval{e}$
@@ -2087,7 +2089,7 @@ and \fop{reduce}.
   $S($($e_1,\cdots,e_n$)$)$ = $S(e_1) + \ldots + S(e_n) + 1$
   $S(f$ $e_1 \cdots e_n)$ =
     $S(e_1) + \ldots + S(e_n) + S(e[\Eval{e_1}/x_1,\cdots \Eval{e_n}/x_n]) + 1$
-    $\mathrm{where}$ $($fun $f$ $x_1 \cdots x_n$ = $e) ~\in~ P$
+    $\mathrm{where}$ $($let $f$ $x_1 \cdots x_n$ = $e) ~\in~ P$
   $S(e_1$ $\id{binop}$ $e_2)$ = $S(e_1) + S(e_2) + 1$
   $S($map $F$ $e)$ =
     $\Let$ [$v_1,\cdots,v_n$] = $\Eval{e}$
@@ -2126,7 +2128,7 @@ algorithm. In Futhark, the funcion \kw{red} can be implemented as
 follows:
 
 \begin{wrap}
-\lstinputlisting[firstline=16]{src/reduce_contract.fut}
+\lstinputlisting[firstline=11,lastline=15]{src/reduce_contract.fut}
 \end{wrap}
 
 \noindent
@@ -2137,10 +2139,11 @@ is a power of two. It then implements a sequential loop with the
 contraction step as its loop body, implemented by a
 parallel $\fop{map}$ over an appropriately splitted input vector.
 
-The auxiliary function for padding the input vector is implemented by the following code:
+The auxiliary function for padding the input vector is implemented by
+the following code:
 
 \begin{wrap}
-\lstinputlisting[firstline=7,lastline=13]{src/reduce_contract.fut}
+\lstinputlisting[firstline=2,lastline=8]{src/reduce_contract.fut}
 \end{wrap}
 
 \subsection{Determining Work and Span}
@@ -2192,7 +2195,7 @@ order is shown in Figure~\ref{fig:rsort}.
 
 \begin{figure}
 \begin{wrap}
-\lstinputlisting[firstline=18]{src/rsort.fut}
+\lstinputlisting[firstline=17,lastline=31]{src/rsort.fut}
 \end{wrap}
 \caption{An Implementation of Radix-Sort (ascending) in Futhark.}
 \label{fig:rsort}
@@ -2290,12 +2293,12 @@ The first higher-order concept that we shall need is the concept of
 function composition. Whenever $f$ and $g$ denote some Futhark
 functions
 %
-\lstinline[mathescape=true]!fn $x_1\cdots x_n$ => $e$! and
+\lstinline[mathescape=true]!\ $x_1\cdots x_n$ -> $e$! and
 %
-\lstinline[mathescape=true]!fn $y_1\cdots y_m$ => $e'$!, respectively, the
+\lstinline[mathescape=true]!\ $y_1\cdots y_m$ -> $e'$!, respectively, the
 \emph{composition} of $f$ and $g$, written $(f \circ g)$, is defined as
 %
-\lstinline[mathescape=true]!fn $y_1\cdots y_m$ => let ($x_1,\cdots,x_n$) = $e'$ in $e$!.
+\lstinline[mathescape=true]!\ $y_1\cdots y_m$ -> let ($x_1,\cdots,x_n$) = $e'$ in $e$!.
 
 Using, the notion of function composition, we can present the
 \emph{first fusion rule}, $F1$, which says that the result of mapping an
@@ -2310,11 +2313,11 @@ also called map-map fusion and can simply be written
 
 Given that $f$ and $g$ denote the Futhark functions
 %
-\lstinline[mathescape=true]!fn $x_1\cdots x_n$ => $e$! and
+\lstinline[mathescape=true]!\ $x_1\cdots x_n$ -> $e$! and
 %
-\lstinline[mathescape=true]!fn $y_1\cdots y_m$ => $e'$!, respectively (possibly after renaming of bound variables),
+\lstinline[mathescape=true]!\ $y_1\cdots y_m$ -> $e'$!, respectively (possibly after renaming of bound variables),
 the \emph{function product} of $f$ and $g$, written $f \otimes g$, is defined as
-\lstinline[mathescape=true]!fn ($x_1,\cdots,x_n$) ($y_1,\cdots,y_m$) => ($e$,$e'$)!.
+\lstinline[mathescape=true]!\ ($x_1,\cdots,x_n$) ($y_1,\cdots,y_m$) -> ($e$,$e'$)!.
 
 Now, the \emph{second fusion rule}, $F2$, which denotes horizontal fusion,
 specifies that
@@ -2330,7 +2333,7 @@ is equivalent to
 \end{lstlisting}
 
 \noindent
-Here \kw{dup} is the Futhark function \lstinline!fn x => (x,x)!.
+Here \kw{dup} is the Futhark function \lstinline!\ x -> (x,x)!.
 
 \section{Flattening}
 
@@ -2386,7 +2389,7 @@ associative function that operates on pairs of values
 definition of the segmented scan operation:
 
 \begin{wrap}
-\lstinputlisting[firstline=7]{src/sgm_scan.fut}
+\lstinputlisting[firstline=2,lastline=8]{src/sgm_scan.fut}
 \end{wrap}
 
 \section{Parallel Utility Functions}
@@ -2404,7 +2407,7 @@ returns the smallest index $i$ into $\kw{xs}$ for which $\kw{xs[}i\kw{]} =
 \kw{e}$:
 
 \begin{wrap}
-\lstinputlisting[firstline=9,lastline=13]{src/find_idx.fut}
+\lstinputlisting[firstline=4,lastline=8]{src/find_idx.fut}
 \end{wrap}
 
 The second function,
@@ -2413,15 +2416,15 @@ returns the largest index $i$ into $\kw{xs}$ for which $\kw{xs[}i\kw{]} =
 \kw{e}$:
 
 \begin{wrap}
-\lstinputlisting[firstline=15]{src/find_idx.fut}
+\lstinputlisting[firstline=10,lastline=13]{src/find_idx.fut}
 \end{wrap}
 
 The above two functions make use of the auxiliary functions \kw{min} and
 \kw{max}, which are not included in Futhark's basis library:
 
 \begin{lstlisting}
-fun max (a:i32) (b:i32) : i32 = if a > b then a else b
-fun min (a:i32) (b:i32) : i32 = if a < b then a else b
+let max (a:i32) (b:i32) : i32 = if a > b then a else b
+let min (a:i32) (b:i32) : i32 = if a < b then a else b
 \end{lstlisting}
 
 \subsection{Finding the Largest Element and its Index in an Array}
@@ -2431,7 +2434,7 @@ arguments. This feature is exploited in the following function, which
 implements a homomorphism for finding the largest element and its
 index in an array:
 
-\lstinputlisting[firstline=4]{src/maxidx.fut}
+\lstinputlisting[lastline=8]{src/maxidx.fut}
 
 \noindent The function \kw{maxidx} is a \emph{homomorphism} \cite{BirdListTh}: For any
 $x$ and $y$, there exists an associative operator $\oplus$ such that
@@ -2447,7 +2450,7 @@ Figure~\ref{fig:rsort}. In this section, we present two generalized
 versions of radix sort, one for ascending sorting and one for
 descending sorting. As a bonus, the sorting routines return both the
 sorted arrays and an index array that can be used together with
-\fop{write} to sort an array with respect to a permutation obtained by
+\fop{scatter} to sort an array with respect to a permutation obtained by
 sorting another array. The generalised ascending radix sort is shown
 in Figure~\ref{fig:rsort_idx_asc}. The descending version is shown in
 Figure~\ref{fig:rsort_idx_desc}. Notice that in case of identical
@@ -2456,13 +2459,13 @@ ascending version by reversing the arrays resulting from calling the
 descending version.
 
 \begin{figure}
-\lstinputlisting[firstline=23,lastline=40]{src/rsort_idx.fut}
+\lstinputlisting[firstline=15,lastline=32]{src/rsort_idx.fut}
 \caption{Generalised Ascending Version of Radix Sort.}
 \label{fig:rsort_idx_asc}
 \end{figure}
 
 \begin{figure}
-\lstinputlisting[firstline=42,lastline=58]{src/rsort_idx.fut}
+\lstinputlisting[firstline=34,lastline=50]{src/rsort_idx.fut}
 \caption{Generalised Descending Version of Radix Sort.}
 \label{fig:rsort_idx_desc}
 \end{figure}
@@ -2476,7 +2479,7 @@ the segmented scan as an integrated part of the algorithm. We start by
 showing the latter version of the longest streak problem:
 
 \begin{wrap}
-\lstinputlisting[firstline=27,lastline=40]{src/streak.fut}
+\lstinputlisting[firstline=21,lastline=34]{src/streak.fut}
 \end{wrap}
 
 The following derivation shows how the algorithm works for a
@@ -2497,14 +2500,14 @@ Variable & : & Value \\ \hline
 \end{tabular}
 \vspace*{3mm}
 
-A simpler algorithm builds directly on the segmented scan operation as
+A simpler algorithm builds directly on the segmented scan operation
 defined earlier. The algorithm first constructs the \kw{is} array as
 in the previous algorithm and then uses a segmented scan over a
 negation of this array over the unit-array to create the \kw{ss3} vector
 directly.
 
 \begin{wrap}
-\lstinputlisting[firstline=34]{src/sgm_streak.fut}
+\lstinputlisting[firstline=28,lastline=35]{src/sgm_streak.fut}
 \end{wrap}
 
 \noindent
@@ -2538,11 +2541,11 @@ second argument. If we call the operation \kw{sgm\_repl}, a call
 \kw{[5,5,6,8,8,8]}.
 
 Here is code that implements the function \kw{sgm\_repl} and a more
-general function \kw{sgm\_idx}, which returns an index array providing
+general function \kw{repl\_idx}, which returns an index array providing
 replicating indexes into any argument array of the same length as the
 argument array.
 
-\lstinputlisting[firstline=13]{src/sgm_repl.fut}
+\lstinputlisting[firstline=10,lastline=19]{src/sgm_repl.fut}
 
 An example evaluation of a call to the \kw{repl\_idx} function is
 provided in Figure~\ref{fig:replidxex}. Notice that in order to use
@@ -2589,7 +2592,7 @@ relative to a particular starting point.
 The simple line drawing routine is shown in Figure~\ref{fig:linesseq}.
 
 \begin{figure}
-  \lstinputlisting[firstline=4,lastline=23]{src/lines_seq.fut}
+  \lstinputlisting[firstline=3,lastline=22]{src/lines_seq.fut}
   \caption{Algorithm for Finding the Consituting Points of a Single Line, Defined by its End Points.}
   \label{fig:linesseq}
 \end{figure}
@@ -2602,7 +2605,7 @@ for each line, computed using the \kw{linepoints} function. The
 resulting points are shown on Figure~\ref{fig:lines}.
 
 \begin{figure}
-  \lstinputlisting[firstline=25,lastline=46]{src/lines_seq.fut}
+  \lstinputlisting[firstline=24,lastline=45]{src/lines_seq.fut}
   \caption{Driver Code for Drawing Lines.}
   \label{fig:linesdriver}
 \end{figure}

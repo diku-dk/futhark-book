@@ -1,9 +1,9 @@
 -- Segmented scan with integer addition
-fun sgm_scan_add (vals:[n]i32) (flags:[n]bool) : [n]i32 =
-  let pairs = scan ( fn (v1,f1) (v2,f2) =>
+let sgm_scan_add [n] (vals:[n]i32) (flags:[n]bool) : [n]i32 =
+  let pairs = scan ( \(v1,f1) (v2,f2) ->
                        let f = f1 || f2
                        let v = if f2 then v2 else v1+v2
-                       in (v,f) ) (0,False) (zip vals flags)
+                       in (v,f) ) (0,false) (zip vals flags)
   let (res,_) = unzip pairs
   in res
 
@@ -16,13 +16,7 @@ fun sgm_scan_add (vals:[n]i32) (flags:[n]bool) : [n]i32 =
 -- streak [9, 8, 7, 6, 5, 4] == 0
 -- streak [1, 5, 3, 4, 2, 6, 7, 8] == 3
 
-fun main() : []bool =
-  [sgm_streak ([1, 2, 3, 4, 5, 6, 7, 8, 9]) == 8,
-   sgm_streak ([1]) == 0,
-   sgm_streak ([9, 8, 7, 6, 5, 4]) == 0,
-   sgm_streak ([1, 5, 3, 4, 2, 6, 7, 8]) == 3]
-
-fun max (a:i32) (b:i32) : i32 = if a > b then a else b
+let max (a:i32) (b:i32) : i32 = if a > b then a else b
 
 -- xs   : [1, 5, 3, 4, 2, 6, 7, 8]
 -- ys   : [5, 3, 4, 2, 6, 7, 8, 1]
@@ -32,10 +26,16 @@ fun max (a:i32) (b:i32) : i32 = if a > b then a else b
 -- res  : 3
 
 -- Longest streak of increasing numbers
-fun sgm_streak (xs: [n]i32) : i32  =
+let sgm_streak [n] (xs: [n]i32) : i32  =
   let ys = rotate 1 xs
-  let is = (map (fn x y => if x < y then 1 else 0) xs ys)[0:n-1]
+  let is = (map (\x y -> if x < y then 1 else 0) xs ys)[0:n-1]
   let fs = map (==0) is
   let ss = sgm_scan_add is fs
   let res = reduce max 0 ss
   in res
+
+let main() : []bool =
+  [sgm_streak ([1, 2, 3, 4, 5, 6, 7, 8, 9]) == 8,
+   sgm_streak ([1]) == 0,
+   sgm_streak ([9, 8, 7, 6, 5, 4]) == 0,
+   sgm_streak ([1, 5, 3, 4, 2, 6, 7, 8]) == 3]

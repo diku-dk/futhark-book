@@ -4,5 +4,5 @@
 -- input {    1000000 } output {   584144992 }
 -- input { 1000000000 } output { -2087553280 }
 
-fun main (n: int): int =
+let main (n: int): int =
   reduce (+) 0 (map (**2) (iota n))
