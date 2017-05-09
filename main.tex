@@ -260,7 +260,7 @@ systems, but more on compilation to high-performance parallel code.
 Futhark comes with language constructs for performing bulk operations
 on arrays, called \textit{Second-Order Array Combinators} (SOACs),
 that mirror the higher order functions found in conventional
-functional languages: \texttt{map}, \texttt{reduce}, \texttt{filter},
+functional languages: \fop{map}, \fop{reduce}, \fop{filter},
 and so forth.  In Futhark, SOACs are not merely library functions, but
 built-in language features with parallel semantics, and which will
 typically be compiled to parallel code.
@@ -439,7 +439,7 @@ f 1.0
 See Section \ref{sec:function-declarations} for how to declare your
 own functions.
 
-A \texttt{let}-expression can be used to give a name to the result of
+A \fw{let}-expression can be used to give a name to the result of
 an expression:
 
 \begin{lstlisting}
@@ -448,8 +448,8 @@ in body
 \end{lstlisting}
 
 Futhark is eagerly evaluated (unlike Haskell), so the expression for
-\texttt{z} will be fully evaluated before \texttt{body}.  The \texttt{in} keyword is optional when it precedes another
-\texttt{let}.  Thus, instead of writing:
+\texttt{z} will be fully evaluated before \texttt{body}.  The \fw{in} keyword is optional when it precedes another
+\fw{let}.  Thus, instead of writing:
 
 \begin{lstlisting}
 let a = 0 in
@@ -469,9 +469,9 @@ in a + b + c
 \end{lstlisting}
 
 \noindent
-The final \texttt{in} is still necessary.  In examples, we will often
-skip the body of a \texttt{let} if it is not important.  A limited
-amount of pattern matching is supported in \texttt{let}-bindings,
+The final \fw{in} is still necessary.  In examples, we will often
+skip the body of a \fw{let} if it is not important.  A limited
+amount of pattern matching is supported in \fw{let}-bindings,
 which permits tuple components to be extracted:
 
 \begin{lstlisting}
@@ -482,7 +482,7 @@ let (x,y) = e      -- e must be of some type (t1,t2)
 This feature also demonstrates the Futhark line comment syntax---two dashes
 followed by a space.  Block comments are not presently supported.
 
-A two-way \texttt{if-then-else} is the only branching construct in
+A two-way \fw{if}-\fw{then}-\fw{else} is the only branching construct in
 Futhark:
 
 \begin{lstlisting}
@@ -562,9 +562,9 @@ result in an infinite loop if the value is ever used.
 Futhark provides various combinators for performing bulk
 transformations of arrays.  Judicious use of these combinators is key
 to getting good performance.  There are two overall categories:
-\textit{first-order array combinators}, like \texttt{concat}, that
+\textit{first-order array combinators}, like \fop{concat}, that
 always perform the same operation, and \textit{second-order array
-  combinators} (\textit{SOAC}s), like \texttt{map}, that take a
+  combinators} (\textit{SOAC}s), like \fop{map}, that take a
 \textit{functional argument} indicating the operation to perform.
 SOACs are absolutely crucial to Futhark programming.  While they are
 designed to resemble higher-order functions that may be familiar from
@@ -573,26 +573,26 @@ some restrictions to preserve those semantics.
 
 In addition to the array combinators, there are constructs for
 \textit{constructing} arrays.  We already demonstrated literal arrays.
-Additionally, there is \texttt{iota}, which creates an array of a
+Additionally, there is \fop{iota}, which creates an array of a
 range of integers starting from zero:
 
 \begin{lstlisting}
 iota 10 == [0,1,2,3,4,5,6,7,8,9]
 \end{lstlisting}
 
-The name \texttt{iota} comes from APL, one of the earliest array
+The name \fop{iota} comes from APL, one of the earliest array
 programming languages, and is supposed to be mnemonic for creating
-\textit{index spaces} of arrays.  Put another way, \texttt{iota n}
+\textit{index spaces} of arrays.  Put another way, \fop{iota}\texttt{ n}
 produces an array of valid indices into an array of size \texttt{n}.
 
-The \texttt{replicate} construct is used to create an array of some
+The \fop{replicate} construct is used to create an array of some
 size, with all elements having the same given value:
 
 \begin{lstlisting}
 replicate 3 42 == [42,42,42]
 \end{lstlisting}
 
-We can use \texttt{concat} to combine several arrays:
+We can use \fop{concat} to combine several arrays:
 
 \begin{lstlisting}
 concat (iota 2) ([1,2,3]) (replicate 4 1) ==
@@ -601,10 +601,10 @@ concat (iota 2) ([1,2,3]) (replicate 4 1) ==
 
 Note that the parentheses around the literal array are necessary - if
 they were not present, this expression would be parsed as an attempt
-to index the expression \texttt{iota 2} using \texttt{[1,2,3]} as the
+to index the expression \fop{iota}\texttt{ 2} using \texttt{[1,2,3]} as the
 indices.  This would of course result in a type error.
 
-We can use \texttt{zip} to transform $n$ arrays to a single array of
+We can use \fop{zip} to transform $n$ arrays to a single array of
 $n$-tuples:
 
 \begin{lstlisting}
@@ -613,18 +613,18 @@ zip [1,2,3] [true,false,true] [7.0,8.0,9.0] ==
 \end{lstlisting}
 
 That the input arrays may have different types.  We can use
-\texttt{unzip} to perform the inverse transformation:
+\fop{unzip} to perform the inverse transformation:
 
 \begin{lstlisting}
 unzip [(1,true,7.0),(2,false,8.0),(3,true,9.0)] ==
   ([1,2,3], [true,false,true], [7.0,8.0,9.0])
 \end{lstlisting}
 
-Be aware that \texttt{zip} requires all of the input arrays to have
+Be aware that \fop{zip} requires all of the input arrays to have
 the same size.  Transforming between arrays of tuples and tuples of
 arrays is common in Futhark programs, as many array operations accept
 only one array as input.  Due to a clever implementation technique,
-\texttt{zip} and \texttt{unzip} also have no runtime cost (no copying
+\fop{zip} and \fop{unzip} also have no runtime cost (no copying
 or allocation whatsoever), so you should not shy away from using them
 out of efficiency concerns.\footnote{This is enabled via storing all
   arrays in ``unzipped'' form.  That is, at runtime, arrays of tuples
@@ -636,7 +636,7 @@ out of efficiency concerns.\footnote{This is enabled via storing all
 
 \subsection{Map}
 
-The simplest SOAC is probably \texttt{map}.  It takes two arguments: a
+The simplest SOAC is probably \fop{map}.  It takes two arguments: a
 function and an array.  The function argument can be a function name,
 or an anonymous function.  The function is
 called for every element of the input array, and an array of the result is
@@ -667,7 +667,7 @@ Haskell:
 map (2-) [1,2,3] == [1,0,-1]
 \end{lstlisting}
 
-In contrast to other languages, the \texttt{map} in Futhark takes any
+In contrast to other languages, the \fop{map} SOAC in Futhark takes any
 nonzero number of array arguments, and requires a function with the
 same number of parameters.  For example, we can perform an
 element-wise sum of two arrays:
@@ -676,9 +676,9 @@ element-wise sum of two arrays:
 map (+) [1,2,3] [4,5,6] == [5,7,9]
 \end{lstlisting}
 
-Be careful when writing \texttt{map} expressions where the function
+Be careful when writing \fop{map} expressions where the function
 returns an array.  Futhark requires regular arrays, so a map with
-\texttt{iota} is unlikely to go well:
+\fop{iota} is unlikely to go well:
 
 \begin{lstlisting}
 map (\n -> iota n) ns
@@ -687,7 +687,7 @@ map (\n -> iota n) ns
 Unless the array \texttt{ns} consisted of identical values, the
 program would fail at runtime.
 
-We can use \texttt{map} and \texttt{iota} to duplicate many other
+We can use \fop{map} and \fop{iota} to duplicate many other
 language constructs.  For example, if we have two arrays
 \texttt{xs:[n]int} and \texttt{ys:[m]int}---that is, two integer
 arrays of sizes \texttt{n} and \texttt{m}---we can concatenate them
@@ -697,13 +697,13 @@ using:
 
 However, it is not a good idea to write code like this, as it hinders
 the compiler from using high-level properties to do optimisation.
-Using \texttt{map}s over \texttt{iota}s with explicit indexing is
+Using \fop{map}s over \fop{iota}s with explicit indexing is
 usually only necessary when solving complicated irregular problems
 that cannot be represented directly.
 
 \subsection{Scan and Reduce}
 
-While \texttt{map} is an array transformer, the \texttt{reduce} SOAC
+While \fop{map} is an array transformer, the \fop{reduce} SOAC
 is an array aggregator: it uses some function of type \texttt{t -> t
   -> t} to combine the elements of an array of type \texttt{[]t} to a
 value of type \texttt{t}.  In order to do this in parallel, the
@@ -726,10 +726,10 @@ element to compute the sum of an array of integers:
 reduce (+) 0 [1,2,3] == 6
 \end{lstlisting}
 
-It turns out that combining \texttt{map} and \texttt{reduce} is both
+It turns out that combining \fop{map} and \fop{reduce} is both
 powerful and has remarkable optimisation properties, as we will
 discuss in Chapter~\ref{chap:soac-algebra}.  Many Futhark programs are
-primarly \texttt{map}-\texttt{reduce} compositions.  For example, we
+primarly \fop{map}-\fop{reduce} compositions.  For example, we
 can define a function to compute the dot product of two vectors of
 integers:
 
@@ -738,50 +738,50 @@ let dotProd (xs: []int) (ys: []int): int =
   reduce (+) 0 (map (*) xs ys)
 \end{lstlisting}
 
-A close cousin of \texttt{reduce} is \texttt{scan}, often called
-\textit{generalised prefix sum}.  Where \texttt{reduce} produces just
-one result, \texttt{scan} produces one result for every prefix of the
+A close cousin of \fop{reduce} is \fop{scan}, often called
+\textit{generalised prefix sum}.  Where \fop{reduce} produces just
+one result, \fop{scan} produces one result for every prefix of the
 input array.  This is perhaps best understood with an example:
 
 \begin{lstlisting}
 scan (+) 0 [1,2,3] == [0+1, 0+1+2, 0+1+2+3] == [1, 3, 6]
 \end{lstlisting}
 
-Intuitively, the result of \texttt{scan} is an array of the results of calling
-\texttt{reduce} on increasing prefixes of the input array.  The last
+Intuitively, the result of \fop{scan} is an array of the results of calling
+\fop{reduce} on increasing prefixes of the input array.  The last
 element of the returned array is equivalent to the result of calling
-\texttt{reduce}. Like with \texttt{reduce}, the operator given to
-\texttt{scan} must be associative and have a neutral element.
+\fop{reduce}. Like with \fop{reduce}, the operator given to
+\fop{scan} must be associative and have a neutral element.
 
 There are two main ways to compute scans: \textit{exclusive} and
 \textit{inclusive}.  The difference is that the empty prefix is
 considered in an exclusive scan, but not in an inclusive scan.
 Computing the exclusive $+$-scan of \texttt{[1,2,3]} thus gives
 \texttt{[0,1,3,6]}, while the inclusive $+$-scan is \texttt{[1,3,6]}.
-The \texttt{scan} SOAC in Futhark is inclusive, but it is of course
+The \fop{scan} SOAC in Futhark is inclusive, but it is of course
 easy to generate a corresponding exclusive scan simply by prepending
 the neutral element.
 
-While the idea behind \texttt{reduce} is probably familiar,
-\texttt{scan} is a little more esoteric, and mostly has applications
+While the idea behind \fop{reduce} is probably familiar,
+\fop{scan} is a little more esoteric, and mostly has applications
 for handling algorithms that do not seem parallel at first glance.
 Several examples are discussed in
 Chapter~\ref{chap:parallel-algorithms}.
 
 \subsection{Filtering}
 
-We have seen \texttt{map}, which permits us to change all the elements
-of an array.  We have seen \texttt{reduce}, which lets us collapse all
+We have seen \fop{map}, which permits us to change all the elements
+of an array.  We have seen \fop{reduce}, which lets us collapse all
 the elements of an array.  But we still need something that lets us
 remove some, but not all, of the elements of an array.  This SOAC is
-\texttt{filter}, which behaves much like a filter in any other
+\fop{filter}, which behaves much like a filter in any other
 functional language:
 
 \begin{lstlisting}
 filter (<3) [1,5,2,3,4] == [1,2]
 \end{lstlisting}
 
-The use of \texttt{filter} is mostly straightforward, but there are
+The use of \fop{filter} is mostly straightforward, but there are
 some patterns that may appear subtle at first glance.  For example,
 how do we find the \textit{indices} of all nonzero entries in an array
 of integers?  Finding the values is simple enough:
@@ -793,13 +793,13 @@ filter (\x -> x != 0) [0,5,2,0,1] ==
 
 \noindent
 But what are the corresponding indices?  We can solve this using a
-combination of \texttt{zip}, \texttt{filter}, and \texttt{unzip}:
+combination of \fop{zip}, \fop{filter}, and \fop{unzip}:
 
 \lstinputlisting[firstline=5,lastline=9]{src/indices_of_nonzero.fut}
 
 \noindent
-Be aware that \texttt{filter} is a somewhat expensive SOAC,
-corresponding roughly to a \texttt{scan} plus a \texttt{map}.
+Be aware that \fop{filter} is a somewhat expensive SOAC,
+corresponding roughly to a \fop{scan} plus a \fop{map}.
 
 \section{Sequential Loops}
 \label{sec:sequential-loops}
@@ -814,7 +814,7 @@ let fibhelper(x: int, y: int, n: int): int =
   if n == 1 then x else fibhelper(y, x+y, n-1)
 \end{lstlisting}
 
-We can rewrite this looping using \texttt{loop} syntax:
+We can rewrite this looping using \fw{loop} syntax:
 
 \begin{lstlisting}
 let fib(n: int): int =
@@ -844,7 +844,7 @@ has the following semantics:
   value.
 \end{enumerate}
 
-Semantically, a \texttt{loop} expression is completely equivalent to a
+Semantically, a \fw{loop} expression is completely equivalent to a
 call to its corresponding tail-recursive function.
 
 For example, denoting by \texttt{t} the type of \texttt{x}, the
@@ -870,7 +870,7 @@ let x = f(i, n, a)
 in body
 \end{lstlisting}
 
-The purpose of \texttt{loop} is partly to render some sequential
+The purpose of \fw{loop} is partly to render some sequential
 computations slightly more convenient, but primarily to express
 certain very specific forms of recursive functions, specifically those
 with a fixed iteration count.  This property is used for analysis and
@@ -878,7 +878,7 @@ optimisation by the Futhark compiler.  In contrast to most functional
 languages, Futhark does \textit{not} perform tail call optimisation.
 Furthermore, recursive functions may not work inside parallel
 sections, depending on the targeted backend.  It is therefore strongly
-recommended to use \texttt{loop} syntax instead of recursion.
+recommended to use \fw{loop} syntax instead of recursion.
 
 Apart from the \texttt{i < n} form, which loops from zero, Futhark
 also supports the \texttt{v <= i < n} form which starts at \texttt{v}.
@@ -887,11 +887,11 @@ We can also invert the order of iteration by writing \texttt{n > i} or
 lower.  Due to parser limitations, most non-atomic expressions will
 have to be parenthesised when used as the left-hand bound.
 
-Apart from \texttt{for}-loops, Futhark also supports \texttt{while}
-loops.  These do not provide as much information to the compiler, but
-can be used for convergence loops, where the number of iterations
-cannot be predicted in advance.  For example, the following program
-doubles a given number until it exceeds a given threshold value:
+Apart from \fop{for}-loops, Futhark also supports \fop{while}-loops.
+These do not provide as much information to the compiler, but can be
+used for convergence loops, where the number of iterations cannot be
+predicted in advance.  For example, the following program doubles a
+given number until it exceeds a given threshold value:
 
 \begin{lstlisting}
 let main(x: i32, bound: i32): i32 =
@@ -900,8 +900,8 @@ let main(x: i32, bound: i32): i32 =
 \end{lstlisting}
 
 \noindent
-In all respects other than termination criteria, \texttt{while}-loops
-behave identically to \texttt{for}-loops.
+In all respects other than termination criteria, \fop{while}-loops
+behave identically to \fop{for}-loops.
 
 For brevity, the initial value expression can be elided, in which case
 an expression equivalent to the pattern is implied.  This is easier to
@@ -1017,7 +1017,7 @@ is a subtype of the corresponding nonunique type).
 
 A variable $v$ aliases $a$ if they may share some elements,
 i.e. overlap in memory.  As the most trivial case, after evaluating
-the binding \texttt{let b = a}, the variable \texttt{b} will alias
+the binding \fw{let}\texttt{ b = a}, the variable \texttt{b} will alias
 \texttt{$a$}.  As another example, if we extract a row from a
 two-dimensional array, the row will alias its source:
 
@@ -1028,8 +1028,8 @@ let b = a[0] -- b is aliased to a
 
 \noindent
 Most array combinators produce fresh arrays that initially alias no
-other arrays in the program.  In particular, the result of \texttt{map
-  f a} does not alias \texttt{a}.  One exception is \texttt{split},
+other arrays in the program.  In particular, the result of \fop{map
+  f a} does not alias \texttt{a}.  One exception is \fop{split},
 used for dividing arrays into multiple parts, where each of the
 partitions are aliased to the original array (but the partitions,
 being non-overlapping, are not aliased to each other).
@@ -1056,7 +1056,7 @@ three principal rules:
 \begin{description}
 \item[Uniqueness Rule 1] When a value is consumed --- for example, by
   being passed in the place of a unique parameter in a function call,
-  or used as the source in a in-place \texttt{let} expression, neither
+  or used as the source in a in-place \fw{let} expression, neither
   that value, nor any value that aliases it, may be used on any
   execution path following the function call.  A violation of this
   rule is illustrated on Figure \ref{fig:uniqueness-rule-1-violation}.
@@ -1119,11 +1119,11 @@ algorithms that are then mapped on some array.  Somewhat
 counter-intuitively, however, in-place updates can also be used for
 expressing irregular nested parallel algorithms (which are otherwise
 not expressible in Futhark), albeit in a low-level way.  The key here
-is the array combinator \texttt{scatter}, which writes to several
+is the array combinator \fop{scatter}, which writes to several
 positions in an array in parallel.  Suppose we have an array
 \texttt{is} of type \texttt{[$n$]i32}, an array \texttt{vs} of type
 \texttt{[$n$]$t$} (for some \texttt{$t$}), and an array \texttt{as} of
-type \texttt{[$m$]$t$}. Then the expression \texttt{write as is vs}
+type \texttt{[$m$]$t$}. Then the expression \fop{scatter}\texttt{ as is vs}
 morally computes
 
 \begin{lstlisting}[language=ruby,mathescape=true]
@@ -1136,7 +1136,7 @@ morally computes
 \noindent
 and returns the modified \texttt{as} array.  The old \texttt{as} array
 is marked as consumed and may not be used anymore.  Parallel
-\texttt{scatter} can be used to implement efficiently the radix sort algorithm, as demonstrated in Section~\ref{sec:radixsort}.
+\fop{scatter} can be used to implement efficiently the radix sort algorithm, as demonstrated in Section~\ref{sec:radixsort}.
 
 \section{Modules}
 \label{sec:modules}
@@ -1325,7 +1325,7 @@ module Sum(M: Monoid) = {
 There is an implied assumption here, which is not captured by the type
 system: the function \texttt{add} must be associative and have
 \texttt{zero} as its neutral element.  These constraints are from the
-parallel semantics of \texttt{reduce}, and the algebraic concept of a
+parallel semantics of \fop{reduce}, and the algebraic concept of a
 \textit{monoid}.  Note that in \texttt{Monoid}, no definition is given
 of the type \texttt{t} - we only assert that there must be some type
 \texttt{t}, and that certain operations are defined for it.
@@ -1366,7 +1366,7 @@ Parametric modules, like other modules, can contain more than one
 declaration.  This is useful for giving related functionality a common
 abstraction, for example to implement linear algebra operations that
 are polymorphic over the type of scalars.  This example uses an
-anonymous module type for the module parameter, and the \texttt{open}
+anonymous module type for the module parameter, and the \fw{open}
 declaration, which brings the names from a module into the current
 scope
 
@@ -1378,11 +1378,12 @@ scope
     val mul : scalar -> scalar -> scalar
   }) = {
     open M
-
-    let dotprod (xs: [n]scalar) (ys: [n]scalar): scalar =
-      reduce add zero (zipWith mul xs ys)
-
-    let matmul (xss: [n][p]scalar) (yss: [p][m]scalar): [n][m]scalar =
+    let dotprod [n] (xs: [n]scalar) (ys: [n]scalar)
+      : scalar =
+      reduce add zero (map mul xs ys)
+    let matmul [n] [p] [m] (xss: [n][p]scalar)
+                           (yss: [p][m]scalar)
+      : [n][m]scalar =
       map (\xs -> map (dotprod xs) (transpose yss)) xss
   }
 \end{lstlisting}
@@ -1617,7 +1618,7 @@ let main(n: int): [][]int =
 At the time of this writing, the \texttt{futhark-opencl} compiler will
 fail with the not particularly illuminative error message
 \texttt{Cannot allocate memory in kernel}.  The reason is that the
-compiler is trying to compile the \texttt{map} to parallel code, which
+compiler is trying to compile the \fop{map} to parallel code, which
 involves pre-allocating memory for the \texttt{a} and \texttt{b}
 array.  It is unable to do this, as the sizes of these two arrays
 depend on values that are only known \textit{inside} the map, which is
@@ -1641,7 +1642,7 @@ let main(n: int): [][]int =
 This exploits the fact that the compiler does not generate allocations
 for array slices or in-place updates.  The only allocation is of the
 initial \texttt{res}, the size of which can be computed before
-entering the \texttt{map}.
+entering the \fop{map}.
 
 \chapter{A Parallel Cost Model for Futhark Programs}
 \label{chap:costmodel}
@@ -1725,7 +1726,7 @@ pattern matching and we do not, in this section, consider uniqueness types.
 \begin{lstlisting}[mathescape=true]
   $p$ ::= $x$  |  ($x_1$,...,$x_n$)
   $\id{ps}$ ::= $p_1 \cdots p_n$
-  $F$ ::= \backslash $\id{ps}$ -> $e$  |  $e$ $\id{binop}$  |  $\id{binop}$ $e$
+  $F$ ::= $\backslash{}\id{ps}$ -> $e$  |  $e$ $\id{binop}$  |  $\id{binop}$ $e$
   $P$ ::= let $f$ $\id{ps}$ = $e$  |  $P_1$ $P_2$  |  let $p$ = $e$
   $v$ ::= true  |  false  |  $n$  |  $r$  |  [$v_1$,...,$v_n$]  |  ($v_1$,...,$v_n$)
   $e$ ::= $x$  |  $v$  |  let $\id{ps}$ = $e$ in $e'$  |  $e$[$e'$]  |  $e$[$e'$:$e''$]
@@ -2254,13 +2255,15 @@ first calculates the primes smaller than $\sqrt n$. It then uses this
 intermediate result for sieving away the integers in the range $\sqrt
 n$ up to $n$ that are multiples of the primes smaller than $\sqrt n$.
 
-A Futhark program calculating the number of primes below some number
+Unfortunately, Futhark does not presently support recursion, thus, one
+needs to use a \fw{loop} construct instead to implement the sieve.  A
+Futhark program calculating the number of primes below some number
 $n$, also denoted in the literature as the $\pi$ function, is shown in
 Figure~\ref{fig:primes}.
 
 \begin{figure}
 \begin{wrap}
-\lstinputlisting{src/primes.fut}
+\lstinputlisting[firstline=15]{src/primes.fut}
 \end{wrap}
 \caption{An Implementation of the Sieve of Eratosthenes.}
 \label{fig:primes}
@@ -2270,9 +2273,8 @@ Notice that the algorithm applies a parallel sieve for each step,
 using a combination of maps and reductions. The work done by the
 algorithm is $O(n\,\log\,\log\,n)$ and the span is
 $O(\log\,\log\,n)$. The $\log\,\log\,n$ factor appears because the
-size of the problem is reduced at each step by applying the square
-root, which is identical to halving the exponent size at each
-step (i.e., the sequence $n, \ldots, 2^{16}, 2^8, 2^4, 2^2$, where $n=2^{2^m}$, for some positive $m$, has $m = \log\,\log\,n$ elements.)
+size of the problem is squared at each step, which is identical to doubling the exponent size at each
+step (i.e., the sequence $2^2, 2^4, 2^8, 2^{16}, \ldots, n$, where $n=2^{2^m}$, for some positive $m$, has $m = \log\,\log\,n$ elements.)
 
 \chapter{Algebraic Properties of SOACs}
 \label{chap:soac-algebra}
