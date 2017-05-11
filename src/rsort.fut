@@ -11,6 +11,8 @@
 -- input @ data/radix_sort_100.in
 -- output @ data/radix_sort_100.out
 
+module Array = import "/futlib/array"
+
 -- The rsort_step contraction function takes care of moving
 -- all elements with bitn set to the end of the array (and
 -- otherwise preserve the order of elements)
@@ -23,7 +25,7 @@ let rsort_step [n] (xs: [n]u32, bitn: i32): [n]u32 =
   let idxs1 = map (*) bits1 (map (+offs) idxs1)
   let idxs  = map (+) idxs0 idxs1
   let idxs  = map (-1) idxs
-  in scatter (copy xs) idxs xs
+  in scatter (Array.copy xs) idxs xs
 
 -- Radix sort algorithm, ascending
 let rsort [n] (xs: [n]u32): [n]u32 =

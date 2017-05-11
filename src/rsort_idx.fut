@@ -12,6 +12,8 @@
 -- nobench input @ data/radix_sort_100.in
 -- output @ data/radix_sort_100.out
 
+module Array = import "/futlib/array"
+
 -- Store elements for which bitn is not set first
 let rs_step_asc [n] ((xs:[n]u32,is:[n]i32),bitn:i32) : ([n]u32,[n]i32) =
   let bits1 = map (\x -> i32((x >> u32(bitn)) & 1u32)) xs
@@ -21,8 +23,8 @@ let rs_step_asc [n] ((xs:[n]u32,is:[n]i32),bitn:i32) : ([n]u32,[n]i32) =
   let offs  = reduce (+) 0 bits0    -- store idxs1 last
   let idxs1 = map (*) bits1 (map (+offs) idxs1)
   let idxs  = map (-1) (map (+) idxs0 idxs1)
-  in (scatter (copy xs) idxs xs,
-      scatter (copy is) idxs is)
+  in (scatter (Array.copy xs) idxs xs,
+      scatter (Array.copy is) idxs is)
 
 -- Radix sort - ascending
 let rsort_asc [n] (xs: [n]u32) : ([n]u32,[n]i32) =
@@ -40,8 +42,8 @@ let rs_step_desc [n] ((xs:[n]u32,is:[n]i32),bitn:i32) : ([n]u32,[n]i32) =
   let offs  = reduce (+) 0 bits1    -- store idxs0 last
   let idxs0 = map (*) bits0 (map (+offs) idxs0)
   let idxs  = map (-1) (map (+) idxs1 idxs0)
-  in (scatter (copy xs) idxs xs,
-      scatter (copy is) idxs is)
+  in (scatter (Array.copy xs) idxs xs,
+      scatter (Array.copy is) idxs is)
 
 -- Radix sort - descending
 let rsort_desc [n] (xs: [n]u32) : ([n]u32,[n]i32) =

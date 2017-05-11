@@ -1677,16 +1677,16 @@ compute the work for a call to the \fop{map} SOAC, how to compute the
 work for the \fop{iota} operation, how to compute the work for the
 multiply operation, and, finally, how to combine the work. The way to
 determine the work for a \fop{map} SOAC instance is to multiply the
-size of the argument array with the work of body of the argument
+size of the argument array with the work of the body of the argument
 function. Thus, we have
-$$ W(\fop{map}~\kw{(}\backslash~\kw{j -> i * j) (}\fop{iota}~\kw{$n$)}) = n+1 $$
+$$ W(\fop{map}~\kw{(\textbackslash{}j -> i * j) (}\fop{iota}~\kw{$n$)}) = n+1 $$
 Applying a similar agument to the outer map, we get
-$$W(\fop{map}~\kw{(}\backslash~\kw{i -> $\cdots$) (}\fop{iota}~\kw{$n$)}) = (n+1)^2 $$
+$$W(\fop{map}~\kw{(\textbackslash{}i -> $\cdots$) (}\fop{iota}~\kw{$n$)}) = (n+1)^2 $$
 
 \noindent
 Most often we are interested in finding the asymptotical complexity of
 the algorithm we are analyzing, in which case we will simply write
-$$W(\fop{map}~\kw{(}\backslash~\kw{i -> $\cdots$) (}\fop{iota}~\kw{$n$)}) = O(n^2) $$
+$$W(\fop{map}~\kw{(\textbackslash{}i -> $\cdots$) (}\fop{iota}~\kw{$n$)}) = O(n^2) $$
 
 In a similar way we can derive that the span of a call
 $\kw{multable}~n$, written $S(\kw{multable}~n)$, is $O(1)$.
@@ -1709,7 +1709,7 @@ We assume a countable infinite number of program variables, ranged over
 by $x$ and $f$. Binary infix scalar operators, first-order built-in operations, and
 second order array combinators are given as follows:
 
-\begin{lstlisting}[mathescape=true]
+\begin{lstlisting}[mathescape=true,style=nonumbers]
   $\id{binop}$ ::= + | - | * | / | $\cdots$
   $\id{op}$ ::= - | abs | copy | concat | empty | iota
        | partition | rearrange | replicate | reshape
@@ -1723,10 +1723,10 @@ required explicit type annotations and the optional explicit type
 annotations. Also for simplicity, we are considering only ``unnested''
 pattern matching and we do not, in this section, consider uniqueness types.
 
-\begin{lstlisting}[mathescape=true]
+\begin{lstlisting}[mathescape=true,style=nonumbers]
   $p$ ::= $x$  |  ($x_1$,...,$x_n$)
   $\id{ps}$ ::= $p_1 \cdots p_n$
-  $F$ ::= $\backslash{}\id{ps}$ -> $e$  |  $e$ $\id{binop}$  |  $\id{binop}$ $e$
+  $F$ ::= \$\id{ps}$ -> $e$  |  $e$ $\id{binop}$  |  $\id{binop}$ $e$
   $P$ ::= let $f$ $\id{ps}$ = $e$  |  $P_1$ $P_2$  |  let $p$ = $e$
   $v$ ::= true  |  false  |  $n$  |  $r$  |  [$v_1$,...,$v_n$]  |  ($v_1$,...,$v_n$)
   $e$ ::= $x$  |  $v$  |  let $\id{ps}$ = $e$ in $e'$  |  $e$[$e'$]  |  $e$[$e'$:$e''$]
@@ -1905,7 +1905,7 @@ type environment $\Gamma'$.''
 
 \onepart{
   \fraccc{\Gamma,x_1:\tau_1~\cdots~x_n:\tau_n \vd e : \tau}{
-    \Gamma \vd \backslash ~x_1:\tau_1~\cdots~x_n:\tau_n ~ \kw{->} ~e : \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau
+    \Gamma \vd \kw{\textbackslash{}} x_1:\tau_1~\cdots~x_n:\tau_n ~ \kw{->} ~e : \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau
   }
 }
 
@@ -2015,7 +2015,7 @@ first give the definition for $\Eval{\cdot}$:
 
 Given a SOAC function parameter $F$, we define the utility \emph{extraction function}, $\extractF{F}$, as follows:
 \begin{eqnarray*}
-  \extractF{\backslash~x_1\cdots x_n~\kw{->}~ e} & = & \lambda x_1 \cdots x_n . e \\
+  \extractF{\kw{\textbackslash}x_1\cdots x_n~\kw{->}~ e} & = & \lambda x_1 \cdots x_n . e \\
   \extractF{\id{binop}~e} & = & \lambda x . x~\id{binop}~v \\
     & & ~~~\mathrm{where}~v = \Eval{e} \\
   \extractF{e~\id{binop}} & = & \lambda x . v~\id{binop}~x \\
@@ -2051,7 +2051,7 @@ remaining SOACs follow the same lines as the definitions for \fop{map}
 and \fop{reduce}.
 
 \begin{figure}
-\begin{lstlisting}[mathescape=true]
+\begin{lstlisting}[mathescape=true,style=nonumbers]
   $W(v)$ = $1$
   $W($let $x$ = $e$ in $e')$ = $W(e) + W(e'[\Eval{e}/x]) + 1$
   $W($let ($x_1$,...,$x_n$) = $e$ in $e')$ =
@@ -2080,7 +2080,7 @@ and \fop{reduce}.
 \end{figure}
 
 \begin{figure}
-\begin{lstlisting}[mathescape=true]
+\begin{lstlisting}[mathescape=true,style=nonumbers]
   $S(v)$ = $1$
   $S($let $x$ = $e$ in $e')$ = $S(e) + S(e'[\Eval{e}/x]) + 1$
   $S($let ($x_1$,...,$x_n$) = $e$ in $e')$ =
@@ -2196,7 +2196,7 @@ order is shown in Figure~\ref{fig:rsort}.
 
 \begin{figure}
 \begin{wrap}
-\lstinputlisting[firstline=17,lastline=31]{src/rsort.fut}
+\lstinputlisting[firstline=19,lastline=33]{src/rsort.fut}
 \end{wrap}
 \caption{An Implementation of Radix-Sort (ascending) in Futhark.}
 \label{fig:rsort}
@@ -2461,13 +2461,13 @@ ascending version by reversing the arrays resulting from calling the
 descending version.
 
 \begin{figure}
-\lstinputlisting[firstline=15,lastline=32]{src/rsort_idx.fut}
+\lstinputlisting[firstline=17,lastline=34]{src/rsort_idx.fut}
 \caption{Generalised Ascending Version of Radix Sort.}
 \label{fig:rsort_idx_asc}
 \end{figure}
 
 \begin{figure}
-\lstinputlisting[firstline=34,lastline=50]{src/rsort_idx.fut}
+\lstinputlisting[firstline=36,lastline=52]{src/rsort_idx.fut}
 \caption{Generalised Descending Version of Radix Sort.}
 \label{fig:rsort_idx_desc}
 \end{figure}
