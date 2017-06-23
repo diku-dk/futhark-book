@@ -5,7 +5,7 @@
 --   [83, 1, 4, 99, 33, 0, 6, 5]
 -- }
 -- output {
---   [0, 1, 4, 5, 6, 33, 83, 99],
+--   [0, 1, 4, 5, 6, 33, 83, 99]
 --   [5, 1, 2, 7, 6,  4,  0,  3]
 -- }
 --
@@ -29,9 +29,9 @@ let rs_step_asc [n] ((xs:[n]u32,is:[n]i32),bitn:i32) : ([n]u32,[n]i32) =
 -- Radix sort - ascending
 let rsort_asc [n] (xs: [n]u32) : ([n]u32,[n]i32) =
   let is = iota n
-  loop (p : ([n]u32,[n]i32) = (xs,is)) = for i < 32 do
+  in loop (p : ([n]u32,[n]i32) = (xs,is)) for i < 32 do
     rs_step_asc(p,i)
-  in p
+
 
 -- Store elements for which bitn is set first
 let rs_step_desc [n] ((xs:[n]u32,is:[n]i32),bitn:i32) : ([n]u32,[n]i32) =
@@ -47,9 +47,9 @@ let rs_step_desc [n] ((xs:[n]u32,is:[n]i32),bitn:i32) : ([n]u32,[n]i32) =
 
 -- Radix sort - descending
 let rsort_desc [n] (xs: [n]u32) : ([n]u32,[n]i32) =
-  loop (p : ([n]u32,[n]i32) = (xs,iota n)) = for i < 32 do
+  loop (p : ([n]u32,[n]i32) = (xs,iota n)) for i < 32 do
     rs_step_desc(p,i)
-  in p
+
 
 let grade_up [n] (xs: [n]u32) : [n]i32 =
   let (_,is) = rsort_asc xs in is

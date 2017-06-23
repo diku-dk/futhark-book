@@ -30,10 +30,10 @@ let update [h] [w] [n] (grid:*[h][w]i32)(xs:[n]i32)(ys:[n]i32):*[h][w]i32 =
 
 -- Sequential algorithm for drawing multiple lines
 let drawlines [h] [w] [n] (grid: *[h][w]i32) (lines:[n]line) : [h][w]i32 =
-  loop (grid) = for i < n do -- find points for line i
+  loop (grid) for i < n do -- find points for line i
     let (xs,ys) = unzip (linepoints (lines[i]))
     in update grid xs ys
-  in grid
+
 
 -- Draw lines on a 70 by 30 grid
 let main () : [][]i32 =

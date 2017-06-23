@@ -2,14 +2,14 @@
 -- ==
 --
 -- input {
---   [83, 1, 4, 99, 33, 0, 6, 5]
+--
 -- }
 -- output {
---   [0, 1, 4, 5, 6, 33, 83, 99]
+--   [0u32, 1u32, 4u32, 5u32, 6u32, 33u32, 83u32, 99u32]
 -- }
 --
--- input @ data/radix_sort_100.in
--- output @ data/radix_sort_100.out
+--
+--
 
 module Array = import "/futlib/array"
 
@@ -30,9 +30,8 @@ let radix_sort_step [n] (xs: [n]u32, digit_n: i32): [n]u32 =
   in scatter (Array.copy xs) ps_actual xs
 
 let radix_sort [n] (xs: [n]u32): [n]u32 =
-  loop (xs) = for i < 32 do
+  loop (xs) for i < 32 do
     radix_sort_step(xs, i)
-  in xs
 
 let main(): []u32 =
   let arg = map u32 ([83, 1, 4, 99, 33, 0, 6, 5])
