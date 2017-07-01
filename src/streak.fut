@@ -2,10 +2,11 @@
 -- 2015 International APL Problem Solving Competition - Phase I
 -- Converted into Futhark code.
 --
--- streak [1, 2, 3, 4, 5, 6, 7, 8, 9] == 8
--- streak [1] == 0
--- streak [9, 8, 7, 6, 5, 4] == 0
--- streak [1, 5, 3, 4, 2, 6, 7, 8] == 3
+-- ==
+-- input { [1, 2, 3, 4, 5, 6, 7, 8, 9] } output { 8 }
+-- input { [1] } output { 0 }
+-- input { [9, 8, 7, 6, 5, 4] } output { 0 }
+-- input { [1, 5, 3, 4, 2, 6, 7, 8] } output { 3 }
 
 let max (a:i32) (b:i32) : i32 = if a > b then a else b
 
@@ -33,8 +34,4 @@ let streak [n] (xs: [n]i32) : i32  =
   let res = reduce max 0 ss3
   in res
 
-let main() : []bool =
-  [streak ([1, 2, 3, 4, 5, 6, 7, 8, 9]) == 8,
-   streak ([1]) == 0,
-   streak ([9, 8, 7, 6, 5, 4]) == 0,
-   streak ([1, 5, 3, 4, 2, 6, 7, 8]) == 3]
+let main [n] (xs: [n]i32) : i32 = streak xs

@@ -1657,7 +1657,7 @@ Futhark can in many cases map two nested maps into fully parallel
 code. Consider the following Futhark function:
 
 \begin{wrap}
-\lstinputlisting[lastline=4]{src/multable.fut}
+\lstinputlisting[firstline=10,lastline=14]{src/multable.fut}
 \end{wrap}
 
 \noindent
@@ -2127,7 +2127,7 @@ algorithm. In Futhark, the funcion \kw{red} can be implemented as
 follows:
 
 \begin{wrap}
-\lstinputlisting[firstline=11,lastline=15]{src/reduce_contract.fut}
+\lstinputlisting[firstline=13,lastline=17]{src/reduce_contract.fut}
 \end{wrap}
 
 \noindent
@@ -2142,7 +2142,7 @@ The auxiliary function for padding the input vector is implemented by
 the following code:
 
 \begin{wrap}
-\lstinputlisting[firstline=2,lastline=8]{src/reduce_contract.fut}
+\lstinputlisting[firstline=4,lastline=10]{src/reduce_contract.fut}
 \end{wrap}
 
 \subsection{Determining Work and Span}
@@ -2261,7 +2261,7 @@ Figure~\ref{fig:primes}.
 
 \begin{figure}
 \begin{wrap}
-\lstinputlisting[firstline=15]{src/primes.fut}
+\lstinputlisting[firstline=18]{src/primes.fut}
 \end{wrap}
 \caption{An Implementation of the Sieve of Eratosthenes.}
 \label{fig:primes}
@@ -2389,7 +2389,7 @@ associative function that operates on pairs of values
 definition of the segmented scan operation:
 
 \begin{wrap}
-\lstinputlisting[firstline=2,lastline=8]{src/sgm_scan.fut}
+\lstinputlisting[firstline=5,lastline=11]{src/sgm_scan.fut}
 \end{wrap}
 
 \section{Parallel Utility Functions}
@@ -2407,7 +2407,7 @@ returns the smallest index $i$ into $\kw{xs}$ for which $\kw{xs[}i\kw{]} =
 \kw{e}$:
 
 \begin{wrap}
-\lstinputlisting[firstline=4,lastline=8]{src/find_idx.fut}
+\lstinputlisting[firstline=7,lastline=11]{src/find_idx.fut}
 \end{wrap}
 
 The second function,
@@ -2416,7 +2416,7 @@ returns the largest index $i$ into $\kw{xs}$ for which $\kw{xs[}i\kw{]} =
 \kw{e}$:
 
 \begin{wrap}
-\lstinputlisting[firstline=10,lastline=13]{src/find_idx.fut}
+\lstinputlisting[firstline=13,lastline=16]{src/find_idx.fut}
 \end{wrap}
 
 The above two functions make use of the auxiliary functions \kw{min} and
@@ -2438,7 +2438,7 @@ arguments. This feature is exploited in the following function, which
 implements a homomorphism for finding the largest element and its
 index in an array:
 
-\lstinputlisting[lastline=8]{src/maxidx.fut}
+\lstinputlisting[firstline=4,lastline=11]{src/maxidx.fut}
 
 \noindent The function \kw{maxidx} is a \emph{homomorphism} \cite{BirdListTh}: For any
 $x$ and $y$, there exists an associative operator $\oplus$ such that
@@ -2463,13 +2463,13 @@ ascending version by reversing the arrays resulting from calling the
 descending version.
 
 \begin{figure}
-\lstinputlisting[firstline=17,lastline=34]{src/rsort_idx.fut}
+\lstinputlisting[firstline=14,lastline=31]{src/rsort_idx.fut}
 \caption{Generalised Ascending Version of Radix Sort.}
 \label{fig:rsort_idx_asc}
 \end{figure}
 
 \begin{figure}
-\lstinputlisting[firstline=36,lastline=52]{src/rsort_idx.fut}
+\lstinputlisting[firstline=33,lastline=49]{src/rsort_idx.fut}
 \caption{Generalised Descending Version of Radix Sort.}
 \label{fig:rsort_idx_desc}
 \end{figure}
@@ -2483,7 +2483,7 @@ the segmented scan as an integrated part of the algorithm. We start by
 showing the latter version of the longest streak problem:
 
 \begin{wrap}
-\lstinputlisting[firstline=21,lastline=34]{src/streak.fut}
+\lstinputlisting[firstline=22,lastline=35]{src/streak.fut}
 \end{wrap}
 
 The following derivation shows how the algorithm works for a
@@ -2511,7 +2511,7 @@ negation of this array over the unit-array to create the \kw{ss3} vector
 directly.
 
 \begin{wrap}
-\lstinputlisting[firstline=28,lastline=35]{src/sgm_streak.fut}
+\lstinputlisting[firstline=31,lastline=38]{src/sgm_streak.fut}
 \end{wrap}
 
 \noindent
@@ -2549,7 +2549,7 @@ general function \kw{repl\_idx}, which returns an index array providing
 replicating indexes into any argument array of the same length as the
 argument array.
 
-\lstinputlisting[firstline=10,lastline=19]{src/sgm_repl.fut}
+\lstinputlisting[firstline=13,lastline=22]{src/sgm_repl.fut}
 
 An example evaluation of a call to the \kw{repl\_idx} function is
 provided in Figure~\ref{fig:replidxex}. Notice that in order to use
@@ -2596,7 +2596,7 @@ relative to a particular starting point.
 The simple line drawing routine is shown in Figure~\ref{fig:linesseq}.
 
 \begin{figure}
-  \lstinputlisting[firstline=3,lastline=22]{src/lines_seq.fut}
+  \lstinputlisting[firstline=6,lastline=25]{src/lines_seq.fut}
   \caption{Algorithm for Finding the Consituting Points of a Single Line, Defined by its End Points.}
   \label{fig:linesseq}
 \end{figure}
@@ -2609,7 +2609,7 @@ for each line, computed using the \kw{linepoints} function. The
 resulting points are shown on Figure~\ref{fig:lines}.
 
 \begin{figure}
-  \lstinputlisting[firstline=24,lastline=45]{src/lines_seq.fut}
+  \lstinputlisting[firstline=27,lastline=48]{src/lines_seq.fut}
   \caption{Driver Code for Drawing Lines.}
   \label{fig:linesdriver}
 \end{figure}

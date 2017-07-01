@@ -1,3 +1,5 @@
+-- ==
+-- input {} output { true }
 
 -- Find the smallest power of two greater than n
 let nextpow2 (n:i32) : i32 =

@@ -1,3 +1,6 @@
+-- ==
+-- input {} output { [true, true, true, true] }
+
 -- Segmented scan with integer addition
 let sgm_scan_add [n] (vals:[n]i32) (flags:[n]bool) : [n]i32 =
   let pairs = scan ( \(v1,f1) (v2,f2) ->

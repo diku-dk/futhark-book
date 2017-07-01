@@ -1,3 +1,6 @@
+-- ==
+-- input {} output { [2i32, 5i32, 63i32, 2i32, 6i32, 13i32, 16i32, 4i32, 10i32, 13i32] }
+
 -- Segmented scan with integer addition
 let sgm_scan_add [n] (vals:[n]i32) (flags:[n]bool) : [n]i32 =
   let pairs = scan ( \ (v1,f1) (v2,f2) ->

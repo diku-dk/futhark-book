@@ -1,3 +1,6 @@
+-- ==
+-- input {} output @ lines_seq.ok
+
 import "/futlib/math"
 
 -- Finding points on a line

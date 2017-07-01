@@ -1,3 +1,6 @@
+-- ==
+-- input { 100 } output { 25 }
+
 -- Find the first n primes
 -- let primes (n:i32) : []i32 =
 --   if n == 2 then empty(i32)

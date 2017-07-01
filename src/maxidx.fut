@@ -1,3 +1,6 @@
+-- ==
+-- input {} output { 1212i32 17i32 }
+
 -- Find the largest integer and its index in an array
 let MININT : i32 = -10000000
 

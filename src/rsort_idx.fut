@@ -1,16 +1,13 @@
 -- A least significant digit radix sort to test out `write`.
 -- ==
 --
--- nobench input {
---   [83, 1, 4, 99, 33, 0, 6, 5]
+-- input {
+--
 -- }
 -- output {
---   [0, 1, 4, 5, 6, 33, 83, 99]
---   [5, 1, 2, 7, 6,  4,  0,  3]
--- }
+--   [true,true]
 --
--- nobench input @ data/radix_sort_100.in
--- output @ data/radix_sort_100.out
+-- }
 
 module Array = import "/futlib/array"
 
