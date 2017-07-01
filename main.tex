@@ -1483,7 +1483,7 @@ $ cat input | ./dotprod-c -t /dev/stderr > /dev/null
 
 That's more like it - parallel execution is now more than seven times
 faster than sequential execution.  This program is entirely
-memory-bound - on a compute-bound algorithm we can expect much larger
+memory-bound - on a compute-bound program we can expect much larger
 speedups.
 
 \subsection{Multiple Measurements}
@@ -1526,10 +1526,11 @@ to figure out how predictable the performance is.
 However, we can do better still.  Futhark comes with a tool for
 performing automated benchmark runs of programs, called
 \texttt{futhark-bench}.  This tool relies on a specially formatted
-header comment that contains input/output pairs.  The reference manual
-contains a full description, but here is a quick taste.  First, we
-introduce a new program, \texttt{sumsquares.fut}, with smaller data
-sets for convenience:
+header comment that contains input/output pairs.  The reference
+manual\footnote{\url{https://futhark.readthedocs.io/}} contains a full
+description, but here is a quick taste.  First, we introduce a new
+program, \texttt{sumsquares.fut}, with smaller data sets for
+convenience:
 
 \inplisting{src/sumsquares.fut}
 
