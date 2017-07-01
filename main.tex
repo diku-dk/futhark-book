@@ -2417,12 +2417,16 @@ returns the largest index $i$ into $\kw{xs}$ for which $\kw{xs[}i\kw{]} =
 \end{wrap}
 
 The above two functions make use of the auxiliary functions \kw{min} and
-\kw{max}, which are not included in Futhark's basis library:
+\kw{max}:
 
 \begin{lstlisting}
 let max (a:i32) (b:i32) : i32 = if a > b then a else b
 let min (a:i32) (b:i32) : i32 = if a < b then a else b
 \end{lstlisting}
+
+These are also present in Futhark's basis library in
+\texttt{/futlib/math.fut} under the names \lstinline{i32.max} and
+\lstinline{i32.min}.
 
 \subsection{Finding the Largest Element and its Index in an Array}
 
