@@ -1,12 +1,13 @@
+pdflatex=pdflatex -halt-on-error
 
 all:
-	pdflatex main.tex
+	$(pdflatex) main.tex
 	bibtex main
-	pdflatex main.tex
-	pdflatex main.tex
+	$(pdflatex) main.tex
+	$(pdflatex) main.tex
 
 small:
-	pdflatex main.tex
+	$(pdflatex) main.tex
 
 test:
 	make -C src test
