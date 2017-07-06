@@ -26,7 +26,7 @@ let rs_step_asc [n] ((xs:[n]u32,is:[n]i32),bitn:i32) : ([n]u32,[n]i32) =
 -- Radix sort - ascending
 let rsort_asc [n] (xs: [n]u32) : ([n]u32,[n]i32) =
   let is = iota n
-  in loop (p : ([n]u32,[n]i32) = (xs,is)) for i < 32 do
+  in loop (p : ([n]u32,[n]i32)) = (xs,is) for i < 32 do
     rs_step_asc(p,i)
 
 
@@ -44,7 +44,7 @@ let rs_step_desc [n] ((xs:[n]u32,is:[n]i32),bitn:i32) : ([n]u32,[n]i32) =
 
 -- Radix sort - descending
 let rsort_desc [n] (xs: [n]u32) : ([n]u32,[n]i32) =
-  loop (p : ([n]u32,[n]i32) = (xs,iota n)) for i < 32 do
+  loop (p : ([n]u32,[n]i32)) = (xs,iota n) for i < 32 do
     rs_step_desc(p,i)
 
 

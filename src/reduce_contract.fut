@@ -3,7 +3,7 @@
 
 -- Find the smallest power of two greater than n
 let nextpow2 (n:i32) : i32 =
-  loop (a=2) while a < n do 2*a
+  loop a=2 while a < n do 2*a
 
 -- Pad a vector to make its size a power of two
 let padpow2 [n] (ne: i32) (v:[n]i32) : []i32 =
@@ -11,7 +11,7 @@ let padpow2 [n] (ne: i32) (v:[n]i32) : []i32 =
 
 -- Reduce by contraction
 let red (xs : []i32) : i32 =
-  let xs = loop (xs=padpow2 0 xs) while (shape xs)[0] > 1 do
+  let xs = loop xs=padpow2 0 xs while (shape xs)[0] > 1 do
     let n = (shape xs)[0] / 2
     in map (+) xs[0:n] xs[n:2*n]
   in xs[0]
