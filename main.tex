@@ -820,7 +820,7 @@ We can rewrite this looping using \fw{loop} syntax:
 
 \begin{lstlisting}
 let fib(n: int): int =
-  let (x, _) = loop ((x, y) = (1,1)) for i < n do (y, x+y)
+  let (x, _) = loop (x, y) = (1,1) for i < n do (y, x+y)
   in x
 \end{lstlisting}
 
@@ -828,7 +828,7 @@ The semantics of this loop is precisely as in the tail-recursive function
 formulation.  In general, a loop
 
 \begin{lstlisting}
-loop (pat = initial) for i < bound do loopbody
+loop pat = initial for i < bound do loopbody
 \end{lstlisting}
 
 \noindent
@@ -850,9 +850,8 @@ For example, denoting by \texttt{t} the type of \texttt{x}, the
 loop
 
 \begin{lstlisting}
-loop (x = a)
-  for i < n do
-    g(x)
+loop x = a for i < n do
+  g(x)
 \end{lstlisting}
 
 \noindent
@@ -893,7 +892,7 @@ given number until it exceeds a given threshold value:
 
 \begin{lstlisting}
 let main(x: i32, bound: i32): i32 =
-  loop (x) = while x < bound do x * 2
+  loop x = while x < bound do x * 2
 \end{lstlisting}
 
 \noindent
@@ -908,7 +907,7 @@ understand with an example.  The loop
 let fib(n: i32): i32 =
   let x = 1
   let y = 1
-  let (x, _) = loop ((x, y) = (x, y)) = for i < n do (y, x+y)
+  let (x, _) = loop (x, y) = (x, y) for i < n do (y, x+y)
   in x
 \end{lstlisting}
 
@@ -919,7 +918,7 @@ can also be written:
 let fib(n: i32): i32 =
   let x = 1
   let y = 1
-  let (x, _) = loop ((x, y)) = for i < n do (y, x+y)
+  let (x, _) = loop (x, y) for i < n do (y, x+y)
   in x
 \end{lstlisting}
 
@@ -1730,8 +1729,8 @@ pattern matching and we do not, in this section, consider uniqueness types.
   $e$ ::= $x$  |  $v$  |  let $\id{ps}$ = $e$ in $e'$  |  $e$[$e'$]  |  $e$[$e'$:$e''$]
       | [$e_1$,...,$e_n$]  |  ($v_1$,...,$v_n$)
       | f $e_1$ ... $e_n$  |  $\id{op}$ $e_1$ ... $e_n$  |  $e_1$ $\id{binop}$ $e_2$
-      | loop ($p_1$=$e_1$,$\cdots$,$p_n$=$e_n$) = for $x$ < $e$ do $e'$
-      | loop ($p_1$=$e_1$,$\cdots$,$p_n$=$e_n$) = while $e$ do $e'$
+      | loop $p_1$=$e_1$,$\cdots$,$p_n$=$e_n$ for $x$ < $e$ do $e'$
+      | loop $p_1$=$e_1$,$\cdots$,$p_n$=$e_n$ while $e$ do $e'$
       | $\id{soac}$ $F$ $e_1 \cdots e_n$
 \end{lstlisting}
 
