@@ -263,7 +263,7 @@ Futhark comes with language constructs for performing bulk operations
 on arrays, called \textit{Second-Order Array Combinators} (SOACs),
 that mirror the higher order functions found in conventional
 functional languages: \fop{map}, \fop{reduce}, \fop{filter},
-and so forth.  In Futhark, SOACs are not merely library functions, but
+and so forth.  In Futhark, SOACs are not library functions, but
 built-in language features with parallel semantics, and which will
 typically be compiled to parallel code.
 
@@ -290,11 +290,11 @@ of two vectors of integers:
 \lstinputlisting[firstline=5]{src/dotprod.fut}
 
 In Futhark, the notation for an array of element type $t$ is
-\texttt{[]$t$}.  The program declares a function called \texttt{main}
+\texttt{[]$t$}.  The program defines a function called \texttt{main}
 that takes two arguments, both integer arrays, and returns an integer.
-The program first computes the element-wise product of its
-two arguments, resulting in an array of integers, then computes the
-product of the elements in this new array.
+The \texttt{main} function first computes the element-wise product of
+its two arguments, resulting in an array of integers, then computes
+the product of the elements in this new array.
 
 If you put this program in a file \texttt{dotprod.fut}, then you can
 compile it to a binary \texttt{dotprod} (or \texttt{dotprod.exe} on
@@ -317,13 +317,13 @@ In Futhark, an array literal is written with square brackets
 surrounding a comma-separated sequence of elements.  Integer literals
 can be suffixed with a specific type.  This is why \texttt{dotprod}
 prints \texttt{36i32}, rather than just \texttt{36} - this makes it
-clear that the result is a 32-bit integer.  Later we will see when
-these suffixes can be useful.
+clear that the result is a 32-bit integer.  Later we will see examples
+of when these suffixes are useful.
 
 The \texttt{futhark-c} compiler we used above translates a Futhark
-program into sequential code running on the GPU.  This can be useful
+program into sequential code running on the CPU.  This can be useful
 for testing, and will work on most systems, even those without GPUs.
-However, this wastes the main potential of Futhark: fast parallel
+However, it wastes the main potential of Futhark: fast parallel
 execution.  We can instead use the \texttt{futhark-opencl} compiler to
 generate an executable that offloads execution via the OpenCL
 framework.  In principle, this allows offloading to any kind of
@@ -346,75 +346,75 @@ $ echo [2,2,3] [4,5,6] | ./dotprod
 
 In this case, the workload is small enough that there is little
 benefit in parallelising the execution.  In fact, it is likely that
-the OpenCL startup overhead results in several orders of magnitude
-slowdown, over sequential execution, for this tiny dataset.  See
+for this tiny dataset, the OpenCL startup overhead results in several
+orders of magnitude slowdown over sequential execution.  See
 Section~\ref{sec:benchmarking} for information on how to measure
 execution times.
 
 The ability to compile Futhark programs to executables is useful for
 testing, but it should be noted that it is not how Futhark is intended
 to be used in practice.  As a pure functional array language, Futhark
-is not capable of input handling or user interfaces, and as such
-cannot be used as a general-purpose language.  Futhark is intended to
-be used for small, performance-sensitive parts of larger applications,
-typically by compiling a Futhark program to a \textit{library} that
-can be imported and used by applications written in conventional
-languages.  While this usage is still work-in-progress, see
-Chapter~\ref{chap:interoperability} for more information.
+is not capable of reading input or managing a user interface, and as
+such cannot be used as a general-purpose language.  Futhark is
+intended to be used for small, performance-sensitive parts of larger
+applications, typically by compiling a Futhark program to a
+\textit{library} that can be imported and used by applications written
+in conventional languages.  See Chapter~\ref{chap:interoperability}
+for more information.
 
-As befits their use for testing, compiled Futhark executables take a
+As compiled Futhark executables are intended for testing, they take a
 range of command line options to manipulate their behaviour and print
 debugging information.  These will be introduced as needed.
 
 \section{Basic Language Features}
 \label{sec:baselang}
-As a functional or \textit{value-oriented} language, Futhark can be
-understood entirely by how values are constructed, and how expressions
-transform one value to another.  As a statically typed language, all
-values are classified by their \textit{type}.  The primitive types in
-Futhark are the signed integer types \texttt{i8}, \texttt{i16},
-\texttt{i32}, \texttt{i64}, the unsigned integer types \texttt{u8},
-\texttt{u16}, \texttt{u32}, \texttt{u64}, the floating-point types
-\texttt{f32}, \texttt{f64}, as well as \texttt{bool}.  An \texttt{f32}
-is always a single-precision float and a \texttt{f64} is a
-double-precision float.
+As a functional or \textit{value-oriented} language, the semanics of
+Futhark can be understood entirely by how values are constructed, and
+how expressions transform one value to another.  As a statically typed
+language, all values are classified by their \textit{type}.  The
+primitive types in Futhark are the signed integer types \texttt{i8},
+\texttt{i16}, \texttt{i32}, \texttt{i64}, the unsigned integer types
+\texttt{u8}, \texttt{u16}, \texttt{u32}, \texttt{u64}, the
+floating-point types \texttt{f32}, \texttt{f64}, and the boolean type
+\texttt{bool}.  An \texttt{f32} is always a single-precision float and
+a \texttt{f64} is a double-precision float.
 
-Numeric literals can be suffixed with their intended type.  For
-example \texttt{42i8} is of type \texttt{i8}, and \texttt{1337e2f64}
-is of type \texttt{f64}.  If no suffix is given, integer literals are
-of type \texttt{i32}, and decimal literals are of type \texttt{f64}.
-Boolean literals are written as \texttt{true} and \texttt{false}.
+Futhark does not yet support type inference, so numeric literals must
+be suffixed with their intended type.  For example \texttt{42i8} is of
+type \texttt{i8}, and \texttt{1337e2f64} is of type \texttt{f64}.  If
+no suffix is given, integer literals are assumed to be of type
+\texttt{i32}, and decimal literals of type \texttt{f64}.  Boolean
+literals are written as \texttt{true} and \texttt{false}.
 
-All primitive values can be combined in tuples and arrays.  A tuple
-value or type is written as a sequence of comma-separated values or
-types enclosed in parentheses.  For example, \texttt{(0, 1)} is a
-tuple value of type \texttt{(i32,i32)}.  The elements of a tuple need
-not have the same type -- the value \texttt{(false, 1, 2.0)} is of
-type \texttt{(bool, i32, f64)}.  A tuple element can also be another
-tuple, as in \texttt{((1,2),(3,4))}, which is of type
+All values can be combined in tuples and arrays.  A tuple value or
+type is written as a sequence of comma-separated values or types
+enclosed in parentheses.  For example, \texttt{(0, 1)} is a tuple
+value of type \texttt{(i32,i32)}.  The elements of a tuple need not
+have the same type -- the value \texttt{(false, 1, 2.0)} is of type
+\texttt{(bool, i32, f64)}.  A tuple element can also be another tuple,
+as in \texttt{((1,2),(3,4))}, which is of type
 \texttt{((i32,i32),(i32,i32))}.  A tuple cannot have just one element,
-but empty tuples are permitted, although they are not very useful---these are
-written \texttt{()} and are of type \texttt{()}.
+but empty tuples are permitted, although they are not very
+useful---these are written \texttt{()} and are of type \texttt{()}.
 
 An array value is written as a nonempty sequence of comma-separated
 values enclosed in square brackets: \texttt{[1,2,3]}.  An array type
 is written as \texttt{[$d$]$t$}, where \texttt{$t$} is the element
 type of the array, and $d$ is an integer indicating the size.  We
-typically elide $d$, in which case the size will be inferred.  As an
+often elide $d$, in which case the size will be inferred.  As an
 example, an array of three integers could be written as
-\texttt{[1,2,3]}, and has type \texttt{[3]i32}.  An empty array is
+\texttt{[1,2,3]}, and has type \texttt{[3]i32}.  An empty array must be
 written as \texttt{empty($t$)}, where \texttt{$t$} is the element
-type.  The type can also be used to indicate the size of the array, by
-putting the size in between the brackets.
+type.
 
 Multi-dimensional arrays are supported in Futhark, but they must be
 \textit{regular}, meaning that all inner arrays must have the same
 shape.  For example, \texttt{[[1,2], [3,4], [5,6]]} is a valid array
 of type \texttt{[3][2]i32}, but \texttt{[[1,2], [3,4,5], [6,7]]} is
 not, because there we cannot determine integers $m$ and $n$ such that
-\texttt{[$m$][$n$]i32} describes the array.  The restriction to
+\texttt{[$m$][$n$]i32} is the type of the array.  The restriction to
 regular arrays is rooted in low-level concerns about efficient
-compilation.  However, we can understand it in language terms by the
+compilation, but we can understand it in language terms by the
 inability to write a type with consistent dimension sizes for an
 irregular array value.  In a Futhark program, all array values,
 including intermediate (unnamed) arrays, must be typeable.
@@ -424,14 +424,16 @@ chapters.
 
 \subsection{Simple Expressions}
 
-The Futhark expression syntax is mostly conventional, and supports the
-usual binary and unary operators, with few surprises.  This section
-will not try to cover the entire Futhark expression language in
-complete detail.  See the reference manual at
+The Futhark expression syntax is mostly conventional ML-derived
+syntax, and supports the usual binary and unary operators, with few
+surprises.  Futhark does not have syntactically significant
+indentation, so feel free to put whitespace whenever you like.  This
+section will not try to cover the entire Futhark expression language
+in complete detail.  See the reference manual at
 \url{http://futhark.readthedocs.io} for a comprehensive treatment.
 
-Function calls are written using simple juxtaposition.  For example,
-to apply a function \texttt{f} to a constant argument, we write:
+Function application is via juxtaposition.  For example, to apply a
+function \texttt{f} to a constant argument, we write:
 
 \begin{lstlisting}
 f 1.0
@@ -482,7 +484,7 @@ let (x,y) = e      -- e must be of some type (t1,t2)
 
 \noindent
 This feature also demonstrates the Futhark line comment syntax---two dashes
-followed by a space.  Block comments are not presently supported.
+followed by a space.  Block comments are not supported.
 
 A two-way \fw{if}-\fw{then}-\fw{else} is the only branching construct in
 Futhark:
@@ -497,30 +499,44 @@ the number of given indices is equal to the dimensionality of the
 array.  All array accesses are checked at runtime, and the program
 will terminate abnormally if an invalid access is attempted.
 
-Indexing binds very tightly.  For example, the expression
-\texttt{a~b~[i]} means ``apply the function \texttt{a} to the
-expression \texttt{b[i]}'', \textit{not} ``apply the function
-\texttt{a} to the expressions \texttt{b} and \texttt{[i]}''.  When the
-latter is desired, enclose the literal array with parentheses, as in
-\texttt{a~b~([i])}.
+Whitespace is used to disambiguate indexing from application to array
+literals.  For example, the expression \texttt{a~b~[i]} means ``apply
+the function \texttt{a} to the arguments \texttt{b} and
+\texttt{[i]}'', while \texttt{a~b[i]} means``apply the function
+\texttt{a} to the argument \texttt{b[i]}''.
 
 Futhark also supports array \textit{slices}.  The expression
-\texttt{a[i:j]} returns a slice of the array \texttt{a} from index
-\texttt{i} to \texttt{j}, the former inclusive and the latter
-exclusive.  Slicing of multiple dimensions can be done by separating
-with commas, and may be intermixed freely with indexing.  It is an
-error if \texttt{j < n}. It is also possible to specify an optional step size
-using a third slice argument. As an example, the following snippet returns only
-even numbers:
+\texttt{a[i:j:s]} returns a slice of the array \texttt{a} from index
+\texttt{i} (inclusive) to \texttt{j} (exclusive) with a stride of
+\texttt{s}.  Slicing of multiple dimensions can be done by separating
+with commas, and may be intermixed freely with indexing.
+
+If the stride is positive, then \texttt{i <= j} must hold, and if the
+stride is negativ, then \texttt{j <= i} must hold.
+
+Some syntactic sugar is provided for concisely arrays of integevals of
+integers.  The expression \texttt{[x...y]} produces an array of the
+integers from \texttt{x} to \texttt{y}, both inclusive.  The upper
+bound can be made exclusive by writing \texttt{[x..<y]}.  For example:
 
 \begin{lstlisting}
-let f(): i32[] = let x = iota 42
-                  in x[0:41:2]
-
--- Could also be written as
-let f(): i32[] = let x = iota 42
-                  in x[::2]
+[1...3] == [1,2,3]
+[1..<3] == [1,2]
 \end{lstlisting}
+
+A stride can be provided by writing \texttt{[x..y...z]}, with the
+interpretation ``first \texttt{x}, then \texttt{y}, up to
+\texttt{z}``.  For example:
+
+\begin{lstlisting}
+[1..3...7] == [1,3,5,7]
+[1..3..<7] == [1,3,5]
+\end{lstlisting}
+
+The element type of the produced array is the same as the type of the
+integers used to specify the bounds, which must all have the same type
+(but need not be constants).  We will be making frequent use of this
+notation thoughout this book.
 
 \subsection{Top-Level Definitions}
 \label{sec:function-declarations}
@@ -535,6 +551,7 @@ let name params... : return_type = body
 
 \noindent
 A function must declare both its return type and the types of all its
+<<<<<<< HEAD
 parameters.  All functions (except for inline anonymous functions, as
 we will get to later) are defined globally.  Futhark does not use type
 inference. As a concrete example, here is the definition of the Mandelbrot
@@ -550,13 +567,17 @@ let mandelbrot_step(Zn: (f32, f32), C: (f32, f32)): (f32, f32) =
     let real_part = Zn_r*Zn_r - Zn_i*Zn_i + C_r
     let imag_part = 2f32*Zn_r*Zn_i + C_i
     in (real_part, imag_part)
+=======
+parameters.  Futhark does not yet support type inference.  As a
+concrete example, here is the parallel definition of the factorial
+function in Futhark:
+
+\begin{lstlisting}
+let fact (n: i32): i32 = reduce (*) 1 [1...n]
+>>>>>>> Refresh some of the text.
 \end{lstlisting}
 
-\noindent
-Indentation has no syntactical significance in Futhark, but is
-recommended for readability.
-
-A value definition is very similar:
+We can define a constant with very similar notation:
 
 \begin{lstlisting}
 let name: value_type = definition
@@ -570,11 +591,13 @@ let physicists_pi: f64 = 4.0
 \end{lstlisting}
 
 A value definition is semantically similar to a function that ignores
-its argument and always returns the same value.  Values and functions
-may refer to each other, and the order in which they are defined does
-not matter (except when modules get involved---see \ref{sec:modules}).
-You can even define mutually recursive values, although this will
-result in an infinite loop if the value is ever used.
+its argument and always returns the same value.  Top-level definitions
+are declared in strict order, and a definition may refer \textit{only}
+to those names that have been defined before it occurs.  This means
+that circular definitions are not permitted.  We will return to
+function definitions in Section~\ref{sec:polymorphism}, where we will
+look at more advanced features, such as parametric polymorphism and
+implicit size parameters.
 
 \section{Array Operations}
 
@@ -590,38 +613,12 @@ designed to resemble higher-order functions that may be familiar from
 functional languages, they have implicitly parallel semantics, and
 some restrictions to preserve those semantics.
 
-In addition to the array combinators, there are constructs for
-\textit{constructing} arrays.  We already demonstrated literal arrays.
-Additionally, there is \fop{iota}, which creates an array of a
-range of integers starting from zero:
-
-\begin{lstlisting}
-iota 10 == [0,1,2,3,4,5,6,7,8,9]
-\end{lstlisting}
-
-The name \fop{iota} comes from APL, one of the earliest array
-programming languages, and is supposed to be mnemonic for creating
-\textit{index spaces} of arrays.  Put another way, \fop{iota}\texttt{ n}
-produces an array of valid indices into an array of size \texttt{n}.
-
-The \fop{replicate} construct is used to create an array of some
-size, with all elements having the same given value:
-
-\begin{lstlisting}
-replicate 3 42 == [42,42,42]
-\end{lstlisting}
-
 We can use \fop{concat} to combine several arrays:
 
 \begin{lstlisting}
-concat (iota 2) ([1,2,3]) (replicate 4 1) ==
+concat [1,2] [1,2,3] [1,1,1,1] ==
   [0,1,1,2,3,1,1,1,1i32]
 \end{lstlisting}
-
-Note that the parentheses around the literal array are necessary - if
-they were not present, this expression would be parsed as an attempt
-to index the expression \fop{iota}\texttt{ 2} using \texttt{[1,2,3]} as the
-indices.  This would of course result in a type error.
 
 We can use \fop{zip} to transform $n$ arrays to a single array of
 $n$-tuples:
@@ -631,7 +628,7 @@ zip [1,2,3] [true,false,true] [7.0,8.0,9.0] ==
   [(1,true,7.0),(2,false,8.0),(3,true,9.0)]
 \end{lstlisting}
 
-That the input arrays may have different types.  We can use
+Note that the input arrays may have different types.  We can use
 \fop{unzip} to perform the inverse transformation:
 
 \begin{lstlisting}
@@ -639,19 +636,21 @@ unzip [(1,true,7.0),(2,false,8.0),(3,true,9.0)] ==
   ([1,2,3], [true,false,true], [7.0,8.0,9.0])
 \end{lstlisting}
 
-Be aware that \fop{zip} requires all of the input arrays to have
-the same size.  Transforming between arrays of tuples and tuples of
+Be aware that \fop{zip} requires all of the input arrays to have the
+same length.  Transforming between arrays of tuples and tuples of
 arrays is common in Futhark programs, as many array operations accept
 only one array as input.  Due to a clever implementation technique,
-\fop{zip} and \fop{unzip} also have no runtime cost (no copying
-or allocation whatsoever), so you should not shy away from using them
-out of efficiency concerns.\footnote{This is enabled via storing all
+\fop{zip} and \fop{unzip} have no runtime cost (no copying or
+allocation whatsoever), so you should not shy away from using them out
+of efficiency concerns.\footnote{This is enabled via storing all
   arrays in ``unzipped'' form.  That is, at runtime, arrays of tuples
   do not exist, but have always been decomposed into multiple arrays.
   This is a common practice for high-performance computing, usually
   called ``structs of arrays'' versus ``arrays of structs'', and
   serves to permit memory access patterns more friendly to vectorised
   operations.}
+
+Now let's take a look at some SOACs.
 
 \subsection{Map}
 
@@ -669,7 +668,7 @@ Anonymous functions need not define their parameter- or return types,
 but you are free to do so to increase readability:
 
 \begin{lstlisting}
-map (\(x:int): int -> x + 2) [1,2,3]
+map (\(x:i32): i32 -> x + 2) [1,2,3]
 \end{lstlisting}
 
 The functional argument can also be an operator, which must be
@@ -696,29 +695,28 @@ map (+) [1,2,3] [4,5,6] == [5,7,9]
 \end{lstlisting}
 
 Be careful when writing \fop{map} expressions where the function
-returns an array.  Futhark requires regular arrays, so a map with
-\fop{iota} is unlikely to go well:
+returns an array.  Futhark requires regular arrays, so this \fop{map}
+is unlikely to go well:
 
 \begin{lstlisting}
-map (\n -> iota n) ns
+map (\n -> [1...n]) ns
 \end{lstlisting}
 
 Unless the array \texttt{ns} consisted of identical values, the
 program would fail at runtime.
 
-We can use \fop{map} and \fop{iota} to duplicate many other
-language constructs.  For example, if we have two arrays
-\texttt{xs:[n]int} and \texttt{ys:[m]int}---that is, two integer
-arrays of sizes \texttt{n} and \texttt{m}---we can concatenate them
-using:
+We can use \fop{map} to duplicate many other language constructs.  For
+example, if we have two arrays \texttt{xs:[n]i32} and
+\texttt{ys:[m]i32}---that is, two integer arrays of sizes \texttt{n}
+and \texttt{m}---we can concatenate them using:
 
 \lstinputlisting[firstline=2]{src/concat_with_map.fut}
 
 However, it is not a good idea to write code like this, as it hinders
 the compiler from using high-level properties to do optimisation.
-Using \fop{map}s over \fop{iota}s with explicit indexing is
-usually only necessary when solving complicated irregular problems
-that cannot be represented directly.
+Using \fop{map}s with explicit indexing is usually only necessary when
+solving complicated irregular problems that cannot be represented
+directly.
 
 \subsection{Scan and Reduce}
 
@@ -727,7 +725,7 @@ is an array aggregator: it uses some function of type \texttt{t -> t
   -> t} to combine the elements of an array of type \texttt{[]t} to a
 value of type \texttt{t}.  In order to do this in parallel, the
 function must be \textit{associative} and have a \textit{neutral
-  element} (i.e, form a monoid).
+  element} (i.e, form a monoid):
 
 \begin{itemize}
 \item A function $f$ is associative if $f(x,f(y,z)) = f(f(x,y),z)$ for
@@ -736,10 +734,10 @@ function must be \textit{associative} and have a \textit{neutral
   $f(x,e) = f(e,x) = x$ for all $x$.
 \end{itemize}
 
-Many common mathematical operators fulfill these laws, e.g addition:
-$(x+y)+z=x+(y+z)$ and $x+0=0+x=0$.  But others, like subtraction, do
-not.  In Futhark, we can use the addition operator and its neutral
-element to compute the sum of an array of integers:
+Many common mathematical operators fulfill these laws, such as
+addition: $(x+y)+z=x+(y+z)$ and $x+0=0+x=0$.  But others, like
+subtraction, do not.  In Futhark, we can use the addition operator and
+its neutral element to compute the sum of an array of integers:
 
 \begin{lstlisting}
 reduce (+) 0 [1,2,3] == 6
@@ -753,7 +751,7 @@ can define a function to compute the dot product of two vectors of
 integers:
 
 \begin{lstlisting}
-let dotProd (xs: []int) (ys: []int): int =
+let dotprod (xs: []int) (ys: []i32): i32 =
   reduce (+) 0 (map (*) xs ys)
 \end{lstlisting}
 
@@ -777,24 +775,23 @@ There are two main ways to compute scans: \textit{exclusive} and
 considered in an exclusive scan, but not in an inclusive scan.
 Computing the exclusive $+$-scan of \texttt{[1,2,3]} thus gives
 \texttt{[0,1,3,6]}, while the inclusive $+$-scan is \texttt{[1,3,6]}.
-The \fop{scan} SOAC in Futhark is inclusive, but it is of course
-easy to generate a corresponding exclusive scan simply by prepending
-the neutral element.
+The \fop{scan} SOAC in Futhark is inclusive, but it is easy to
+generate a corresponding exclusive scan simply by prepending the
+neutral element.
 
-While the idea behind \fop{reduce} is probably familiar,
-\fop{scan} is a little more esoteric, and mostly has applications
-for handling algorithms that do not seem parallel at first glance.
-Several examples are discussed in
-Chapter~\ref{chap:parallel-algorithms}.
+While the idea behind \fop{reduce} is probably familiar, \fop{scan} is
+a little more esoteric, and mostly has applications for handling
+problems that do not seem parallel at first glance.  Several examples
+are discussed in Chapter~\ref{chap:parallel-algorithms}.
 
 \subsection{Filtering}
 
-We have seen \fop{map}, which permits us to change all the elements
-of an array.  We have seen \fop{reduce}, which lets us collapse all
+We have seen \fop{map}, which permits us to change all the elements of
+an array, and we have seen \fop{reduce}, which lets us collapse all
 the elements of an array.  But we still need something that lets us
 remove some, but not all, of the elements of an array.  This SOAC is
-\fop{filter}, which behaves much like a filter in any other
-functional language:
+\fop{filter}, which keeps only those elements of an array that satisfy
+some predicate.
 
 \begin{lstlisting}
 filter (<3) [1,5,2,3,4] == [1,2]
@@ -806,7 +803,7 @@ how do we find the \textit{indices} of all nonzero entries in an array
 of integers?  Finding the values is simple enough:
 
 \begin{lstlisting}
-filter (\x -> x != 0) [0,5,2,0,1] ==
+filter (!=0) [0,5,2,0,1] ==
   [5,2,1]
 \end{lstlisting}
 
@@ -828,15 +825,15 @@ functions.  Consider the following tail-recursive formulation of a
 function for computing the Fibonacci numbers
 
 \begin{lstlisting}
-let fibhelper(x: int, y: int, n: int): int =
+let fibhelper(x: i32, y: i32, n: i32): i32 =
   if n == 1 then x else fibhelper(y, x+y, n-1)
-let fib(n: int): int = fibhelper(1,1,n)
+let fib(n: i32): i32 = fibhelper(1,1,n)
 \end{lstlisting}
 
 We can rewrite this looping using \fw{loop} syntax:
 
 \begin{lstlisting}
-let fib(n: int): int =
+let fib(n: i32): i32 =
   let (x, _) = loop (x, y) = (1,1) for i < n do (y, x+y)
   in x
 \end{lstlisting}
@@ -875,7 +872,7 @@ loop x = a for i < n do
 has the semantics of a call to the following tail-recursive function:
 
 \begin{lstlisting}
-let f(i: int, n: int, x: t): t =
+let f(i: i32, n: i32, x: t): t =
   if i >= n then x
      else f(i+1, n, g(x))
 
@@ -889,7 +886,8 @@ computations slightly more convenient, but primarily to express
 certain very specific forms of recursive functions, specifically those
 with a fixed iteration count.  This property is used for analysis and
 optimisation by the Futhark compiler.  In contrast to most functional
-languages, Futhark does \textit{not} perform tail call optimisation.
+languages, Futhark does not properly support recursion, and in
+particular does \textit{not} perform tail call optimisation.
 Furthermore, recursive functions may not work inside parallel
 sections, depending on the targeted backend.  It is therefore strongly
 recommended to use \fw{loop} syntax instead of recursion.
@@ -992,7 +990,7 @@ let modify(a: @@*@@[]i32, i: i32, x: i32): @@*@@[]i32 =
 
 The function call \texttt{modify($a$,$i$,$x$)} returns $a$, but where
 the element at index \texttt{i} has been increased by $x$.  Note the
-asterisks: in the parameter declaration \texttt{a: *[int]}, this means
+asterisks: in the parameter declaration \texttt{a: *[i32]}, this means
 that the function \texttt{modify} has been given ``ownership'' of the
 array $a$, meaning that any caller of \texttt{modify} will never
 reference array $a$ after the call again.  In particular,
@@ -1012,7 +1010,7 @@ let $b$ = modify($a$, $i$, $x$)
 
 Under which circumstances is this call valid?  Two things must hold:
 \begin{enumerate}
-\item The type of \texttt{$a$} must be \texttt{*[]int}, of course.
+\item The type of \texttt{$a$} must be \texttt{*[]i32}, of course.
 
 \item Neither \texttt{$a$} or any variable that \textit{aliases}
   \texttt{$a$} may be used on any execution path following the call to
@@ -1050,7 +1048,7 @@ being non-overlapping, are not aliased to each other).
 Let us consider the definition of a function returning a unique array:
 
 \begin{lstlisting}[mathescape=true]
-let f(a: [int]): *[int] = $e$
+let f(a: []i32): *[]i32 = $e$
 \end{lstlisting}
 
 Note that the argument, \texttt{a}, is non-unique, and hence we cannot
@@ -1104,7 +1102,7 @@ f(b,a) // @@Error:@@ a used after being source in a let-with
 \begin{figure}
 \centering
 \begin{lstlisting}
-let *[int] broken([[int]] a, int i) =
+let broken (a: [][]i32, i: i32): *[]i32 =
   a[i] // @@Error:@@ Return value aliased with 'a'.
 \end{lstlisting}
 \caption{Violation of Uniqueness Rule 2}
@@ -1150,6 +1148,9 @@ morally computes
 and returns the modified \texttt{as} array.  The old \texttt{as} array
 is marked as consumed and may not be used anymore.  Parallel
 \fop{scatter} can be used to implement efficiently the radix sort algorithm, as demonstrated in Section~\ref{sec:radixsort}.
+
+\section{Polymorphic Functions and Size Parameters}
+\label{sec:polymorphism}
 
 \section{Modules}
 \label{sec:modules}
@@ -1283,14 +1284,14 @@ module Speeds: { type thing
                  val car : thing
                  val plane : thing
                  val futhark : thing
-                 val speed : thing -> int } = {
-  type thing = int
+                 val speed : thing -> i32 } = {
+  type thing = i32
 
   let car: thing = 0
   let plane: thing = 1
   let futhark: thing = 2
 
-  let speed (x: thing): int =
+  let speed (x: thing): i32 =
     if      x == car     then 120
     else if x == plane   then 800
     else if x == futhark then 10000
@@ -1486,7 +1487,7 @@ can use the \texttt{futhark-dataset(1)} tool to generate random test
 data of a desired size:
 
 \begin{verbatim}
-$ futhark-dataset -g [10000000]int -g [10000000]int > input
+$ futhark-dataset -g [10000000]i32 -g [10000000]i32 > input
 \end{verbatim}
 
 Two ten million element vectors should be enough work to amortise the
@@ -1621,12 +1622,12 @@ to fall in three different categories:
 For example, consider this program:
 
 \begin{lstlisting}
-let main(n: int): [][]int =
+let main(n: i32): [][]i32 =
   map (\i ->
-         let a = iota i
-         let b = iota (n-i)
+         let a = [0..<i]
+         let b = [0..<n-i]
          in concat a b)
-  (iota n)
+      [0..<n]
 \end{lstlisting}
 
 At the time of this writing, the \texttt{futhark-opencl} compiler will
@@ -1644,13 +1645,13 @@ It is usually possible, sometimes with some pain, to come up with a
 workaround.  We could rewrite the program as:
 
 \begin{lstlisting}
-let main(n: int): [][]int =
-  let big_iota = iota n
+let main(n: i32): [][]i32 =
+  let scratch = [0...<n]
   in map (\i ->
-            let res = iota n
-            let res[i:n] = big_iota[0:n-i]
+            let res = [0..<n]
+            let res[i:n] = scratch[0:n-i]
             in res)
-         (iota n)
+         [0..<n]
 \end{lstlisting}
 
 This exploits the fact that the compiler does not generate allocations
