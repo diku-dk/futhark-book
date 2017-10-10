@@ -551,14 +551,14 @@ let name params... : return_type = body
 
 \noindent
 A function must declare both its return type and the types of all its
-<<<<<<< HEAD
 parameters.  All functions (except for inline anonymous functions, as
-we will get to later) are defined globally.  Futhark does not use type
-inference. As a concrete example, here is the definition of the Mandelbrot
-set iteration step $Z_{n+1} = Z_{n}^{2} + C$, where $Z_n$ is the actual
-iteration value, and $C$ is the initial point. In this example, all operations
-on complex numbers are fully expanded, though Futhark comes with a library for
-complex numbers that will be presented later.
+we will get to later) are defined globally.  Futhark does not yet
+support type inference. As a concrete example, here is the definition
+of the Mandelbrot set iteration step $Z_{n+1} = Z_{n}^{2} + C$, where
+$Z_n$ is the actual iteration value, and $C$ is the initial point. In
+this example, all operations on complex numbers are fully expanded,
+though Futhark comes with a library for complex numbers that will be
+presented later.
 
 \begin{lstlisting}
 let mandelbrot_step(Zn: (f32, f32), C: (f32, f32)): (f32, f32) =
@@ -567,14 +567,6 @@ let mandelbrot_step(Zn: (f32, f32), C: (f32, f32)): (f32, f32) =
     let real_part = Zn_r*Zn_r - Zn_i*Zn_i + C_r
     let imag_part = 2f32*Zn_r*Zn_i + C_i
     in (real_part, imag_part)
-=======
-parameters.  Futhark does not yet support type inference.  As a
-concrete example, here is the parallel definition of the factorial
-function in Futhark:
-
-\begin{lstlisting}
-let fact (n: i32): i32 = reduce (*) 1 [1...n]
->>>>>>> Refresh some of the text.
 \end{lstlisting}
 
 We can define a constant with very similar notation:
