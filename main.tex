@@ -587,9 +587,9 @@ its argument and always returns the same value.  Top-level definitions
 are declared in strict order, and a definition may refer \textit{only}
 to those names that have been defined before it occurs.  This means
 that circular definitions are not permitted.  We will return to
-function definitions in Section~\ref{sec:polymorphism}, where we will
-look at more advanced features, such as parametric polymorphism and
-implicit size parameters.
+function definitions in Section~\ref{sec:size-annotations} and
+\ref{sec:polymorphism}, where we will look at more advanced features,
+such as parametric polymorphism and implicit size parameters.
 
 \section{Array Operations}
 
@@ -743,7 +743,7 @@ can define a function to compute the dot product of two vectors of
 integers:
 
 \begin{lstlisting}
-let dotprod (xs: []int) (ys: []i32): i32 =
+let dotprod (xs: []i32) (ys: []i32): i32 =
   reduce (+) 0 (map (*) xs ys)
 \end{lstlisting}
 
@@ -1141,8 +1141,101 @@ and returns the modified \texttt{as} array.  The old \texttt{as} array
 is marked as consumed and may not be used anymore.  Parallel
 \fop{scatter} can be used to implement efficiently the radix sort algorithm, as demonstrated in Section~\ref{sec:radixsort}.
 
-\section{Polymorphic Functions and Size Parameters}
+\section{Size Annotations}
+\label{sec:size-annotations}
+
+Functions on arrays typically impose constraints on the shape of their
+parameters, and often the shape of the result depends on the shape of
+the parameters.  Futhark provides a language construct called
+\textit{size annotations} that give the programmer the option of
+encoding these properties directly into the type of a function.
+Consider first the trivial case of a function that packs a single
+\texttt{i32} value in an array:
+\begin{lstlisting}
+let singleton (x: i32): [1]i32 = [x]
+\end{lstlisting}
+We explicitly annotate the return type to state that this function
+returns a single-element array.
+
+For expressing constraints among the sizes of the parameters, Futhark
+provides \textit{size parameters}.  Consider the definition of dot
+product we have used so far:
+\begin{lstlisting}
+let dotprod (xs: []i32) (ys: []i32): i32 =
+  reduce (+) 0 (map (*) xs ys)
+\end{lstlisting}
+The \texttt{dotprod} function assumes that the two input arrays have
+the same size, or else the \texttt{map} will fail.  However, this
+constraint is not visible in the type of the function.  Size
+parameters allow us to make this explicit:
+\begin{lstlisting}
+let dotprod [n] (xs: []i32) (ys: []i32): i32 =
+  reduce (+) 0 (map (*) xs ys)
+\end{lstlisting}
+The \texttt{[n]} preceding the \textit{value parameters} (\texttt{xs}
+and \texttt{ys}) is called a \textit{size parameter}, which lets us
+assign a name to the dimensions of the value parameters.  A size
+parameter must be used at least once in the type of a value parameter,
+so that a concrete value for the size parameter can be determined at
+runtime.  Size parameters are \textit{implicit}, and need not an
+explicit argument when the function is called.  For example, the
+\texttt{dotprod} function can be used as follows:
+\begin{lstlisting}
+dotprod [1,2] [3,4]
+\end{lstlisting}
+
+A size parameter is in scope in both the body of a function and its
+return type, which we be used to define a function for computing
+averages:
+\begin{lstlisting}
+let average [n] (xs: [n]f64): f64 =
+  reduce (+) 0.0 xs / f64 n
+\end{lstlisting}
+Size parameters are always of type \texttt{i32}, and in fact,
+\textit{any} \texttt{i32}-typed variable in scope can be used as a
+size annotation.  This lets us define a function that replicates an
+integer some number of times:
+\begin{lstlisting}
+let replicate_i32 (n: i32) (x: i32): [n]i32 =
+  map (\_ -> x) [0..<n]
+\end{lstlisting}
+In Section~\ref{sec:polymorphism} we will see how to write a
+polymorphic function that works for any type.
+
+As a more complicated example of using size parameters, consider the
+following function for performing matrix multiplication:
+\begin{lstlisting}
+let matmult [n][m][p] (x: [n][m]i32, y: [m][p]i32): [n][p]i32 =
+  map (\xr -> map (dotprod xr) (transpose y)) x
+\end{lstlisting}
+Futhark's support for size annotations permits us to succintly encode
+the usual size invariants for matrix multiplication.
+
+Be aware that size annotations are checked dynamically, not
+statically.  Whenever we call a function or return a value, an error
+is raised if its size does not match the annotations.  However,
+nothing prevents this following expression from passing the type
+checker:
+\begin{lstlisting}
+dotprod [1,2] [1,2,3]
+\end{lstlisting}
+Although it will fail if actually executed.
+
+Presently, only variables and constants are legal as size annotations.
+This means that the following function definition is not valid:
+\begin{lstlisting}
+let doubleup [n] (xs: [n]i32): [2*n]i32 =
+  map (\i -> xs[i/2]) [0..<n*2]
+\end{lstlisting}
+While size annotations are a simple and limited mechanism, they can
+help make hidden invariants visible to users of your code.  In some
+cases, size annotations also help the compiler generate better code,
+as it becomes clear which arrays are supposed to have the same size,
+and lets the compiler hoist checking out as far as possible.
+
+\section{Parametric Polymorphism}
 \label{sec:polymorphism}
+
 
 \section{Modules}
 \label{sec:modules}
