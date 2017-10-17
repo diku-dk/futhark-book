@@ -45,4 +45,4 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
-    repo: hiperfit/futhark-book
+    repo: diku-dk/futhark-book
