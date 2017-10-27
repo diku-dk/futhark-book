@@ -34,3 +34,4 @@ deploy:
   file: main.pdf
   on:
     repo: diku-dk/futhark-book
+    tags: true
