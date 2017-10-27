@@ -33,4 +33,4 @@ let primes (n:i32) : []i32 =
 
 -- Return the number of primes less than n
 let main (n:i32) : i32 =
-  let ps = primes n in (shape ps)[0]
+  let ps = primes n in length ps

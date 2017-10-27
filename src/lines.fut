@@ -48,7 +48,7 @@ let drawlines_seq [h][w][n] (grid: *[h][w]i32) (lines:[n]line) : [h][w]i32 =
   loop (grid) for i < n do
     let (p1,p2) = lines[i]
     let ps = linepoints p1 p2
-    in loop (grid) for j < (shape ps)[0] do
+    in loop (grid) for j < length ps do
          let x = #1 (ps[j])
          let y = #2 (ps[j])
          let grid[y,x] = 1
