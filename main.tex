@@ -396,6 +396,8 @@ as in \texttt{((1,2),(3,4))}, which is of type
 \texttt{((i32,i32),(i32,i32))}.  A tuple cannot have just one element,
 but empty tuples are permitted, although they are not very
 useful---these are written \texttt{()} and are of type \texttt{()}.
+\textit{Records} exist as syntactic sugar on top of tuples, and will
+be discussed in Section \ref{sec:records}.
 
 An array value is written as a nonempty sequence of comma-separated
 values enclosed in square brackets: \texttt{[1,2,3]}.  An array type
@@ -417,10 +419,8 @@ regular arrays is rooted in low-level concerns about efficient
 compilation, but we can understand it in language terms by the
 inability to write a type with consistent dimension sizes for an
 irregular array value.  In a Futhark program, all array values,
-including intermediate (unnamed) arrays, must be typeable.
-
-We will return to the implications of this restriction in later
-chapters.
+including intermediate (unnamed) arrays, must be typeable.  We will
+return to the implications of this restriction in later chapters.
 
 \subsection{Simple Expressions}
 
@@ -542,7 +542,7 @@ notation thoughout this book.
 \label{sec:function-declarations}
 
 A Futhark program consists of a sequence of top-level definitions,
-which are either \textit{function definitions} or \textit{value
+which are primarily \textit{function definitions} and \textit{value
   definitions}.  A function definition has the following form:
 
 \begin{lstlisting}
@@ -561,11 +561,11 @@ though Futhark comes with a library for complex numbers that will be
 presented later.
 
 \begin{lstlisting}
-let mandelbrot_step(Zn: (f32, f32), C: (f32, f32)): (f32, f32) =
+let mandelbrot_step(Zn: (f64, f64), C: (f64, f64)): (f64, f64) =
     let (Zn_r, Zn_i) = Zn
     let (C_r, C_i) = C
     let real_part = Zn_r*Zn_r - Zn_i*Zn_i + C_r
-    let imag_part = 2f32*Zn_r*Zn_i + C_i
+    let imag_part = 2.0*Zn_r*Zn_i + C_i
     in (real_part, imag_part)
 \end{lstlisting}
 
@@ -590,6 +590,37 @@ that circular definitions are not permitted.  We will return to
 function definitions in Section~\ref{sec:size-annotations} and
 \ref{sec:polymorphism}, where we will look at more advanced features,
 such as parametric polymorphism and implicit size parameters.
+
+\subsubsection{Type abbreviations}
+\label{sec:type-abbreviations}
+
+The previous definition of \lstinline{mandelbrot_step} accepted
+arguments and produced results of type \lstinline{(f64,f64}), with the
+implied understanding that such pairs of floats represent complex
+numbers.  To make this clearer, and thus improve the readability of
+the function, we can use a \textit{type abbreviation} to define a type
+\lstinline{complex}:
+
+\begin{lstlisting}
+type complex = (f64, f64)
+\end{lstlisting}
+
+We can now define \lstinline{mandelbrot_step} as follows:
+
+\begin{lstlisting}
+let mandelbrot_step(Zn: complex, C: complex): complex =
+    let (Zn_r, Zn_i) = Zn
+    let (C_r, C_i) = C
+    let real_part = Zn_r*Zn_r - Zn_i*Zn_i + C_r
+    let imag_part = 2.0*Zn_r*Zn_i + C_i
+    in (real_part, imag_part)
+\end{lstlisting}
+
+Type abbreviations are purely a syntactic convenience --- the type
+\lstinline{complex} is fully interchangeable with the type
+\lstinline{(f64, f64)}.  For abstract types, that hide their
+definition, we have to use the module system discussed in
+Section~\ref{sec:modules}.
 
 \section{Array Operations}
 
@@ -1233,9 +1264,57 @@ cases, size annotations also help the compiler generate better code,
 as it becomes clear which arrays are supposed to have the same size,
 and lets the compiler hoist checking out as far as possible.
 
+Size parameters are also permitted in type abbreviations.  As an
+example, consider a type abbreviation for a vector of integers:
+
+\begin{lstlisting}
+type intvec [n] = [n]i32
+\end{lstlisting}
+
+We can now use \lstlisting{intvec [n]} to refer to integer vectors of
+size \lstinline{n}:
+
+\begin{lstlisting}
+let x: intvec [3] = [1,2,3]
+\end{lstlisting}
+
+A type parameter can be used multiple times on the right-hand side of
+the definition; perhaps to define an abbreviation for square matrices:
+
+\begin{lstlisting}
+type sqmat [n] = [n][n]i32
+\end{lstlisting}
+
+The brackets surrounding \lstinline{[n]} and \lstinline{[3]} are part
+of the notation, not the parameter itself, and are used for
+disambiguating size parameters from the \textit{type parameters} shown
+when introducing parametric polymorphism in
+Section~\ref{sec:polymorphism}.
+
+Parametric types must always be fully applied.  Using
+\lstinline{intvec} by itself (without a type argument) is an error.
+
+\section{Records}
+\label{sec:records}
+
+Records are a finite map from labels to values.  These are supported
+by Futhark as a convenient syntactic extension on top of tuples.  As
+an example, let us return to our previous definition of complex
+numbers:
+
+\begin{lstlisting}
+type complex = (f64, f64)
+\end{lstlisting}
+
+We can make the role of the two floats clear by using a record
+instead.
+
+\begin{lstlisting}
+type complex = {re: f64, im: f64}
+\end{lstlisting}
+
 \section{Parametric Polymorphism}
 \label{sec:polymorphism}
-
 
 \section{Modules}
 \label{sec:modules}
