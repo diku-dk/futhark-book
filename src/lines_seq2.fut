@@ -12,8 +12,8 @@ let compare (v1:i32) (v2:i32) : i32 =
 
 -- Compute a slope
 let sl ((x1,y1):point) ((x2,y2):point) : f32 =
-  if x2==x1 then if y2>y1 then f32(1) else f32(-1)
-		 else f32(y2-y1) / f32.abs(f32(x2-x1))
+  if x2==x1 then if y2>y1 then 1f32 else -1f32
+		 else r32(y2-y1) / f32.abs(r32(x2-x1))
 
 let linepoints ((x1,y1):point, (x2,y2):point) : points =
   let dx = i32.abs(x1-x2)
@@ -27,8 +27,8 @@ let linepoints ((x1,y1):point, (x2,y2):point) : points =
     else sl (y1,x1) (y2,x2)
   in map (\i ->
             if xmax then (x1+i*dir,
-			  y1+i32(slop*f32(i)))
-	    else (x1+i32(slop*f32(i)),
+			  y1+t32(slop*r32(i)))
+	    else (x1+t32(slop*r32(i)),
 		  y1+i*dir))
          (iota len)
 

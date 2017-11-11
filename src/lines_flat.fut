@@ -53,13 +53,13 @@ let drawlines [h][w][n] (grid:*[h][w]i32) (lines:[n]line) :[h][w]i32 =
                      else 0) lines1
   let slops = map (\((x1,y1),(x2,y2)) ->
                      if x2 == x1 then
-                       if y2 > y1 then f32(1) else f32(-1)
-                     else f32(y2-y1) / f32.abs(f32(x2-x1))) lines1
+                       if y2 > y1 then 1f32 else -1f32
+                     else r32(y2-y1) / f32.abs(r32(x2-x1))) lines1
   let iotas = sgm_iota flags
   let xs = map (\((x1,_),_) dirx i ->
                   x1+dirx*i) lines1 dirxs iotas
   let ys = map (\((_,y1),_) slop i ->
-                  y1+i32(slop*f32(i))) lines1 slops iotas
+                  y1+t32(slop*r32(i))) lines1 slops iotas
   in upd_grid grid xs ys
 
 let main () : [][]i32 =

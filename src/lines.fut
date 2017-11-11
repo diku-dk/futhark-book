@@ -36,11 +36,11 @@ let linepoints (p1:point) (p2:point) : points =
     let len = i32.max (i32.abs(x1-x2)) (i32.abs(y1-y2))
     let dirx = if x2 > x1 then 1 else if x1 > x2 then -1 else 0
     let slop = if x2==x1 then
-                  if y2 > y1 then f32(1) else f32(-1)
-	       else f32(y2-y1) / f32.abs(f32(x2-x1))
+                  if y2 > y1 then 1f32 else -1f32
+	       else r32(y2-y1) / f32.abs(r32(x2-x1))
     in map (\i ->
               let x = x1+i*dirx
-	      let y = y1+i32(slop*f32(i))
+	      let y = y1+t32(slop*r32(i))
 	      in (x,y))
        (iota(len))
 
@@ -49,8 +49,8 @@ let drawlines_seq [h][w][n] (grid: *[h][w]i32) (lines:[n]line) : [h][w]i32 =
     let (p1,p2) = lines[i]
     let ps = linepoints p1 p2
     in loop (grid) for j < length ps do
-         let x = #1 (ps[j])
-         let y = #2 (ps[j])
+         let x = (ps[j]).1
+         let y = (ps[j]).2
          let grid[y,x] = 1
          in grid
 
@@ -79,13 +79,13 @@ let drawlines_par [h][w][n] (grid:*[h][w]i32) (lines:[n]line) :[h][w]i32 =
 		        else 0) xs1 xs2
   let slops = map (\x1 y1 x2 y2 ->
                         if x2 == x1 then
-   	   	        if y2 > y1 then f32(1) else f32(-1)
-		        else f32(y2-y1) / f32.abs(f32(x2-x1))) xs1 ys1 xs2 ys2
+   	   	        if y2 > y1 then 1f32 else -1f32
+		        else r32(y2-y1) / f32.abs(r32(x2-x1))) xs1 ys1 xs2 ys2
   let iotas = sgmIota flags
   let xs = map (\x1 dirx i ->
                      x1+dirx*i) xs1 dirxs iotas
   let ys = map (\y1 slop i ->
-                     y1+i32(slop*f32(i))) ys1 slops iotas
+                     y1+t32(slop*r32(i))) ys1 slops iotas
   let is = map (\x y -> w*y+x) xs ys
   let flatgrid = reshape (h*w) grid
   in reshape (h,w) (scatter flatgrid is (replicate nn 1))
