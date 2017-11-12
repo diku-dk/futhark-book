@@ -561,9 +561,9 @@ though Futhark comes with a library for complex numbers that will be
 presented later.
 
 \begin{lstlisting}
-let mandelbrot_step(Zn: (f64, f64), C: (f64, f64)): (f64, f64) =
-    let (Zn_r, Zn_i) = Zn
-    let (C_r, C_i) = C
+let mandelbrot_step ((Zn_r, Zn_i): (f64, f64))
+                    ((C_r, C_i): (f64, f64))
+                  : (f64, f64) =
     let real_part = Zn_r*Zn_r - Zn_i*Zn_i + C_r
     let imag_part = 2.0*Zn_r*Zn_i + C_i
     in (real_part, imag_part)
@@ -608,9 +608,9 @@ type complex = (f64, f64)
 We can now define \lstinline{mandelbrot_step} as follows:
 
 \begin{lstlisting}
-let mandelbrot_step(Zn: complex, C: complex): complex =
-    let (Zn_r, Zn_i) = Zn
-    let (C_r, C_i) = C
+let mandelbrot_step ((Zn_r, Zn_i): complex)
+                    ((C_r, C_i): complex)
+                  : complex =
     let real_part = Zn_r*Zn_r - Zn_i*Zn_i + C_r
     let imag_part = 2.0*Zn_r*Zn_i + C_i
     in (real_part, imag_part)
@@ -1297,8 +1297,9 @@ Parametric types must always be fully applied.  Using
 \section{Records}
 \label{sec:records}
 
-Records are a finite map from labels to values.  These are supported
-by Futhark as a convenient syntactic extension on top of tuples.  As
+Semantically, a record is a finite map from labels to values.  These
+are supported by Futhark as a convenient syntactic extension on top of
+tuples.  A label-value pairing is often called a \textit{field}.  As
 an example, let us return to our previous definition of complex
 numbers:
 
@@ -1312,6 +1313,89 @@ instead.
 \begin{lstlisting}
 type complex = {re: f64, im: f64}
 \end{lstlisting}
+
+We can construct values of record type with a \textit{record
+  expression}, which consists of field assignments enclosed in curly
+braces:
+
+\begin{lstlisting}
+let sqrt_minus_one = {re = 0.0, im = -1.0}
+\end{lstlisting}
+
+The order of the fields in a record type or value does not matter, so
+the following definition is equivalent to the one above:
+
+\begin{lstlisting}
+let sqrt_minus_one = {im = -1.0, re = 0.0}
+\end{lstlisting}
+
+In contrast to most other programming languages, record types in
+Futhark are \textit{structural}, not \textit{nominal}.  This means
+that the name (if any) of a record type does not matter.  For example,
+we can define a type abbreviation that is equivalent to the previous
+definition of \lstinline{complex}:
+
+\begin{lstlisting}
+type another_complex = {re: f64, im: f64}
+\end{lstlisting}
+
+The types \lstinline{complex} and \lstinline{another_complex} are
+entirely interchangeable.  In fact, we do not need to name record
+types at all; they can be used anonymously:
+
+\begin{lstlisting}
+let sqrt_minus_one: {re: f64, im: f64} = {re = 0.0, im = -1.0}
+\end{lstlisting}
+
+However, for readability purposes it is usually a good idea to use
+type abbreviations when working with records.
+
+There are two ways to access the fields of records.  The first is by
+\textit{field projection}, which is done by dot notation known from
+most other programming languages.  To access the \lstinline{re} field
+of the \lstinline{sqrt_minus_one} value defined above, we write
+\lstinline{sqrt_minus_one.re}.
+
+The second way of accessing field values is by pattern matching, just
+like we do with tuples.  A record pattern is similar to a record
+expression, and consists of field patterns enclosed in curly braces.
+For example, a function for adding complex numbers could be defined as:
+
+\begin{lstlisting}
+let complex_add ({re = x_re, im = x_im}: complex)
+                ({re = y_re, im = y_im}: complex)
+              : complex =
+  {re = x_re + y_re, im = x_im + y_im}
+\end{lstlisting}
+
+As with tuple patterns, we can use record patterns in both function
+parameters, \lstinline{let}-bindings, and \lstinline{loop} parameters.
+
+As a special syntactic convenience, we can elide the \lstinline{= pat}
+part of a record pattern, which will bind the value of the field to a
+variable of the same name as the field.  For example:
+
+\begin{lstlisting}
+let conj ({re, im}: complex): complex =
+  {re = re, im = -im}
+\end{lstlisting}
+
+\subsection{Tuples as a Special Case of Records}
+
+In Futhark, tuples are merely records with numeric labels starting
+from 1.  For example, the types \lstinline{(i32,f64)} and
+\lstinline!{1:i32,2:f64}! are indistinguishable.  The main utility of
+this equivalence is that we can use field projection to access the
+components of tuples, rather than using a pattern in a
+\lstinline{let}-binding.  For example, we can say \lstinline{foo.1} to
+extract the first component of a tuple.
+
+Note that the fields of a record must constitute a prefix of the
+positive numbers for it to be considered a tuple.  The record type
+\lstinline!{1:i32,3:f64}! does not correspond to a tuple, and neither
+does \lstinline!{2:i32,3:f64}! (but \lstinline!{2:f64,1:i32}!  is
+equivalent to the tuple \lstinline{(i32,f64)}, because field order
+does not matter).
 
 \section{Parametric Polymorphism}
 \label{sec:polymorphism}
