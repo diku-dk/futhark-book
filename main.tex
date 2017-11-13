@@ -1380,6 +1380,15 @@ let conj ({re, im}: complex): complex =
   {re = re, im = -im}
 \end{lstlisting}
 
+This convenience is also present in tuple expressions. If we elide the
+definition of a field, the value will be taken from the variable in
+scope with the same name:
+
+\begin{lstlisting}
+let conj ({re, im}: complex): complex =
+  {re, im = -im}
+\end{lstlisting}
+
 \subsection{Tuples as a Special Case of Records}
 
 In Futhark, tuples are merely records with numeric labels starting
