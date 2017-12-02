@@ -915,13 +915,6 @@ Furthermore, recursive functions may not work inside parallel
 sections, depending on the targeted backend.  It is therefore strongly
 recommended to use \fw{loop} syntax instead of recursion.
 
-Apart from the \texttt{i < n} form, which loops from zero, Futhark
-also supports the \texttt{v <= i < n} form which starts at \texttt{v}.
-We can also invert the order of iteration by writing \texttt{n > i} or
-\texttt{n > i >= v}, which loops down from the upper bound to the
-lower.  Due to parser limitations, most non-atomic expressions will
-have to be parenthesised when used as the left-hand bound.
-
 Apart from \fop{for}-loops, Futhark also supports \fop{while}-loops.
 These do not provide as much information to the compiler, but can be
 used for convergence loops, where the number of iterations cannot be
