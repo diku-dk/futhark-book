@@ -843,17 +843,19 @@ corresponding roughly to a \fop{scan} plus a \fop{map}.
 \section{Sequential Loops}
 \label{sec:sequential-loops}
 
-Futhark has built-in syntax for expressing certain tail-recursive
-functions.  Consider the following tail-recursive formulation of a
-function for computing the Fibonacci numbers
+Futhark does not directly support recursive functions, but instead
+provides syntactical sugar for expressing the equivalent of certain
+tail-recursive functions.  Consider the following tail-recursive
+formulation of a function for computing the Fibonacci numbers
 
 \begin{lstlisting}
 let fibhelper(x: i32, y: i32, n: i32): i32 =
   if n == 1 then x else fibhelper(y, x+y, n-1)
+
 let fib(n: i32): i32 = fibhelper(1,1,n)
 \end{lstlisting}
 
-We can rewrite this looping using \fw{loop} syntax:
+We can rewrite this using \fw{loop} syntax:
 
 \begin{lstlisting}
 let fib(n: i32): i32 =
@@ -904,16 +906,29 @@ let x = f(i, n, a)
 in body
 \end{lstlisting}
 
+The \fw{loop} syntax shown above is actually just syntactical sugar
+for a common special case of a \textit{for-in} loop over an integer
+range, which is written as:
+
+\begin{lstlisting}
+loop pat = initial for xpat in xs do loopbody
+\end{lstlisting}
+
+Here, \texttt{xpat} is an arbitrary pattern that matches an element of
+the array \texttt{xs}.  For example:
+
+\begin{lstlisting}
+loop acc = 0 for (x,y) in zip xs ys do
+  acc + x * y
+\end{lstlisting}
+
 The purpose of \fw{loop} is partly to render some sequential
 computations slightly more convenient, but primarily to express
 certain very specific forms of recursive functions, specifically those
 with a fixed iteration count.  This property is used for analysis and
 optimisation by the Futhark compiler.  In contrast to most functional
-languages, Futhark does not properly support recursion, and in
-particular does \textit{not} perform tail call optimisation.
-Furthermore, recursive functions may not work inside parallel
-sections, depending on the targeted backend.  It is therefore strongly
-recommended to use \fw{loop} syntax instead of recursion.
+languages, Futhark does not properly support recursion, and you are
+therefore required to use \fw{loop} syntax for sequential loops.
 
 Apart from \fop{for}-loops, Futhark also supports \fop{while}-loops.
 These do not provide as much information to the compiler, but can be
