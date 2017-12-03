@@ -1,0 +1,48 @@
+{% extends "!layout.html" %}
+
+{% block extrahead %}
+    
+    {{ super() }}
+{% endblock %}
+
+{% block header %}
+    <div style="display:none">
+{% raw %}
+    \(
+\newcommand{\sem}[1]{ [\! [#1] \!] }
+\newcommand{\semzero}[1]{\sem{#1}_0}
+
+\newcommand{\emptymap}{\{\}}
+\newcommand{\fracc}[2]{\begin{eqnarray} \frac{\begin{array}{c} #1
+    \end{array}}{\begin{array}{c} #2 \end{array}} \end{eqnarray}}
+\newcommand{\sembox}[1]{\fbox{\(#1\)}}
+\newcommand{\fraccc}[2]{\frac{\begin{array}{c} #1 \end{array}}{\begin{array}{c} #2 \end{array}}}
+\newcommand{\onepart}[1]{#1}
+\newcommand{\twopart}[2]{#1\quad#2}
+\newcommand{\threepart}[3]{#1\quad#2\quad#3}
+\newcommand{\axiomm}[1]{$\begin{array}{c} #1 \end{array}$}
+\newcommand{\vd}{\vdash}
+\newcommand{\Ran}{{\rm Ran}}
+\newcommand{\Dom}{{\rm Dom}}
+\newcommand{\kw}[1]{\texttt{#1}}
+\newcommand{\id}[1]{\textit{#1}}
+\newcommand{\rarr}{\rightarrow}
+\newcommand{\larr}{\leftarrow}
+\newcommand{\fop}[1]{\color{blue}{\texttt{#1}}}
+\newcommand{\fw}[1]{\color{purple}{\texttt{#1}}}
+\newcommand{\Eval}[1]{\sem{\,#1\,}}
+\newcommand{\extractF}[1]{\langle\,#1\,\rangle}
+\newcommand{\Let}{\mathrm{let}}
+\newcommand{\Where}[1]{\mathrm{where} \begin{array}[t]{l} #1 \end{array}}
+\newcommand{\In}{\mathrm{in}}
+\newcommand{\N}{N}
+\newcommand{\Z}{Z}
+\newcommand{\R}{R}
+\newcommand{\size}{\mathrm{size}}
+\newcommand{\length}{\mathrm{length}}
+\renewcommand{\log}{\mathrm{log}}
+\)
+{% endraw %}
+    </div>
+    {{ super() }}
+{% endblock %}
