@@ -7,13 +7,13 @@ Futhark programming.
 
 ## Reading the Book
 
-Navigate to
-[Releases](https://github.com/diku-dk/futhark-book/releases) and pick
-the most recent PDF file.
+The book is readable in HTML form at the following location:
+
+http://futhark-book.readthedocs.io
+
+There is currently no PDF version.
 
 ## Writing the Book
 
-The document is compiled by typing `make` and the embedded Futhark
-code is compiled, executed, and tested by typing `make test`.
-
-For a list of topics, consult `main.tex`.
+The document is compiled by typing `make html` and the embedded
+Futhark code is compiled, executed, and tested by typing `make test`.
