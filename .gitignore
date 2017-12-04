@@ -1,8 +1,2 @@
-*.out
-*.aux
-*.bbl
-*.blg
-*.log
-main.pdf
-*.toc
-*~
+_build
+.stack_work
