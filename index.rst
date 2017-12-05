@@ -3,6 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+Parallel Programming in Futhark
+===============================
+
 Welcome to "Parallel Programming in Futhark", an introductionary book
 about the Futhark programming language.  Futhark is a data-parallel
 array programming language that uses the vocabulary of functional
@@ -22,9 +25,6 @@ that each aim to demonstrate some feature or facet of the language.
 Furthermore, we will discusss some of the theorical background of
 data-parallel programming, as well as elaborate on some of the
 optimisations that can be expected from the compiler.
-
-Parallel Programming in Futhark
-===============================
 
 .. toctree::
    :maxdepth: 2
