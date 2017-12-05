@@ -8,12 +8,13 @@ syntactically and conceptually similar to established functional
 languages, such as Haskell and Standard ML. In contrast to these
 languages, Futhark focuses less on expressivity and elaborate type
 systems, but more on compilation to high-performance parallel code.
-Futhark comes with language constructs for performing bulk operations on
-arrays, called *Second-Order Array Combinators* (SOACs), that mirror the
-higher order functions found in conventional functional languages: , , ,
-and so forth. In Futhark, SOACs are not library functions, but built-in
-language features with parallel semantics, and which will typically be
-compiled to parallel code.
+Futhark comes with language constructs for performing bulk operations
+on arrays, called *Second-Order Array Combinators* (SOACs), that
+mirror the higher order functions found in conventional functional
+languages: ``map``, ``reduce``, ``filter``, and so forth. In Futhark,
+SOACs are not library functions, but built-in language features with
+parallel semantics, and which will typically be compiled to parallel
+code.
 
 The primary idea behind Futhark is to design a language that has enough
 expressive power to conveniently express complex programs, yet is also
@@ -359,25 +360,26 @@ system discussed in :ref:`modules`.
 Array Operations
 ----------------
 
-Futhark provides various combinators for performing bulk transformations
-of arrays. Judicious use of these combinators is key to getting good
-performance. There are two overall categories: *first-order array
-combinators*, like , that always perform the same operation, and
-*second-order array combinators* (*SOAC*\ s), like , that take a
-*functional argument* indicating the operation to perform. SOACs are
-absolutely crucial to Futhark programming. While they are designed to
-resemble higher-order functions that may be familiar from functional
-languages, they have implicitly parallel semantics, and some
-restrictions to preserve those semantics.
+Futhark provides various combinators for performing bulk
+transformations of arrays. Judicious use of these combinators is key
+to getting good performance. There are two overall categories:
+*first-order array combinators*, like ``concat``, that always perform
+the same operation, and *second-order array combinators* (*SOAC*\ s),
+like ``map``, that take a *functional argument* indicating the
+operation to perform. SOACs are absolutely crucial to Futhark
+programming. While they are designed to resemble higher-order
+functions that may be familiar from functional languages, they have
+implicitly parallel semantics, and some restrictions to preserve those
+semantics.
 
-We can use to combine several arrays:
+We can use ``concat`` to combine several arrays:
 
 ::
 
     concat [1,2] [1,2,3] [1,1,1,1] ==
       [0,1,1,2,3,1,1,1,1i32]
 
-We can use to transform :math:`n` arrays to a single array of
+We can use ``zip`` to transform :math:`n` arrays to a single array of
 :math:`n`-tuples:
 
 ::
@@ -385,30 +387,31 @@ We can use to transform :math:`n` arrays to a single array of
     zip [1,2,3] [true,false,true] [7.0,8.0,9.0] ==
       [(1,true,7.0),(2,false,8.0),(3,true,9.0)]
 
-Note that the input arrays may have different types. We can use to
-perform the inverse transformation:
+Note that the input arrays may have different types. We can use
+``unzip`` to perform the inverse transformation:
 
 ::
 
     unzip [(1,true,7.0),(2,false,8.0),(3,true,9.0)] ==
       ([1,2,3], [true,false,true], [7.0,8.0,9.0])
 
-Be aware that requires all of the input arrays to have the same length.
-Transforming between arrays of tuples and tuples of arrays is common in
-Futhark programs, as many array operations accept only one array as
-input. Due to a clever implementation technique, and have no runtime
-cost (no copying or allocation whatsoever), so you should not shy away
-from using them out of efficiency concerns.
+Be aware that ``zip`` requires all of the input arrays to have the
+same length.  Transforming between arrays of tuples and tuples of
+arrays is common in Futhark programs, as many array operations accept
+only one array as input. Due to a clever implementation technique,
+``zip`` and ``unzip`` have no runtime cost (no copying or allocation
+whatsoever), so you should not shy away from using them out of
+efficiency concerns.
 
 Now let’s take a look at some SOACs.
 
 Map
 ~~~
 
-The simplest SOAC is probably . It takes two arguments: a function and
-an array. The function argument can be a function name, or an anonymous
-function. The function is called for every element of the input array,
-and an array of the result is returned. For example:
+The simplest SOAC is probably ``map``. It takes two arguments: a
+function and an array. The function argument can be a function name,
+or an anonymous function. The function is called for every element of
+the input array, and an array of the result is returned. For example:
 
 ::
 
@@ -435,7 +438,7 @@ Haskell:
 
     map (2-) [1,2,3] == [1,0,-1]
 
-In contrast to other languages, the SOAC in Futhark takes any nonzero
+In contrast to other languages, the ``map`` SOAC in Futhark takes any nonzero
 number of array arguments, and requires a function with the same number
 of parameters. For example, we can perform an element-wise sum of two
 arrays:
@@ -444,8 +447,9 @@ arrays:
 
     map (+) [1,2,3] [4,5,6] == [5,7,9]
 
-Be careful when writing expressions where the function returns an array.
-Futhark requires regular arrays, so this is unlikely to go well:
+Be careful when writing ``map`` expressions where the function returns
+an array.  Futhark requires regular arrays, so this is unlikely to go
+well:
 
 ::
 
@@ -454,9 +458,10 @@ Futhark requires regular arrays, so this is unlikely to go well:
 Unless the array ``ns`` consisted of identical values, the program would
 fail at runtime.
 
-We can use to duplicate many other language constructs. For example, if
-we have two arrays ``xs:[n]i32`` and ``ys:[m]i32``—that is, two integer
-arrays of sizes ``n`` and ``m``—we can concatenate them using:
+We can use ``map`` to duplicate many other language constructs. For
+example, if we have two arrays ``xs:[n]i32`` and ``ys:[m]i32``—that
+is, two integer arrays of sizes ``n`` and ``m``—we can concatenate
+them using:
 
 ::
 
@@ -464,18 +469,19 @@ arrays of sizes ``n`` and ``m``—we can concatenate them using:
           ([0..<n+m])
 
 However, it is not a good idea to write code like this, as it hinders
-the compiler from using high-level properties to do optimisation. Using
-s with explicit indexing is usually only necessary when solving
-complicated irregular problems that cannot be represented directly.
+the compiler from using high-level properties to do
+optimisation. Using ``map`` with explicit indexing is usually only
+necessary when solving complicated irregular problems that cannot be
+represented directly.
 
 Scan and Reduce
 ~~~~~~~~~~~~~~~
 
-While is an array transformer, the SOAC is an array aggregator: it uses
-some function of type ``t -> t -> t`` to combine the elements of an
-array of type ``[]t`` to a value of type ``t``. In order to do this in
-parallel, the function must be *associative* and have a *neutral
-element* (i.e, form a monoid):
+While ``map`` is an array transformer, the ``reduce`` SOAC is an array
+aggregator: it uses some function of type ``t -> t -> t`` to combine
+the elements of an array of type ``[]t`` to a value of type ``t``. In
+order to do this in parallel, the function must be *associative* and
+have a *neutral element* (i.e, form a monoid):
 
 -  A function :math:`f` is associative if
    :math:`f(x,f(y,z)) = f(f(x,y),z)` for all :math:`x,y,z`.
@@ -492,60 +498,63 @@ its neutral element to compute the sum of an array of integers:
 
     reduce (+) 0 [1,2,3] == 6
 
-It turns out that combining and is both powerful and has remarkable
-optimisation properties, as we will discuss in
-:ref:`soac-algebra`. Many Futhark programs are primarly -
-compositions. For example, we can define a function to compute the dot
-product of two vectors of integers:
+It turns out that combining ``map`` and ``reduce` is both powerful and
+has remarkable optimisation properties, as we will discuss in
+:ref:`soac-algebra`. Many Futhark programs are primarly
+``map``-``reduce`` compositions. For example, we can define a function
+to compute the dot product of two vectors of integers:
 
 ::
 
     let dotprod (xs: []i32) (ys: []i32): i32 =
       reduce (+) 0 (map (*) xs ys)
 
-A close cousin of is , often called *generalised prefix sum*. Where
-produces just one result, produces one result for every prefix of the
-input array. This is perhaps best understood with an example:
+A close cousin of ``reduce`` is ``scan``, often called *generalised
+prefix sum*. Where ``reduce`` produces just one result, ``scan``
+produces one result for every prefix of the input array. This is
+perhaps best understood with an example:
 
 ::
 
     scan (+) 0 [1,2,3] == [0+1, 0+1+2, 0+1+2+3] == [1, 3, 6]
 
-Intuitively, the result of is an array of the results of calling on
-increasing prefixes of the input array. The last element of the returned
-array is equivalent to the result of calling . Like with , the operator
-given to must be associative and have a neutral element.
+Intuitively, the result of ``scan`` is an array of the results of
+calling ``reduce`` on increasing prefixes of the input array. The last
+element of the returned array is equivalent to the result of calling
+``reduce``. Like with ``reduce``, the operator given to ``scan`` must
+be associative and have a neutral element.
 
 There are two main ways to compute scans: *exclusive* and *inclusive*.
 The difference is that the empty prefix is considered in an exclusive
 scan, but not in an inclusive scan. Computing the exclusive
 :math:`+`-scan of ``[1,2,3]`` thus gives ``[0,1,3,6]``, while the
-inclusive :math:`+`-scan is ``[1,3,6]``. The SOAC in Futhark is
+inclusive :math:`+`-scan is ``[1,3,6]``. The ``scan`` in Futhark is
 inclusive, but it is easy to generate a corresponding exclusive scan
 simply by prepending the neutral element.
 
-While the idea behind is probably familiar, is a little more esoteric,
-and mostly has applications for handling problems that do not seem
-parallel at first glance. Several examples are discussed in
-:ref:`parallel-algorithms`.
+While the idea behind ``reduce`` is probably familiar, ``scan`` is a
+little more esoteric, and mostly has applications for handling
+problems that do not seem parallel at first glance. Several examples
+are discussed in :ref:`parallel-algorithms`.
 
 Filtering
 ~~~~~~~~~
 
-We have seen , which permits us to change all the elements of an array,
-and we have seen , which lets us collapse all the elements of an array.
-But we still need something that lets us remove some, but not all, of
-the elements of an array. This SOAC is , which keeps only those elements
-of an array that satisfy some predicate.
+We have seen ``map``, which permits us to change all the elements of
+an array, and we have seen ``reduce``, which lets us collapse all the
+elements of an array.  But we still need something that lets us remove
+some, but not all, of the elements of an array. This SOAC is
+``filter``, which keeps only those elements of an array that satisfy
+some predicate.
 
 ::
 
     filter (<3) [1,5,2,3,4] == [1,2]
 
-The use of is mostly straightforward, but there are some patterns that
-may appear subtle at first glance. For example, how do we find the
-*indices* of all nonzero entries in an array of integers? Finding the
-values is simple enough:
+The use of ``filter`` is mostly straightforward, but there are some
+patterns that may appear subtle at first glance. For example, how do
+we find the *indices* of all nonzero entries in an array of integers?
+Finding the values is simple enough:
 
 ::
 
@@ -553,7 +562,7 @@ values is simple enough:
       [5,2,1]
 
 But what are the corresponding indices? We can solve this using a
-combination of , , and :
+combination of ``zip``, ``filter``, and ``unzip``:
 
 ::
 
@@ -563,8 +572,8 @@ combination of , , and :
       let (_, is') = unzip xs_and_is'
       in is'
 
-Be aware that is a somewhat expensive SOAC, corresponding roughly to a
-plus a .
+Be aware that ``filter`` is a somewhat expensive SOAC, corresponding
+roughly to a ``scan`` plus a ``map``.
 
 .. _sequential-loops:
 
@@ -654,19 +663,19 @@ compiler. In contrast to most functional languages, Futhark does not
 properly support recursion, and you are therefore required to use syntax
 for sequential loops.
 
-Apart from -loops, Futhark also supports -loops. These do not provide as
-much information to the compiler, but can be used for convergence loops,
-where the number of iterations cannot be predicted in advance. For
-example, the following program doubles a given number until it exceeds a
-given threshold value:
+Apart from ``for``-loops, Futhark also supports ``while``-loops. These
+do not provide as much information to the compiler, but can be used
+for convergence loops, where the number of iterations cannot be
+predicted in advance. For example, the following program doubles a
+given number until it exceeds a given threshold value:
 
 ::
 
     let main(x: i32, bound: i32): i32 =
       loop x = while x < bound do x * 2
 
-In all respects other than termination criteria, -loops behave
-identically to -loops.
+In all respects other than termination criteria, ``while``-loops
+behave identically to ``for``-loops.
 
 For brevity, the initial value expression can be elided, in which case
 an expression equivalent to the pattern is implied. This is easier to
@@ -794,10 +803,11 @@ alias its source:
                  -- (assuming a is not one-dimensional)
 
 Most array combinators produce fresh arrays that initially alias no
-other arrays in the program. In particular, the result of does not alias
-``a``. One exception is , used for dividing arrays into multiple parts,
-where each of the partitions are aliased to the original array (but the
-partitions, being non-overlapping, are not aliased to each other).
+other arrays in the program. In particular, the result of ``map f a``
+does not alias ``a``. One exception is ``split``, used for dividing
+arrays into multiple parts, where each of the partitions are aliased
+to the original array (but the partitions, being non-overlapping, are
+not aliased to each other).
 
 Let us consider the definition of a function returning a unique array:
 
@@ -868,12 +878,13 @@ making use of in-place updates at all.
 Typically, we use in-place updates to efficiently express sequential
 algorithms that are then mapped on some array. Somewhat
 counter-intuitively, however, in-place updates can also be used for
-expressing irregular nested parallel algorithms (which are otherwise not
-expressible in Futhark), albeit in a low-level way. The key here is the
-array combinator , which writes to several positions in an array in
-parallel. Suppose we have an array ``is`` of type ``[n]i32``, an array
-``vs`` of type ``[n]t`` (for some ``t``), and an array ``as`` of type
-``[m]t``. Then the expression ``as is vs`` morally computes
+expressing irregular nested parallel algorithms (which are otherwise
+not expressible in Futhark), albeit in a low-level way. The key here
+is the array combinator ``scatter``, which writes to several positions
+in an array in parallel. Suppose we have an array ``is`` of type
+``[n]i32``, an array ``vs`` of type ``[n]t`` (for some ``t``), and an
+array ``as`` of type ``[m]t``. Then the expression ``scatter as is
+vs`` morally computes
 
 .. code-block:: none
 
@@ -883,9 +894,9 @@ parallel. Suppose we have an array ``is`` of type ``[n]i32``, an array
         as[j] = v
 
 and returns the modified ``as`` array. The old ``as`` array is marked
-as consumed and may not be used anymore. Parallel can be used to
-implement efficiently the radix sort algorithm, as demonstrated in
-:ref:`radixsort`.
+as consumed and may not be used anymore. Parallel ``scatter`` can be
+used to implement efficiently the radix sort algorithm, as
+demonstrated in :ref:`radixsort`.
 
 .. _size-annotations:
 
@@ -1325,9 +1336,10 @@ collapsing an array
 There is an implied assumption here, which is not captured by the type
 system: the function ``add`` must be associative and have ``zero`` as
 its neutral element. These constraints are from the parallel semantics
-of , and the algebraic concept of a *monoid*. Note that in ``Monoid``,
-no definition is given of the type ``t`` - we only assert that there
-must be some type ``t``, and that certain operations are defined for it.
+of ``reduce``, and the algebraic concept of a *monoid*. Note that in
+``Monoid``, no definition is given of the type ``t`` - we only assert
+that there must be some type ``t``, and that certain operations are
+defined for it.
 
 We can use the parametric module ``Sum`` thus
 

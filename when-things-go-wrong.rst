@@ -45,14 +45,14 @@ For example, consider this program:
           [0..<n]
 
 At the time of this writing, the ``futhark-opencl`` compiler will fail
-with the not particularly illuminative error message
-``Cannot allocate memory in kernel``. The reason is that the compiler is
-trying to compile the to parallel code, which involves pre-allocating
+with the not particularly illuminative error message ``Cannot allocate
+memory in kernel``. The reason is that the compiler is trying to
+compile the ``map`` to parallel code, which involves pre-allocating
 memory for the ``a`` and ``b`` array. It is unable to do this, as the
-sizes of these two arrays depend on values that are only known *inside*
-the map, which is too late. There are various techniques the Futhark
-compiler could use to estimate how much memory would be needed, but
-these have not yet been implemented.
+sizes of these two arrays depend on values that are only known
+*inside* the map, which is too late. There are various techniques the
+Futhark compiler could use to estimate how much memory would be
+needed, but these have not yet been implemented.
 
 It is usually possible, sometimes with some pain, to come up with a
 workaround. We could rewrite the program as:
@@ -69,4 +69,5 @@ workaround. We could rewrite the program as:
 
 This exploits the fact that the compiler does not generate allocations
 for array slices or in-place updates. The only allocation is of the
-initial ``res``, the size of which can be computed before entering the .
+initial ``res``, the size of which can be computed before entering the
+``map``.
