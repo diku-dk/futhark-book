@@ -26,10 +26,32 @@ Furthermore, we will discusss some of the theorical background of
 data-parallel programming, as well as elaborate on some of the
 optimisations that can be expected from the compiler.
 
+Contributing to the book
+------------------------
+
+The book is Open Source, maintained on Github, and distributed under
+the Creative Commons Attribution (By) 4.0 license. All code snippets
+in the book, including code in the book’s repository directory is
+distributed under the ISC license.  We will appreciate pull-requests
+for fixing any kinds of typos and errors in the text and in the
+enclosed programs, or making any other improvement. The book’s main
+repository is https://github.com/diku-dk/futhark-book.
+
+Acknowledgments
+---------------
+
+This work has been partially supported by the Danish Strategic Research
+Council, Program Committee for Strategic Growth Technologies, for the
+research center HIPERFIT: Functional High Performance Computing for
+Financial Information Technology (`hiperfit.dk <hiperfit.dk>`__) under
+contract number 10-092299.
+
+Table of contents
+-----------------
+
 .. toctree::
    :maxdepth: 2
 
-   preface.rst
    introduction.rst
    language.rst
    benchmarking.rst
@@ -41,7 +63,7 @@ optimisations that can be expected from the compiler.
    zbibliography.rst
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`search`
