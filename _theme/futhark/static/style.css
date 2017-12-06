@@ -44,6 +44,9 @@ div.bodywrapper {
 div.body {
     margin: 0;
     padding: 0.5em 20px 20px 20px;
+    max-width: 750px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 div.related {
