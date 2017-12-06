@@ -144,7 +144,7 @@ manually. The cost model developed for Futhark has been adapted from
 the cost model developed for the SPARC parallel functional programming
 language developed for the Carnegie Mellon University (CMU) Fall 2016
 course “15-210: Parallel and Sequential Data Structures and
-Algorithms” :cite`algdesign:parseq2016`.
+Algorithms” :cite:`algdesign:parseq2016`.
 
 We shall primarily look at parallelism from a data-parallel functional
 programming perspective. The development in the book is made through
