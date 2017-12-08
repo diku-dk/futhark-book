@@ -65,15 +65,16 @@ first-order built-in operations, and second order array combinators
 are given as follows:
 
 .. math::
-   \id{binop} &::= \fop{+} | \fop{-} | \fop{*} | \fop{/} | \cdots
-
-   \id{op} &::= \fop{-} | \fop{abs} | \fop{copy} | \fop{concat} | \fop{empty} | \fop{iota}
-
-       & \quad\quad\quad | \fop{partition} | \fop{rearrange} | \fop{replicate} | \fop{reshape}
-
-       & \quad\quad\quad | \fop{rotate} | \fop{shape} | \fop{split} | \fop{transpose} | \fop{unzip} | \fop{scatter} | \fop{zip}
-
-   \id{soac} &::= \fop{map} | \fop{reduce} | \fop{reduce\_comm} | \fop{scan} | \fop{filter} | \fop{partition}
+   \id{binop} &::=~~& \fop{+} ~~|~~ \fop{-} ~~|~~ \fop{*} ~~|~~ \fop{/} ~~|~~ \cdots \\
+   \\
+   \id{op} &::=~~& \fop{-} ~~|~~ \fop{abs} ~~|~~ \fop{copy} ~~|~~ \fop{concat} ~~|~~ \fop{empty} \\
+       &~~|~~& \fop{iota} ~~|~~ \fop{partition} ~~|~~ \fop{rearrange} \\
+       &~~|~~& \fop{replicate} ~~|~~ \fop{reshape} \\
+       &~~|~~& \fop{rotate} ~~|~~ \fop{shape} ~~|~~ \fop{scatter} \\
+       &~~|~~& \fop{split} ~~|~~ \fop{transpose} ~~|~~ \fop{unzip} ~~|~~ \fop{zip} \\
+   \\
+   \id{soac} &::=~~& \fop{map} ~~|~~ \fop{reduce} ~~|~~ \fop{reduce_comm} \\
+             &~~|~~& \fop{scan} ~~|~~ \fop{filter} ~~|~~ \fop{partition}
 
 In the grammar for the Futhark language below, we have eluded both the
 required explicit type annotations and the optional explicit type
@@ -82,27 +83,24 @@ pattern matching and we do not, in this section, consider uniqueness
 types.
 
 .. math::
-   p &::= x ~|~ (x_1,...,x_n)
-
-   \id{ps} &::= p_1 \cdots p_n
-
-   F &::= \texttt{\ } ps \texttt{->} e ~|~  e~\id{binop}  ~|~  \id{binop}~e
-
-   P &::= \kw{let}~f~\id{ps}~\kw{=}~e ~|~  P_1 P_2 ~|~  \kw{let}~p~\kw{=}~e
-
-   v &::= \kw{true} ~|~  \kw{false} ~|~  n  ~|~  r  ~|~  [v_1,...,v_n]  ~|~  (v_1,...,v_n)
-
-   e &::= x  ~|~  v  ~|~  \kw{let}~\id{ps}~\kw{=}~e~\kw{in}~e'  ~|~  e[e']  ~|~  e[e':e'']
-
-       & \quad\quad\quad ~|~ [e_1,...,e_n]  ~|~  (v_1,...,v_n)
-
-       & \quad\quad\quad ~|~ f e_1 ... e_n  ~|~  \id{op}~e_1 ... e_n  ~|~  e_1~\id{binop}~e_2
-
-       & \quad\quad\quad ~|~ \texttt{loop $p_1$=$e_1$,$\cdots$,$p_n$=$e_n$ for $x$ < $e$ do $e'$}
-
-       & \quad\quad\quad ~|~ \texttt{loop $p_1$=$e_1$,$\cdots$,$p_n$=$e_n$ while $e$ do $e'$}
-
-       & \quad\quad\quad ~|~ \id{soac}~F~e_1~\cdots~e_n
+   p &::=~~& x ~~|~~ \kw{(}x_1,...,x_n\kw{)} \\
+   \\
+   \id{ps} &::=~~& p_1 \cdots p_n \\
+   \\
+   F &::=~~& \kw{\ } ps ~\kw{->}~ e ~~|~~  e~\id{binop}  ~~|~~  \id{binop}~e \\
+   \\
+   P &::=~~& \fw{let}~f~\id{ps}~\kw{=}~e ~~|~~  P_1 P_2 ~~|~~ \fw{let}~p~\kw{=}~e \\
+   \\
+   v &::=~~& \fop{true} ~~|~~  \fop{false} ~~|~~  n  ~~|~~  r \\
+     &~~|~~& \kw{[}v_1,...,v_n\kw{]}  ~~|~~  \kw{(}v_1,...,v_n\kw{)} \\
+   \\
+   e &::=& x  ~~|~~  v  ~~|~~  \fw{let}~\id{ps}~\kw{=}~e~\fw{in}~e' \\
+     &~~|~~&  e\kw{[}e'\kw{]}  ~~|~~  e\kw{[}e'\kw{:}e''\kw{]} \\
+     &~~|~~& \kw{[}e_1,...,e_n\kw{]}  ~~|~~  \kw{(}v_1,...,v_n\kw{)} \\
+     &~~|~~& f e_1 ... e_n  ~~|~~  \id{op}~e_1 ... e_n  ~~|~~  e_1~\id{binop}~e_2 \\
+     &~~|~~& \fw{loop}~ p_1\kw{=}e_1,\cdots,p_n\kw{=}e_n ~\fw{for}~ x \kw{<} e ~\fw{do}~ e' \\
+     &~~|~~& \fw{loop}~ p_1\kw{=}e_1,\cdots,p_n\kw{=}e_n ~\fw{while}~ e ~\fw{do}~ e' \\
+     &~~|~~& \id{soac}~F~e_1~\cdots~e_n
 
 Futhark Type System
 -------------------
@@ -112,7 +110,8 @@ system is simple. Types (:math:`\tau`) follow the following
 grammar-slightly simplified:
 
 .. math::
-   \tau ~~::=~~ \kw{i32} ~~|~~ \kw{f32} ~~|~~ \kw{bool} ~~|~~ \kw{[]}\tau ~~|~~ \kw{(}\tau_1,\cdots,\tau_n\kw{)} ~~|~~ \tau \rarr \tau' ~~|~~ \alpha
+   \tau & ::=~~& \kw{i32} ~~|~~ \kw{f32} ~~|~~ \kw{bool} ~~|~~ \kw{[]}\tau \\
+        & ~~|~~& \kw{(}\tau_1,\cdots,\tau_n\kw{)} ~~|~~ \tau \rarr \tau' ~~|~~ \alpha
 
 \noindent We shall refer to the types ``i32``, ``f32``, and ``bool``
 as *basic types*. Futhark supports more basic types than those
@@ -131,7 +130,7 @@ introducing the concept of *type schemes*, ranged over by
 :math:`\sigma`, which are basically quantified types with
 :math:`\alpha` and :math:`\beta` ranging over ordinary types. When
 :math:`\sigma=\forall\vec{\alpha}.\tau` is some type scheme, we say
-that :math:`\tau''` is an instance of :math:`\sigma`, written
+that :math:`\tau'` is an instance of :math:`\sigma`, written
 :math:`\sigma \geq \tau'` if there exists a substitution
 :math:`[\vec{\tau}/\vec{\alpha}]` such that
 :math:`\tau[\vec{\tau}/\vec{\alpha}] = \tau'`. We require all
@@ -145,46 +144,39 @@ The type schemes for Futhark's second-order array combinators are as
 follows:
 
 .. math::
-   :nowrap:
-
-   \begin{eqnarray*}
-                                                                                                           \id{soac} & : & \mathrm{TypeOf}(\id{soac}) \\
-                                                                                                               \fop{filter} & : & \forall \alpha. (\alpha \rarr \mathtt{bool}) \rarr []\alpha \rarr []\alpha\\
-                                                                                                               \fop{map} & : & \forall \alpha_1\cdots\alpha_n\beta. (\alpha_1\rarr\cdots\rarr\alpha_n \rarr \beta) \rarr []\alpha_1 \rarr\cdots\rarr []\alpha_n \rarr []\beta\\
-                                                                                                               \fop{reduce} & : & \forall \alpha. (\alpha \rarr \alpha \rarr \alpha) \rarr \alpha \rarr []\alpha \rarr \alpha\\
-                                                                                                               \fop{scan} & : & \forall \alpha. (\alpha \rarr \alpha \rarr \alpha) \rarr \alpha \rarr []\alpha \rarr []\alpha\\
-                                                                                                             \end{eqnarray*}
+    \id{soac} & ~~:~~ & \mathrm{TypeOf}(\id{soac}) \\ \hline
+ \fop{filter} & ~~:~~ & \forall \alpha. (\alpha \rarr \mathtt{bool}) \rarr []\alpha \rarr []\alpha\\
+    \fop{map} & ~~:~~ & \forall \alpha_1\cdots\alpha_n\beta. (\alpha_1\rarr\cdots\rarr\alpha_n \rarr \beta) \\
+              & & \rarr []\alpha_1 \rarr\cdots\rarr []\alpha_n \rarr []\beta\\
+ \fop{reduce} & ~~:~~ & \forall \alpha. (\alpha \rarr \alpha \rarr \alpha) \rarr \alpha \rarr []\alpha \rarr \alpha\\
+   \fop{scan} & ~~:~~ & \forall \alpha. (\alpha \rarr \alpha \rarr \alpha) \rarr \alpha \rarr []\alpha \rarr []\alpha\\
 
 The type schemes for Futhark's built-in first-order operations are as
 follows:
 
 .. math::
-   :nowrap:
 
-   \begin{eqnarray*}
-   \id{op} & : & \mathrm{TypeOf}(\id{op}) \\
-        \fop{concat} & : & \forall \alpha. []\alpha \rarr \cdots \rarr []\alpha \rarr []\alpha \\
-        \fop{empty} & : & \forall \alpha. []\alpha \\
-        \fop{iota} & : & \kw{int} \rarr []\kw{int} \\
-        \fop{replicate} & : & \forall \alpha. \kw{int} \rarr \alpha \rarr []\alpha\\
-        \fop{rotate} & : & \forall \alpha. \kw{int} \rarr []\alpha \rarr []\alpha\\
-        \fop{transpose} & : & \forall \alpha. [][]\alpha \rarr [][]\alpha\\
-        \fop{unzip} & : & \forall \alpha_1\cdots\alpha_n. [](\alpha_1,\cdots,\alpha_n) \rarr ([]\alpha_1,\cdots,[]\alpha_n) \\
-        \fop{scatter} & : & \forall \alpha. []\alpha \rarr []\kw{int} \rarr []\alpha \rarr []\alpha \\
-        \fop{zip} & : & \forall \alpha_1\cdots\alpha_n. []\alpha_1\rarr\cdots\rarr[]\alpha_n \rarr [](\alpha_1,\cdots,\alpha_n)
-      \end{eqnarray*}
+         \id{op} & ~~:~~ & \mathrm{TypeOf}(\id{op}) \\ \hline
+    \fop{concat} & ~~:~~ & \forall \alpha. []\alpha \rarr \cdots \rarr []\alpha \rarr []\alpha \\
+     \fop{empty} & ~~:~~ & \forall \alpha. []\alpha \\
+      \fop{iota} & ~~:~~ & \kw{int} \rarr []\kw{int} \\
+ \fop{replicate} & ~~:~~ & \forall \alpha. \kw{int} \rarr \alpha \rarr []\alpha\\
+    \fop{rotate} & ~~:~~ & \forall \alpha. \kw{int} \rarr []\alpha \rarr []\alpha\\
+ \fop{transpose} & ~~:~~ & \forall \alpha. [][]\alpha \rarr [][]\alpha\\
+     \fop{unzip} & ~~:~~ & \forall \alpha_1\cdots\alpha_n. [](\alpha_1,\cdots,\alpha_n) \\
+                 &       & \rarr ([]\alpha_1,\cdots,[]\alpha_n) \\
+   \fop{scatter} & ~~:~~ & \forall \alpha. []\alpha \rarr []\kw{int} \rarr []\alpha \rarr []\alpha \\
+       \fop{zip} & ~~:~~ & \forall \alpha_1\cdots\alpha_n. []\alpha_1\rarr\cdots\rarr[]\alpha_n \\
+                 &       & \rarr [](\alpha_1,\cdots,\alpha_n)
 
 The type schemes for Futhark's built-in infix scalar operations are as
 folllows:
 
 .. math::
-   :nowrap:
 
-   \begin{eqnarray*}
-   \id{binop} & : & \mathrm{TypeOf}(\id{binop}) \\
-     \kw{+},\kw{-},\kw{*},\kw{/},\cdots & : & \forall \alpha \triangleright \{\kw{i32},\kw{f32}\}. \alpha \rarr \alpha \rarr \alpha \\
-     \kw{==},\kw{!=},\kw{<},\kw{<=},\kw{>},\kw{>=} & : & \forall \alpha \triangleright \{\kw{i32},\kw{f32}\}. \alpha \rarr \alpha \rarr \kw{bool}
-   \end{eqnarray*}
+   \id{binop} & ~~:~~ & \mathrm{TypeOf}(\id{binop}) \\ \hline
+     \kw{+},\kw{-},\kw{*},\kw{/},\cdots & ~~:~~ & \forall \alpha \triangleright \{\kw{i32},\kw{f32}\}. \alpha \rarr \alpha \rarr \alpha \\
+     \kw{==},\kw{!=},\kw{<},\kw{<=},\kw{>},\kw{>=} & ~~:~~ & \forall \alpha \triangleright \{\kw{i32},\kw{f32}\}. \alpha \rarr \alpha \rarr \kw{bool}
 
 We use :math:`\Gamma` to range over *type environments*, which are
 finite maps mapping variables to types. We use :math:`\{\}` to denote
@@ -208,117 +200,79 @@ type :math:`\tau`.” Finally, type judgments for programs take the form
 :math:`\Gamma`, the program :math:`P` has type environment
 :math:`\Gamma'`.”
 
-.. rubric:: Values :math:`\sembox{ \vd v : \tau}`
+.. rubric:: Values :math:`~~\sembox{ \vd v : \tau}`
 
 .. math::
 
-   \twopart{
-   \fraccc{}{\vd r : \kw{f32}}
-   }{
-   \fraccc{}{\vd n : \kw{i32}}
-   }
+   \begin{eqnarray*}
+   & \fraccc{}{\vd r : \kw{f32}} \\[2mm]
+   & \fraccc{}{\vd n : \kw{i32}} \\[2mm]
+   & \fraccc{}{\vd \fop{true} : \kw{bool}} \\[2mm]
+   & \fraccc{}{\vd \fop{false} : \kw{bool}} \\[2mm]
+   & \fraccc{\vd v_i : \tau_i ~~~i = [1;n]}{\vd \kw{(}v_1,\cdots,v_n\kw{)} : \kw{(}\tau_1,\cdots,\tau_n\kw{)}} \\[2mm]
+   & \fraccc{\vd v_i : \tau ~~~i = [1;n]}{\vd \kw{[}v_1,\cdots,v_n\kw{]} : \kw{[]}\tau}
+   \end{eqnarray*}
 
-   \twopart{
-   \fraccc{}{\vd \fop{true} : \kw{bool}}
-   }{
-   \fraccc{}{\vd \fop{false} : \kw{bool}}
-   }
-
-   \twopart{
-   \fraccc{\vd v_i : \tau_i ~~~i = [1;n]}{\vd \kw{(}v_1,\cdots,v_n\kw{)} : \kw{(}\tau_1,\cdots,\tau_n\kw{)}}
-   }{
-   \fraccc{\vd v_i : \tau ~~~i = [1;n]}{\vd \kw{[}v_1,\cdots,v_n\kw{]} : \kw{[]}\tau}
-   }
-
-.. rubric:: Expressions :math:`\sembox{\Gamma \vd e : \tau}`
+.. rubric:: Expressions :math:`~~\sembox{\Gamma \vd e : \tau}`
 
 .. math::
 
-   \twopart{
-     \fraccc{\Gamma(x) = \tau}{\Gamma \vd x : \tau}
-   }{
-   \fraccc{\Gamma \vd e : []\tau ~~~~\Gamma \vd e_i : \kw{int}~~i=[1,2]}{ \Gamma \vd e\kw{[}e_1:e_2\kw{]} : \tau}
-   }
-
-   \twopart{
-   \fraccc{\Gamma \vd e : \tau ~~~~
-   \Gamma, x:\tau \vd e' : \tau'}{\Gamma \vd \kw{let}~x~\kw{=} ~e~ \kw{in}~e' : \tau'}
-   }{
-   \fraccc{\Gamma \vd e : \kw{(}\tau_1,\cdots,\tau_n\kw{)} \\
-   \Gamma, x_1:\tau_1,\cdots,x_n:\tau_n \vd e' : \tau}{\Gamma \vd \kw{let}~\kw{(}x_1,\cdots,x_n\kw{)} ~\kw{=} ~e~ \kw{in}~e' : \tau}
-   }
-
-   \twopart{
-   \fraccc{\Gamma \vd e_i : \tau_i ~~~i = [1;n]}{\Gamma \vd \kw{(}e_1,\cdots,e_n\kw{)} : \kw{(}\tau_1,\cdots,\tau_n\kw{)}}
-   }{
-   \fraccc{\Gamma \vd e_i : \tau ~~~i = [1;n]}{\Gamma \vd \kw{[}e_1,\cdots,e_n\kw{]} : \kw{[]}\tau}
-   }
-
-   \twopart{
-   \fraccc{\vd v : \tau}{\Gamma \vd v : \tau}
-   }{
-   \fraccc{\Gamma(f) = \kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau ~~~~ \Gamma \vd e_i : \tau_i ~~ i = [1;n]}{\Gamma \vd f~e_1\cdots e_n : \tau}
-   }
-
-   \twopart{
-     \fraccc{\Gamma \vd e_i : \tau_i ~~ i = [1;2] \\
+   \begin{eqnarray*}
+   & \fraccc{\Gamma(x) = \tau}{\Gamma \vd x : \tau} \\[2mm]
+   & \fraccc{\Gamma \vd e : []\tau ~~~~\Gamma \vd e_i : \kw{int}~~i=[1,2]}{ \Gamma \vd e\kw{[}e_1:e_2\kw{]} : \tau} \\[2mm]
+   & \fraccc{\Gamma \vd e : \tau ~~~~ \Gamma, x:\tau \vd e' : \tau'}{\Gamma \vd \fw{let}~x~\kw{=} ~e~ \fw{in}~e' : \tau'} \\[2mm]
+   & \fraccc{\Gamma \vd e : \kw{(}\tau_1,\cdots,\tau_n\kw{)} \\
+             \Gamma, x_1:\tau_1,\cdots,x_n:\tau_n \vd e' : \tau}{\Gamma \vd \fw{let}~\kw{(}x_1,\cdots,x_n\kw{)} ~\kw{=} ~e~ \fw{in}~e' : \tau} \\[2mm]
+   & \fraccc{\Gamma \vd e_i : \tau_i ~~~i = [1;n]}{\Gamma \vd \kw{(}e_1,\cdots,e_n\kw{)} : \kw{(}\tau_1,\cdots,\tau_n\kw{)}} \\[2mm]
+   & \fraccc{\Gamma \vd e_i : \tau ~~~i = [1;n]}{\Gamma \vd \kw{[}e_1,\cdots,e_n\kw{]} : \kw{[]}\tau} \\[2mm]
+   & \fraccc{\vd v : \tau}{\Gamma \vd v : \tau} \\[2mm]
+   & \fraccc{\Gamma(f) = \kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau ~~~~ \Gamma \vd e_i : \tau_i ~~ i = [1;n]}{\Gamma \vd f~e_1\cdots e_n : \tau} \\[2mm]
+   & \fraccc{\Gamma \vd e_i : \tau_i ~~ i = [1;2] \\
      \mathrm{TypeOf}(\id{binop}) \geq \tau ~~~~ \tau = \tau_1 \rarr \tau_2 \rarr \tau'}{\Gamma \vd e_1 ~\id{binop}_\tau~ e_n : \tau'
-     }
-   }{
-     \fraccc{\Gamma \vd e_i : \tau_i ~~ i = [1;n] \\
+     } \\[2mm]
+   & \fraccc{\Gamma \vd e_i : \tau_i ~~ i = [1;n] \\
      \mathrm{TypeOf}(\id{op}) \geq \tau \\ \tau =  \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau'}{\Gamma \vd \id{op}_\tau~ e_1~\cdots~e_n : \tau'
-     }
-   }
-
-   \twopart{
-   \fraccc{\Gamma \vd e : []\tau ~~~~~~\Gamma \vd e' : \kw{int}}{ \Gamma \vd e\kw{[}e'\kw{]} : \tau}
-   }{
-     \fraccc{\Gamma \vd F : \tau_\mathrm{f} ~~~ \Gamma \vd e_i : \tau_i ~~ i = [1;n] \\
+     } \\[2mm]
+   & \fraccc{\Gamma \vd e : []\tau ~~~~~~\Gamma \vd e' : \kw{int}}{ \Gamma \vd e\kw{[}e'\kw{]} : \tau} \\[2mm]
+   & \fraccc{\Gamma \vd F : \tau_\mathrm{f} ~~~ \Gamma \vd e_i : \tau_i ~~ i = [1;n] \\
      \mathrm{TypeOf}(\id{soac}) \geq \tau_\mathrm{f} \rarr \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau}{
        \Gamma \vd \id{soac} ~F~e_1~\cdots~e_n : \tau
      }
-   }
+   \end{eqnarray*}
 
-.. rubric:: Functions :math:`\sembox{\Gamma \vd F : \tau}`
+
+.. rubric:: Functions :math:`~~\sembox{\Gamma \vd F : \tau}`
 
 .. math::
 
-   \onepart{
-     \fraccc{\Gamma,x_1:\tau_1~\cdots~x_n:\tau_n \vd e : \tau}{
+   \begin{eqnarray*}
+   & \fraccc{\Gamma,x_1:\tau_1~\cdots~x_n:\tau_n \vd e : \tau}{
        \Gamma \vd \kw{\ } x_1:\tau_1~\cdots~x_n:\tau_n ~ \kw{->} ~e : \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau
-     }
-   }
-
-   \twopart{
-     \fraccc{\Gamma \vd e : \tau_1 \\
+     } \\[2mm]
+   & \fraccc{\Gamma \vd e : \tau_1 \\
      \mathrm{TypeOf}(\id{binop}) \geq \tau_1 \rarr \tau_2 \rarr \tau}{\Gamma \vd e ~\id{binop} : \tau_2 \rarr \tau
-     }
-   }{
-     \fraccc{\Gamma \vd e : \tau_2 \\
+     } \\[2mm]
+   & \fraccc{\Gamma \vd e : \tau_2 \\
      \mathrm{TypeOf}(\id{binop}) \geq \tau_1 \rarr \tau_2 \rarr \tau}{\Gamma \vd \id{binop}~e : \tau_1 \rarr \tau
      }
-   }
+   \end{eqnarray*}
 
 
-.. rubric:: Programs :math:`\sembox{\Gamma \vd P : \Gamma'}`
+.. rubric:: Programs :math:`~~\sembox{\Gamma \vd P : \Gamma'}`
 
 .. math::
 
-   \twopart{
-                                                                                                           \fraccc{\Gamma \vd e : \tau ~~~~~ x \not \in \Dom(\Gamma)}{\Gamma \vd \kw{let}~x~\kw{=} ~e : \{x:\tau\}}
-                                                                                                           }{
-                                                                                                           \fraccc{\Gamma \vd P_1 : \Gamma_1 ~~~~ \Gamma + \Gamma_1 \vd P_2 : \Gamma_2}
-                                                                                                                  {\Gamma \vd P_1~P_2 : \Gamma_1 + \Gamma_2}
-                                                                                                           }
-
-                                                                                                           \onepart{
-                                                                                                             \fraccc{\Gamma,x_1:\tau_1,\cdots,x_n:\tau_n \vd e : \tau  ~~~~~ f \not \in \Dom(\Gamma)}
-                                                                                                                    {\Gamma \vd \fw{let}~f~\kw{(}x_1,\cdots,x_n\kw{)}~\kw{=} ~e : \{f:\kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau\}}
-   }
+   \begin{eqnarray*}
+   & \fraccc{\Gamma \vd e : \tau ~~~~~ x \not \in \Dom(\Gamma)}{\Gamma \vd \fw{let}~x~\kw{=} ~e : \{x:\tau\}} \\[2mm]
+   & \fraccc{\Gamma \vd P_1 : \Gamma_1 ~~~~ \Gamma + \Gamma_1 \vd P_2 : \Gamma_2}
+            {\Gamma \vd P_1~P_2 : \Gamma_1 + \Gamma_2} \\[2mm]
+   & \fraccc{\Gamma,x_1:\tau_1,\cdots,x_n:\tau_n \vd e : \tau  ~~~~~ f \not \in \Dom(\Gamma)}
+            {\Gamma \vd \fw{let}~f~\kw{(}x_1,\cdots,x_n\kw{)}~\kw{=} ~e : \{f:\kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau\}}
+   \end{eqnarray*}
 
 For brewity, we have eluded some of the typing rules and we leave it
-to the reader to create typing rules for ``rearrange``, `shape`,
-`reshape`, `loop-for`, `loop-while`, and array ranging (``e[i:j:o]``).
+to the reader to create typing rules for ``rearrange``, ``shape``,
+``reshape``, ``loop-for``, ``loop-while``, and array ranging (``e[i:j:o]``).
 
 Futhark Evaluation Semantics
 ----------------------------
@@ -440,22 +394,22 @@ the remaining SOACs follow the same lines as the definitions for
 
    \begin{eqnarray*}
       W(v) &=& 1 \\
-      W(\kw{let}~x~\kw{=}~e~\kw{in}~e') &=& W(e) + W(e'[\Eval{e}/x]) + 1 \\
-      W(\kw{let}~(x_1,...,x_n)~\kw{=}~e~\kw{in}~e') &=& \Let~[v_1,...,v_n] = \Eval{e} \\
+      W(\fw{let}~x~\kw{=}~e~\fw{in}~e') &=& W(e) + W(e'[\Eval{e}/x]) + 1 \\
+      W(\fw{let}~(x_1,...,x_n)~\kw{=}~e~\fw{in}~e') &=& \Let~[v_1,...,v_n] = \Eval{e} \\
       && \In~W(e) + W(e'[v_1/x_1,\cdots,v_n/x_n]) + 1 \\
       W(\kw{[}e_1,\cdots,e_n\kw{]}) &=& W(e_1) + \ldots + W(e_n) + 1 \\
       W(\kw{(}e_1,\cdots,e_n\kw{)}) &=& W(e_1) + \ldots + W(e_n) + 1 \\
       W(f~e_1 \cdots e_n) &=& W(e_1) + \ldots + W(e_n) + W(e[\Eval{e_1}/x_1,\cdots \Eval{e_n}/x_n]) + 1 \\
-      & & \quad \mathrm{where} (\kw{let}~f~x_1~\cdots~x_n~=~e) ~\in~ P \\
+      & & \quad \mathrm{where} (\fw{let}~f~x_1~\cdots~x_n~=~e) ~\in~ P \\
       W(e_1 \id{binop} e_2) &=& W(e_1) + W(e_2) + 1 \\
-      W(map~F~e) &=& \Let~[v_1,\cdots,v_n] = \Eval{e} \\
+      W(\fop{map}~F~e) &=& \Let~[v_1,\cdots,v_n] = \Eval{e} \\
       & & \quad \lambda x. e' = \extractF{F} \\
       & & \In~W(e) + W(e'[v_1/x]) + \ldots + W(e'[v_n/x]) \\
-      W(\kw{reduce}~F~e'~e'') &=& \Let~[v_1,\cdots,v_n] = \Eval{e''} \\
+      W(\fop{reduce}~F~e'~e'') &=& \Let~[v_1,\cdots,v_n] = \Eval{e''} \\
       & & \quad \lambda x~x'. e = \extractF{F} \\
       & & \In~W(e') + W(e'') + W(e[v_1/x,v_n/x']) \times n + 1 \\
       & & \quad \mathrm{assuming} ~ W(e[v_1/x,v_n/x']) ~\mathrm{indifferent~to} ~v_1~ \mathrm{and} ~v_n \\
-      W(\kw{iota}~e) &=& W(e) + n \quad \mathrm{where} ~ n = \Eval{e}
+      W(\fop{iota}~e) &=& W(e) + n \quad \mathrm{where} ~ n = \Eval{e}
    \end{eqnarray*}
 
 .. rubric:: Span (:math:`S`)
@@ -465,26 +419,26 @@ the remaining SOACs follow the same lines as the definitions for
 
    \begin{eqnarray*}
      S(v) &=& 1 \\
-     S(\kw{let}~x~=~e~in~e') &=& S(e) + S(e'[\Eval{e}/x]) + 1 \\
-     S(\kw{let}~(x_1,...,x_n)~=~e~\kw{in}~e') &=&
+     S(\fw{let}~x~=~e~\fw{in}~e') &=& S(e) + S(e'[\Eval{e}/x]) + 1 \\
+     S(\fw{let}~(x_1,...,x_n)~=~e~\fw{in}~e') &=&
        \Let~[v_1,...,v_n] = \Eval{e} \\
        & & \In~S(e) + S(e'[v_1/x_1,\cdots,v_n/x_n]) \\
      S([e_1,\cdots,e_n]) &=& S(e_1) + \ldots + S(e_n) + 1 \\
      S((e_1,\cdots,e_n)) &=& S(e_1) + \ldots + S(e_n) + 1 \\
      S(f e_1 \cdots e_n) &=&
        S(e_1) + \ldots + S(e_n) + S(e[\Eval{e_1}/x_1,\cdots \Eval{e_n}/x_n]) + 1 \\
-       &&\quad \mathrm{where}~(\kw{let}~f~x_1~\cdots~x_n~=~e) ~\in~ P \\
+       &&\quad \mathrm{where}~(\fw{let}~f~x_1~\cdots~x_n~=~e) ~\in~ P \\
      S(e_1~\id{binop}~e_2) &=& S(e_1) + S(e_2) + 1 \\
-     S(\kw{map}~F~e) &=&
+     S(\fop{map}~F~e) &=&
        \Let~[v_1,\cdots,v_n] = \Eval{e} \\
        && \quad \lambda x. e' = \extractF{F} \\
        && \In~S(e) + \id{max}(S(e'[v_1/x]), \ldots , S(e'[v_n/x])) + 1 \\
-     S(\kw{reduce}~F~e'~e'') &=&
+     S(\fop{reduce}~F~e'~e'') &=&
        \Let~[v_1,\cdots,v_n] = \Eval{e''} \\
        && \quad \lambda x~x'. e = \extractF{F} \\
        && \In~S(e') + S(e'') + S(e[v_1/x,v_n/x']) \times \mathrm{ln}\,n + 1 \\
        && \quad \mathrm{assuming} ~ S(e[v_1/x,v_n/x']) ~\mathrm{indifferent~to} ~v_1~ \mathrm{and} ~v_n \\
-     S(iota e) &=& S(e) + 1
+     S(\fop{iota}~ e) &=& S(e) + 1
    \end{eqnarray*}
 
 Reduction by Contraction
@@ -616,10 +570,10 @@ their 0-bit set whereas the first five values have not.
 By a straightforward analysis, we can argue that
 :math:`W(\kw{rsort}~\kw{v})
 = O(\kw{n})`, where :math:`n = \length\,\kw{v}`; each of the operations in
-has work :math:`O(\kw{n})` and :math:`\kw{rsort\_step}` is called a
+has work :math:`O(\kw{n})` and ``rsort_step`` is called a
 constant number of times (i.e., 32 times). Similarly, we can argue that
 :math:`S(\kw{rsort}~\kw{v}) = O(\log\,\kw{n})`, dominated by the SOAC
-calls in :math:`\kw{rsort\_step}`.
+calls in ``rsort_step``.
 
 Counting Primes
 ---------------
@@ -630,8 +584,7 @@ solution to the larger problem. One such algorithm is a version of the
 Sieve of Eratosthenes that, to find the primes smaller than some
 :math:`n`, first calculates the primes smaller than :math:`\sqrt n`. It
 then uses this intermediate result for sieving away the integers in the
-range :math:`\sqrt
-n` up to :math:`n` that are multiples of the primes smaller than
+range :math:`\sqrt n` up to :math:`n` that are multiples of the primes smaller than
 :math:`\sqrt n`.
 
 Unfortunately, Futhark does not presently support recursion, thus, one

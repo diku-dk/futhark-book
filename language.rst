@@ -498,7 +498,7 @@ its neutral element to compute the sum of an array of integers:
 
     reduce (+) 0 [1,2,3] == 6
 
-It turns out that combining ``map`` and ``reduce` is both powerful and
+It turns out that combining ``map`` and ``reduce`` is both powerful and
 has remarkable optimisation properties, as we will discuss in
 :ref:`soac-algebra`. Many Futhark programs are primarly
 ``map``-``reduce`` compositions. For example, we can define a function
