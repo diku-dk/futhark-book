@@ -260,19 +260,17 @@ a code:hover {
 }
 
 pre {
-    background-color:#d8d3c3;
+    background-color: #eeeeee;
     font-family: 'Consolas', 'Deja Vu Sans Mono',
                  'Bitstream Vera Sans Mono', monospace;
     font-size: 0.95em;
     letter-spacing: 0.015em;
     line-height: 120%;
     padding: 0.5em;
-    border-right: 5px solid #5f021f;
-    border-left: 5px solid #5f021f;
 }
 
 .literal {
-    background-color: #d8d3c3;
+    background-color: #eeeeee;
 }
 
 pre a {
