@@ -40,14 +40,14 @@ integers:
     let main (x: []i32) (y: []i32): i32 =
       reduce (+) 0 (map (*) x y)
 
-In Futhark, the notation for an array of element type :math:`t` is
+In Futhark, the notation for an array of element type ``t`` is
 ``[]t``. The program defines a function called ``main`` that takes two
 arguments, both integer arrays, and returns an integer. The ``main``
 function first computes the element-wise product of its two arguments,
 resulting in an array of integers, then computes the product of the
 elements in this new array.
 
-If you put this program in a file ``dotprod.fut``, then you can compile
+If we put save program as a file ``dotprod.fut``, then we can compile
 it to a binary ``dotprod`` (or ``dotprod.exe`` on Windows) by running:
 
 .. code-block:: none
@@ -146,23 +146,23 @@ sugar on top of tuples, and will be discussed in :ref:`records`.
 An array value is written as a nonempty sequence of comma-separated
 values enclosed in square brackets: ``[1,2,3]``. An array type is
 written as ``[d]t``, where ``t`` is the element type of the array, and
-:math:`d` is an integer indicating the size. We often elide :math:`d`,
-in which case the size will be inferred. As an example, an array of
-three integers could be written as ``[1,2,3]``, and has type ``[3]i32``.
-An empty array must be written as ``empty(t)``, where ``t`` is the
+``d`` is an integer indicating the size. We often elide ``d``, in
+which case the size will be inferred. As an example, an array of three
+integers could be written as ``[1,2,3]``, and has type ``[3]i32``.  An
+empty array must be written as ``empty(t)``, where ``t`` is the
 element type.
 
 Multi-dimensional arrays are supported in Futhark, but they must be
 *regular*, meaning that all inner arrays must have the same shape. For
 example, ``[[1,2], [3,4], [5,6]]`` is a valid array of type
-``[3][2]i32``, but ``[[1,2], [3,4,5], [6,7]]`` is not, because there we
-cannot determine integers :math:`m` and :math:`n` such that
-``[m][n]i32`` is the type of the array. The restriction to regular
-arrays is rooted in low-level concerns about efficient compilation, but
-we can understand it in language terms by the inability to write a type
-with consistent dimension sizes for an irregular array value. In a
-Futhark program, all array values, including intermediate (unnamed)
-arrays, must be typeable. We will return to the implications of this
+``[3][2]i32``, but ``[[1,2], [3,4,5], [6,7]]`` is not, because there
+we cannot determine integers ``m`` and ``n`` such that ``[m][n]i32``
+is the type of the array. The restriction to regular arrays is rooted
+in low-level concerns about efficient compilation, but we can
+understand it in language terms by the inability to write a type with
+consistent dimension sizes for an irregular array value. In a Futhark
+program, all array values, including intermediate (unnamed) arrays,
+must be typeable. We will return to the implications of this
 restriction in later chapters.
 
 Simple Expressions
@@ -498,8 +498,8 @@ its neutral element to compute the sum of an array of integers:
 
     reduce (+) 0 [1,2,3] == 6
 
-It turns out that combining ``map`` and ``reduce`` is both powerful and
-has remarkable optimisation properties, as we will discuss in
+It turns out that combining ``map`` and ``reduce`` is both powerful
+and has remarkable optimisation properties, as we will discuss in
 :ref:`soac-algebra`. Many Futhark programs are primarly
 ``map``-``reduce`` compositions. For example, we can define a function
 to compute the dot product of two vectors of integers:
@@ -526,11 +526,11 @@ be associative and have a neutral element.
 
 There are two main ways to compute scans: *exclusive* and *inclusive*.
 The difference is that the empty prefix is considered in an exclusive
-scan, but not in an inclusive scan. Computing the exclusive
-:math:`+`-scan of ``[1,2,3]`` thus gives ``[0,1,3,6]``, while the
-inclusive :math:`+`-scan is ``[1,3,6]``. The ``scan`` in Futhark is
-inclusive, but it is easy to generate a corresponding exclusive scan
-simply by prepending the neutral element.
+scan, but not in an inclusive scan. Computing the exclusive ``+``-scan
+of ``[1,2,3]`` thus gives ``[0,1,3,6]``, while the inclusive
+``+``-scan is ``[1,3,6]``. The ``scan`` in Futhark is inclusive, but
+it is easy to generate a corresponding exclusive scan simply by
+prepending the neutral element.
 
 While the idea behind ``reduce`` is probably familiar, ``scan`` is a
 little more esoteric, and mostly has applications for handling
@@ -828,7 +828,7 @@ To summarise: *values are consumed by being the source in a
 call*. We can crystallise valid usage in the form of three principal
 rules:
 
-Uniqueness Rule 1
+**Uniqueness Rule 1**
     When a value is consumed — for example, by being passed in the place
     of a unique parameter in a function call, or used as the source in a
     in-place expression, neither that value, nor any value that aliases
@@ -839,7 +839,7 @@ Uniqueness Rule 1
       f(b,a) -- Error: a used after being source in a let-with
 
 
-Uniqueness Rule 2
+**Uniqueness Rule 2**
     If a function definition is declared to return a unique value, the
     return value (that is, the result of the body of the function) must
     not share memory with any non-unique arguments to the function. As a
@@ -850,7 +850,7 @@ Uniqueness Rule 2
       let broken (a: [][]i32, i: i32): *[]i32 =
       a[i] -- Error: Return value aliased with 'a'.
 
-Uniqueness Rule 3
+**Uniqueness Rule 3**
     If a function call yields a unique return value, the caller has
     exclusive access to that value. At *the point the call returns*, the
     return value may not share memory with any variable used in any
@@ -1029,8 +1029,8 @@ the definition; perhaps to define an abbreviation for square matrices:
 
 The brackets surrounding ``[n]`` and ``[3]`` are part of the notation,
 not the parameter itself, and are used for disambiguating size
-parameters from the *type parameters* shown when introducing
-parametric polymorphism in :ref:`polymorphism`.
+parameters from the *type parameters* we shall discuss in
+:ref:`polymorphism`.
 
 Parametric types must always be fully applied. Using ``intvec`` by
 itself (without a type argument) is an error.
