@@ -3,7 +3,7 @@
 The Futhark Language
 ====================
 
-Futhark is a pure functional data-parallel array language. Is is both
+Futhark is a pure functional data-parallel array language. It is both
 syntactically and conceptually similar to established functional
 languages, such as Haskell and Standard ML. In contrast to these
 languages, Futhark focuses less on expressivity and elaborate type
@@ -47,7 +47,7 @@ function first computes the element-wise product of its two arguments,
 resulting in an array of integers, then computes the product of the
 elements in this new array.
 
-If we put save program as a file ``dotprod.fut``, then we can compile
+If we save the program in a file ``dotprod.fut``, then we can compile
 it to a binary ``dotprod`` (or ``dotprod.exe`` on Windows) by running:
 
 .. code-block:: none
@@ -116,7 +116,7 @@ debugging information. These will be introduced as needed.
 Basic Language Features
 -----------------------
 
-As a functional or *value-oriented* language, the semanics of Futhark
+As a functional or *value-oriented* language, the semantics of Futhark
 can be understood entirely by how values are constructed, and how
 expressions transform one value to another. As a statically typed
 language, all values are classified by their *type*. The primitive types
@@ -127,7 +127,7 @@ the floating-point types ``f32``, ``f64``, and the boolean type
 a double-precision float.
 
 Futhark does not yet support type inference, so numeric literals must be
-suffixed with their intended type. For example ``42i8`` is of type
+suffixed with their intended type. For example, ``42i8`` is of type
 ``i8``, and ``1337e2f64`` is of type ``f64``. If no suffix is given,
 integer literals are assumed to be of type ``i32``, and decimal literals
 of type ``f64``. Boolean literals are written as ``true`` and ``false``.
@@ -139,7 +139,7 @@ parentheses. For example, ``(0, 1)`` is a tuple value of type
 value ``(false, 1, 2.0)`` is of type ``(bool, i32, f64)``. A tuple
 element can also be another tuple, as in ``((1,2),(3,4))``, which is of
 type ``((i32,i32),(i32,i32))``. A tuple cannot have just one element,
-but empty tuples are permitted, although they are not very useful—these
+but empty tuples are permitted, although they are not very useful — these
 are written ``()`` and are of type ``()``. *Records* exist as syntactic
 sugar on top of tuples, and will be discussed in :ref:`records`.
 
@@ -186,7 +186,7 @@ function ``f`` to a constant argument, we write:
 See :ref:`function-declarations` for how to declare your own
 functions.
 
-A -expression can be used to give a name to the result of an expression:
+A let-expression can be used to give a name to the result of an expression:
 
 ::
 
@@ -194,8 +194,8 @@ A -expression can be used to give a name to the result of an expression:
     in body
 
 Futhark is eagerly evaluated (unlike Haskell), so the expression for
-``z`` will be fully evaluated before ``body``. The keyword is optional
-when it precedes another . Thus, instead of writing:
+``z`` will be fully evaluated before ``body``. The keyword ``in`` is optional
+when it precedes another ``let``. Thus, instead of writing:
 
 ::
 
@@ -213,18 +213,18 @@ we can write
     let c = 2
     in a + b + c
 
-The final is still necessary. In examples, we will often skip the body
-of a if it is not important. A limited amount of pattern matching is
-supported in -bindings, which permits tuple components to be extracted:
+The final ``in`` is still necessary. In examples, we will often skip the body
+of a let-expression if it is not important. A limited amount of pattern matching is
+supported in let-bindings, which permits tuple components to be extracted:
 
 ::
 
     let (x,y) = e      -- e must be of some type (t1,t2)
 
-This feature also demonstrates the Futhark line comment syntax—two
+This feature also demonstrates the Futhark line comment syntax — two
 dashes followed by a space. Block comments are not supported.
 
-A two-way -- is the only branching construct in Futhark:
+A two-way if-then-else is the only branching construct in Futhark:
 
 ::
 
@@ -239,7 +239,7 @@ terminate abnormally if an invalid access is attempted.
 Whitespace is used to disambiguate indexing from application to array
 literals. For example, the expression ``a b [i]`` means “apply the
 function ``a`` to the arguments ``b`` and ``[i]``”, while ``a b[i]``
-means“apply the function ``a`` to the argument ``b[i]``”.
+means “apply the function ``a`` to the argument ``b[i]``”.
 
 Futhark also supports array *slices*. The expression ``a[i:j:s]``
 returns a slice of the array ``a`` from index ``i`` (inclusive) to ``j``
@@ -250,7 +250,7 @@ indexing.
 If the stride is positive, then ``i <= j`` must hold, and if the stride
 is negativ, then ``j <= i`` must hold.
 
-Some syntactic sugar is provided for concisely arrays of integevals of
+Some syntactic sugar is provided for concisely specifying arrays of intervals of
 integers. The expression ``[x...y]`` produces an array of the integers
 from ``x`` to ``y``, both inclusive. The upper bound can be made
 exclusive by writing ``[x..<y]``. For example:
@@ -387,7 +387,7 @@ We can use ``zip`` to transform :math:`n` arrays to a single array of
     zip [1,2,3] [true,false,true] [7.0,8.0,9.0] ==
       [(1,true,7.0),(2,false,8.0),(3,true,9.0)]
 
-Note that the input arrays may have different types. We can use
+Notice that the input arrays may have different types. We can use
 ``unzip`` to perform the inverse transformation:
 
 ::
@@ -438,7 +438,7 @@ Haskell:
 
     map (2-) [1,2,3] == [1,0,-1]
 
-In contrast to other languages, the ``map`` SOAC in Futhark takes any nonzero
+In contrast to most other languages, the ``map`` SOAC in Futhark takes any nonzero
 number of array arguments, and requires a function with the same number
 of parameters. For example, we can perform an element-wise sum of two
 arrays:
@@ -459,8 +459,8 @@ Unless the array ``ns`` consisted of identical values, the program would
 fail at runtime.
 
 We can use ``map`` to duplicate many other language constructs. For
-example, if we have two arrays ``xs:[n]i32`` and ``ys:[m]i32``—that
-is, two integer arrays of sizes ``n`` and ``m``—we can concatenate
+example, if we have two arrays ``xs:[n]i32`` and ``ys:[m]i32`` — that
+is, two integer arrays of sizes ``n`` and ``m`` — we can concatenate
 them using:
 
 ::
@@ -480,7 +480,7 @@ Scan and Reduce
 While ``map`` is an array transformer, the ``reduce`` SOAC is an array
 aggregator: it uses some function of type ``t -> t -> t`` to combine
 the elements of an array of type ``[]t`` to a value of type ``t``. In
-order to do this in parallel, the function must be *associative* and
+order to perform this aggregation in parallel, the function must be *associative* and
 have a *neutral element* (i.e, form a monoid):
 
 -  A function :math:`f` is associative if
@@ -592,7 +592,7 @@ formulation of a function for computing the Fibonacci numbers
 
     let fib(n: i32): i32 = fibhelper(1,1,n)
 
-We can rewrite this using syntax:
+We can rewrite this using the following Futhark syntax:
 
 ::
 
@@ -617,7 +617,7 @@ has the following semantics:
 
 #. Return the final value of ``pat``.
 
-Semantically, a expression is completely equivalent to a call to its
+Semantically, a loop-expression is completely equivalent to a call to its
 corresponding tail-recursive function.
 
 For example, denoting by ``t`` the type of ``x``, the loop
@@ -633,7 +633,7 @@ has the semantics of a call to the following tail-recursive function:
 
     let f(i: i32, n: i32, x: t): t =
       if i >= n then x
-         else f(i+1, n, g(x))
+      else f(i+1, n, g(x))
 
     -- the call
     let x = f(i, n, a)
@@ -655,15 +655,15 @@ array ``xs``. For example:
     loop acc = 0 for (x,y) in zip xs ys do
       acc + x * y
 
-The purpose of is partly to render some sequential computations slightly
+The purpose of the loop syntax is partly to render some sequential computations slightly
 more convenient, but primarily to express certain very specific forms of
 recursive functions, specifically those with a fixed iteration count.
 This property is used for analysis and optimisation by the Futhark
 compiler. In contrast to most functional languages, Futhark does not
-properly support recursion, and you are therefore required to use syntax
+properly support recursion, and users are therefore required to use the loop syntax
 for sequential loops.
 
-Apart from ``for``-loops, Futhark also supports ``while``-loops. These
+Apart from ``for``-loops, Futhark also supports ``while``-loops. These loops
 do not provide as much information to the compiler, but can be used
 for convergence loops, where the number of iterations cannot be
 predicted in advance. For example, the following program doubles a
@@ -678,7 +678,7 @@ In all respects other than termination criteria, ``while``-loops
 behave identically to ``for``-loops.
 
 For brevity, the initial value expression can be elided, in which case
-an expression equivalent to the pattern is implied. This is easier to
+an expression equivalent to the pattern is implied. This featuremis easier to
 understand with an example. The loop
 
 ::
@@ -706,7 +706,7 @@ This style of code can sometimes make imperative code look more natural.
 In-Place Updates
 ----------------
 
-While Futhark is through and through a pure functional language, it may
+While Futhark is throughout a pure functional language, it may
 occasionally prove useful to express certain algorithms in an imperative
 style. Consider a function for computing the :math:`n` first Fibonacci
 numbers:
@@ -723,13 +723,13 @@ numbers:
 
 If the array ``arr`` is copied for each iteration of the loop, we would
 put enormous pressure on memory, and spend a lot of time moving around
-data, even though it is clear in this case that the “old” value of
+data, even though it is clear in this case that the ”old” value of
 ``arr`` will never be used again. Precisely, what should be an algorithm
 with complexity :math:`O(n)` becomes :math:`O(n^2)`, due to copying the
 size :math:`n` array (an :math:`O(n)` operation) for each of the
 :math:`n` iterations of the loop.
 
-To prevent this, we want to update the array *in-place*, that is, with a
+To prevent this copying, we want to update the array *in-place*, that is, with a
 static guarantee that the operation will not require any additional
 memory allocation, or copying the array. An *in-place update* can modify
 the array in time proportional to the elements being updated
@@ -741,11 +741,11 @@ the array exists, or at least that such references will not be used on
 any execution path following the in-place update.
 
 In Futhark, this is done through a type system feature called
-*uniqueness types*, similar to, although simpler, than the uniqueness
+*uniqueness types*, similar to, although simpler than, the uniqueness
 types of the programming language Clean.  Alongside a (relatively)
-simple aliasing analysis in the type checker, this is sufficient to
+simple aliasing analysis in the type checker, this extension is sufficient to
 determine at compile time whether an in-place modification is safe,
-and signal a compile time error if in-place updates are used in way
+and signal a compile time error if in-place updates are used in a way
 where safety cannot be guaranteed.
 
 The simplest way to introduce uniqueness types is through examples. To
@@ -758,8 +758,8 @@ that end, let us consider the following function definition.
       in a
 
 The function call ``modify(a,i,x)`` returns :math:`a`, but where the
-element at index ``i`` has been increased by :math:`x`. Note the
-asterisks: in the parameter declaration ``a: *[i32]``, this means that
+element at index ``i`` has been increased by :math:`x`. Notice the
+asterisks: in the parameter declaration ``a: *[i32]``, the asterisk means that
 the function ``modify`` has been given “ownership” of the array
 :math:`a`, meaning that any caller of ``modify`` will never reference
 array :math:`a` after the call again. In particular, ``modify`` can
@@ -786,13 +786,13 @@ When a value is passed as a unique-typed argument in a function call, we
 say that the value is *consumed*, and neither it nor any of its
 *aliases* (see below) can be used again. Otherwise, we would break the
 contract that gives the function liberty to manipulate the argument
-however it wants. Note that it is the type in the argument declaration
+however it wants. Notice that it is the type in the argument declaration
 that must be unique - it is permissible to pass a unique-typed variable
 as a non-unique argument (that is, a unique type is a subtype of the
 corresponding nonunique type).
 
 A variable :math:`v` aliases :math:`a` if they may share some elements,
-i.e. overlap in memory. As the most trivial case, after evaluating the
+for instance by an overlap in memory. As the most trivial case, after evaluating the
 binding ``b = a``, the variable ``b`` will alias ``a``. As another
 example, if we extract a row from a two-dimensional array, the row will
 alias its source:
@@ -815,7 +815,7 @@ Let us consider the definition of a function returning a unique array:
 
     let f(a: []i32): *[]i32 = e
 
-Note that the argument, ``a``, is non-unique, and hence we cannot modify
+Notice that the argument, ``a``, is non-unique, and hence we cannot modify
 it inside the function. There is another restriction as well: ``a`` must
 not be aliased to our return value, as the uniqueness contract requires
 us to ensure that there are no other references to the unique return
@@ -875,7 +875,7 @@ able to analyze, and should only be used when absolutely necessary. Many
 interesting and complicated Futhark programs can be written without
 making use of in-place updates at all.
 
-Typically, we use in-place updates to efficiently express sequential
+Typically, we use in-place updates to express efficiently sequential
 algorithms that are then mapped on some array. Somewhat
 counter-intuitively, however, in-place updates can also be used for
 expressing irregular nested parallel algorithms (which are otherwise
@@ -895,7 +895,7 @@ vs`` morally computes
 
 and returns the modified ``as`` array. The old ``as`` array is marked
 as consumed and may not be used anymore. Parallel ``scatter`` can be
-used to implement efficiently the radix sort algorithm, as
+used, for instance, to implement efficiently the radix sort algorithm, as
 demonstrated in :ref:`radixsort`.
 
 .. _size-annotations:
@@ -950,7 +950,7 @@ example, the ``dotprod`` function can be used as follows:
     dotprod [1,2] [3,4]
 
 A size parameter is in scope in both the body of a function and its
-return type, which we be used to define a function for computing
+return type, which we can use, for instance, for defining a function for computing
 averages:
 
 ::
@@ -959,7 +959,7 @@ averages:
       reduce (+) 0.0 xs / f64 n
 
 Size parameters are always of type ``i32``, and in fact, *any*
-``i32``-typed variable in scope can be used as a size annotation. This
+``i32``-typed variable in scope can be used as a size annotation. This feature
 lets us define a function that replicates an integer some number of
 times:
 
@@ -994,7 +994,7 @@ following expression from passing the type checker:
 Although it will fail if actually executed.
 
 Presently, only variables and constants are legal as size annotations.
-This means that the following function definition is not valid:
+This restriction means that the following function definition is not valid:
 
 ::
 
@@ -1005,7 +1005,7 @@ While size annotations are a simple and limited mechanism, they can help
 make hidden invariants visible to users of your code. In some cases,
 size annotations also help the compiler generate better code, as it
 becomes clear which arrays are supposed to have the same size, and lets
-the compiler hoist checking out as far as possible.
+the compiler hoist out checking as far as possible.
 
 Size parameters are also permitted in type abbreviations. As an example,
 consider a type abbreviation for a vector of integers:
@@ -1138,7 +1138,7 @@ use field projection to access the components of tuples, rather than
 using a pattern in a ``let``-binding. For example, we can say ``foo.1``
 to extract the first component of a tuple.
 
-Note that the fields of a record must constitute a prefix of the
+Notice that the fields of a record must constitute a prefix of the
 positive numbers for it to be considered a tuple. The record type
 ``{1:i32,3:f64}`` does not correspond to a tuple, and neither does
 ``{2:i32,3:f64}`` (but ``{2:f64,1:i32}`` is equivalent to the tuple
@@ -1185,7 +1185,7 @@ The declaration above is actually a combination of a \*module binding\*
 
     module ADDI32 = ...
 
-And a *module expression*
+and a *module expression*
 
 ::
 
@@ -1222,7 +1222,7 @@ called *signatures* and *functors*).
 
 A module type is the counterpart to a value type. It describes which
 names are defined, and as what. We can define a module type that
-describes ``AddInt32``
+describes ``AddInt32``:
 
 ::
 
