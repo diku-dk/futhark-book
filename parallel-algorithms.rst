@@ -25,7 +25,7 @@ The segmented scan operator is quite essential as we shall see
 demonstrated in many of the algorithms explained later. The segmented
 scan operator can be implemented with a simple scan using an
 associative function that operates on pairs of values
-:cite`Schwartz:1980:ULT:357114.357116,blelloch1990vector`.  Here is
+:cite:`Schwartz:1980:ULT:357114.357116,blelloch1990vector`.  Here is
 the definition of the segmented scan operation:
 
 .. literalinclude:: src/sgm_scan.fut
@@ -51,8 +51,9 @@ e``:
 .. literalinclude:: src/find_idx.fut
    :lines: 7-11
 
-The second function, , also takes a value and an array but returns the
-largest index ``i`` into ``xs`` for which ``xs[i] = e``:
+The second function, ``find_idx_last``, also takes a value and an
+array but returns the largest index ``i`` into ``xs`` for which
+``xs[i] = e``:
 
 .. literalinclude:: src/find_idx.fut
    :lines: 13-16
@@ -83,9 +84,7 @@ and :math:`y`, there exists an associative operator :math:`\oplus`
 such that
 
 .. math::
-   :nowrap:
-
-   $\kw{maxidx}(x \pp y) = \kw{maxidx}(x) \oplus \kw{maxidx}(y)$
+   \kw{maxidx}(x \pp y) = \kw{maxidx}(x) \oplus \kw{maxidx}(y)
 
 The operator :math:`\oplus = \kw{mx}`.
 
@@ -261,12 +260,52 @@ the grid with constituting points for each line, computed using the
 .. image:: img/lines.svg
    :scale: 50%
 
-#. pseudo random numbers and sobol
+Low-Discrepancy Sequences
+-------------------------
+
+Futhark comes with a library for generating Sobol sequences, which are
+examples of so-called low-discrepancy sequences, sequences that, when
+combined with Monte-Carlo methods, make numeric integration converge
+faster than if ordinary pseudo-random numbers are used. Sobol
+sequences may be multi-dimensional and a calculation of a sequence
+depends on a set of direction-vectors, which are also provided by the
+Futhark Sobol library.
+
+As an example, we shall see how we can use Sobol sequences together
+with Monte-Carlo simulation to compute the value of :math:`\pi`. We shall
+also see that doing so will result in faster conversion towards the
+true value of :math:`\pi` compared to if a simpler stratified sampling
+approach is used.
+
+To calculate an approximation to the value of :math:`\pi`, we will use
+a simple dart-throwing approach. We will throw darts randomly at a 2
+by 2 square, centered around the origin, and then establish the ratio between the number of darts
+hitting within the unit circle with the number of darts hitting the
+square. This ration multiplied with 4 will be our approximation of
+:math:`\pi`. The more darts we throw, the better our approximation. To
+calculate whether a particular dart, thrown at the point
+:math:`(x,y)`, is within the unit circle, we can apply the standard
+Pythagoras formula:
+
+.. math::
+   \pi ~~\approx~~ \frac{4}{N} \sum_{i=1}^N \left \{ \begin{array}{ll} 1 & \mbox{if} ~ x_i^2 + y_i^2 < 1 \\ 0 & \mbox{otherwise} \end{array} \right .
+
+For the actual throwing of darts, we need to establish :math:`N` pairs of numbers, each
+in the interval [-1;1]. We will need a two-dimensional Sobol sequence.
+
+The Futhark library, as we shall see, makes essential use of the
+formula for calculating the :math:`n`'th Sobol number. However, even
+though such a formula is essential for achieving parallelism, it
+performs poorly compared to the efficient recurrent formula, which
+makes it possible to calculate the :math:`n`'th Sobol number if we
+know the previous Sobol number.  The Futhark library makes essential
+use of both formulas.
+
+#. pseudo random numbers
 
 #. trees
 
 #. graphs
-
 #. histograms
 
 #. parenthesis matching
