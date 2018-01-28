@@ -24,7 +24,7 @@ let rsort_step [n] (xs: [n]u32, bitn: i32): [n]u32 =
   let offs  = reduce (+) 0 bits0
   let idxs1 = map (*) bits1 (map (+offs) idxs1)
   let idxs  = map (+) idxs0 idxs1
-  let idxs  = map (-1) idxs
+  let idxs  = map (\x->x-1) idxs
   in scatter (Array.copy xs) idxs xs
 
 -- Radix sort algorithm, ascending

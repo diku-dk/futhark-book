@@ -20,7 +20,7 @@ let replIdx [n] (reps:[n]i32) : []i32 =
 
 let sgmIota [n] (flags:[n]bool) : [n]i32 =
   let iotas = sgmScanSum (replicate n 1) flags
-  in map (-1) iotas
+  in map (\x->x-1) iotas
 
 let max (x:i32) (y:i32) : i32 = if x > y then x else y
 
