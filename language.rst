@@ -1149,6 +1149,80 @@ positive numbers for it to be considered a tuple. The record type
 Parametric Polymorphism
 -----------------------
 
+Consider the replication function we wrote earlier::
+
+    let replicate_i32 (n: i32) (x: i32): [n]i32 =
+      map (\_ -> x) [0..<n]
+
+This function works only for replicating values of type ``i32``.  If
+we wanted to replicate, say, bools, we would have to write another
+function::
+
+    let replicate_bool (n: i32) (x: bool): [n]bool =
+      map (\_ -> x) [0..<n]
+
+This duplication is not particularly nice.  Since the only difference
+between the two functions is the type of the ``x`` parameter, and we
+don't actually use any ``i32``-specific operations in
+``replicate_i32``, or ``bool``-specific operations in
+``replicate_bool``, we ought to be able to write a single function
+that is *parameterised* over the element type.  In some languages,
+this is done with *generics*, or *template functions*.  In ML-derived
+languages, including Futhark, we use *parametric polymorphism*.  Just
+like the size parameters we saw earlier, a Futhark function may have
+*type parameters*.  These are written as a name preceded by an
+apostrophe.  As an example, this is a polymorphic version of
+``replicate``::
+
+    let replicate 't (n: i32) (x: t): [n]t =
+      map (\_ -> x) [0..<n]
+
+Note how how the type parameter is written as ``'t``, but we use just
+``t`` to refer to the parametric type in the ``x`` parameter and the
+function return type.  Type parameters may be freely intermixed with
+size parameters, but must precede all ordinary parameters.  Just as
+with size parameters, we do not need to explicitly pass the types when
+we call a polymorphic function; they are automatically deduced from
+the concrete parameters.
+
+We can also use type parameters when defining type abbreviations::
+
+    type triple 't = [3]t
+
+And of course, these can be intermixed with size parameters::
+
+    type vector 't [n] = [n]t
+
+In contrast to function definitions, the order of parameters in a type
+*does* matter.  Hence, ``vector i32 [3]`` is correct, and ``vector [3]
+i32`` would produce an error.
+
+We might try to use parametric types to further refine our previous
+definition of complex numbers, by making it polymorphic in the
+representation of scalar numbers::
+
+    type complex 't = {re: t, im: t}
+
+This type abbreviation is fine, but we will find it difficult to write
+useful functions with it.  Consider an attempt to define complex
+addition::
+
+    let complex_add 't ({re = x_re, im = x_im}: complex t)
+                       ({re = y_re, im = y_im}: complex t)
+                  : complex t =
+      {re = ?, im = ?}
+
+How do we perform an addition ``x_re`` and ``y_re``?  These are both
+of type ``t``, of which we know nothing.  For all we know, they might
+be instantiated to something that is not numeric at all.  Hence, the
+Futhark compiler will prevent us from using the ``+`` operator.  In
+some language, such as Haskell, facilities such as *type classes* to
+support restrictired polymorphism, where we can require that an
+instantiation of a type variable supports certain operations (like
+``+``).  Futhark does not have type classes, but it does have a
+powerful module system that we can use instead.  This module system is
+the subject of the following section.
+
 .. _modules:
 
 Modules
