@@ -7,9 +7,8 @@ function toggleVisible (x) {
 }
 
 window.onload = function () {
-    solutions = $('.solution>.first');
-    for (let o of solutions) {
-        solution = o.nextElementSibling;
-        o.onclick = function() { toggleVisible(solution); };
-    }
+    $('.solution>.first').each(function (index) {
+        solution = this.nextElementSibling;
+        this.onclick = function() { toggleVisible(solution); };
+    });
 }
