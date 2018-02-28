@@ -326,6 +326,23 @@ definitions in :ref:`size-annotations` and :ref:`polymorphism`, where
 we will look at more advanced features, such as parametric
 polymorphism and implicit size parameters.
 
+.. admonition:: Exercise: Simple Futhark programming
+   :class: exercise
+
+   This is a good time to make sure you can actually write and run a
+   Futhark program on your system.  Write a program that contains a
+   function ``main`` that accepts as input a parameter ``x : i32``,
+   and returns ``x`` if ``x`` is positive, and otherwise the negation
+   of ``x``.  Compile your program with ``futhark-c`` and verify that
+   it works, then try with ``futhark-opencl``.
+
+.. admonition:: Solution (click to show)
+   :class: solution
+
+   ::
+
+      let main (x: i32): i32 = if x < 0 then -x else x
+
 .. _type-abbreviations:
 
 Type abbreviations

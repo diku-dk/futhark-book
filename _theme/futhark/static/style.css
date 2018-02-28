@@ -334,7 +334,7 @@ div.admonition p.admonition-title {
     color: white;
     border-bottom: 3px solid #cccccc;
     font-weight: bold;
-    background-color: #165e83;
+    background-color: #5f021f;
 }
 
 div.danger    { border: 3px solid #f0908d; background-color: #f0cfa0; }
@@ -488,5 +488,12 @@ body {
 only screen and (-webkit-min-device-pixel-ratio: 2),
 only screen and (min-device-pixel-ratio: 2) {
 }
+
+/* EXERCISES */
+
+.solution .last {
+    display: none;
+}
+
 
 /* -- end ------------------------------------------------------------------- */
