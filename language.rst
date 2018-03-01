@@ -336,12 +336,12 @@ polymorphism and implicit size parameters.
    of ``x``.  Compile your program with ``futhark-c`` and verify that
    it works, then try with ``futhark-opencl``.
 
-.. admonition:: Solution (click to show)
-   :class: solution
+   .. admonition:: Solution (click to show)
+      :class: solution
 
-   ::
+      ::
 
-      let main (x: i32): i32 = if x < 0 then -x else x
+         let main (x: i32): i32 = if x < 0 then -x else x
 
 .. _type-abbreviations:
 
