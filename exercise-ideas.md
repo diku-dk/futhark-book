@@ -21,11 +21,11 @@ val dotprod [n]: (xs: [n]i32) -> (ys: [n]i32) -> i32
 val matvecmul_row [n][m]: (xss: [n][m]i32) -> (ys: [m]i32) -> [n]t
 
 -- Multiply matrix with column vector.
-let matvecmul_col [n][m]: (xss: [n][m]i32) -> (ys: [n]i32) -> [n][n]t
+val matvecmul_col [n][m]: (xss: [n][m]i32) -> (ys: [n]i32) -> [n][n]t
 
 -- Multiply two matices.  Hint: You will need to use the 'transpose'
 -- function.
-let matmul [n][p][m]: (xss: [n][p]i32) -> (yss: [p][m]i32) -> [n][m]i32
+val matmul [n][p][m]: (xss: [n][p]i32) -> (yss: [p][m]i32) -> [n][m]i32
 ```
 
 Define some of the array utility functions:
