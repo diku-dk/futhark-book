@@ -1,4 +1,5 @@
-== Ideas for exercises.
+Ideas for exercises.
+==
 
 Define the following functions:
 
@@ -31,7 +32,8 @@ Define some of the array utility functions:
 
 https://futhark-lang.org/docs/futlib/array.html
 
-== Testing
+Testing
+--
 
 Put the functions in one or more files.  If you define them with
 `entry` instead of `let`, then you can easily add tests:
