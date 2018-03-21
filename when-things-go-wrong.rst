@@ -37,12 +37,12 @@ For example, consider this program:
 
 ::
 
-    let main(n: i32): [][]i32 =
+    let main (n: i32): [][]i32 =
       map (\i ->
-             let a = [0..<i]
-             let b = [0..<n-i]
+             let a = (0..<i)
+             let b = (0..<n-i)
              in concat a b)
-          [0..<n]
+          (0..<n)
 
 At the time of this writing, the ``futhark-opencl`` compiler will fail
 with the not particularly illuminative error message ``Cannot allocate
@@ -60,12 +60,12 @@ workaround. We could rewrite the program as:
 ::
 
     let main(n: i32): [][]i32 =
-      let scratch = [0...<n]
+      let scratch = (0...<n)
       in map (\i ->
-                let res = [0..<n]
+                let res = (0..<n)
                 let res[i:n] = scratch[0:n-i]
                 in res)
-             [0..<n]
+             (0..<n)
 
 This exploits the fact that the compiler does not generate allocations
 for array slices or in-place updates. The only allocation is of the
