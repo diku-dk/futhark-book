@@ -23,14 +23,14 @@ let max (a:i32) (b:i32) : i32 = if a > b then a else b
 let streak [n] (xs: [n]i32) : i32  =
   -- find increments
   let ys = rotate 1 xs
-  let is = (map (\x y -> if x < y then 1 else 0) xs ys)[0:n-1]
+  let is = (map2 (\x y -> if x < y then 1 else 0) xs ys)[0:n-1]
   -- scan increments
   let ss = scan (+) 0 is
   -- nullify where there is no increment
-  let ss1 = map (\s i -> s*(1-i)) ss is
+  let ss1 = map2 (\s i -> s*(1-i)) ss is
   let ss2 = scan max 0 ss1
   -- subtract from increment scan
-  let ss3 = map (-) ss ss2
+  let ss3 = map2 (-) ss ss2
   let res = reduce max 0 ss3
   in res
 

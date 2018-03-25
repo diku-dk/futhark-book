@@ -20,12 +20,12 @@ let radix_sort_step [n] (xs: [n]u32, digit_n: i32): [n]u32 =
                           & 1) xs
   let bits_inv   = map (\(b: i32): i32 -> 1 - b) bits
   let ps0        = scan (+) 0 (bits_inv)
-  let ps0_clean  = map (*) bits_inv ps0
+  let ps0_clean  = map2 (*) bits_inv ps0
   let ps1        = scan (+) 0 bits
   let ps0_offset = reduce (+) 0 (bits_inv)
   let ps1_clean  = map (+ps0_offset) ps1
-  let ps1_clean' = map (*) bits ps1_clean
-  let ps         = map (+) ps0_clean ps1_clean'
+  let ps1_clean' = map2 (*) bits ps1_clean
+  let ps         = map2 (+) ps0_clean ps1_clean'
   let ps_actual  = map (\(p: i32): i32 -> p - 1) ps
   in scatter (Array.copy xs) ps_actual xs
 

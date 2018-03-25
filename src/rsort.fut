@@ -19,11 +19,11 @@ module Array = import "/futlib/array"
 let rsort_step [n] (xs: [n]u32, bitn: i32): [n]u32 =
   let bits1 = map (\x -> (i32.u32 x >>> bitn) & 1) xs
   let bits0 = map (1-) bits1
-  let idxs0 = map (*) bits0 (scan (+) 0 bits0)
+  let idxs0 = map2 (*) bits0 (scan (+) 0 bits0)
   let idxs1 = scan (+) 0 bits1
   let offs  = reduce (+) 0 bits0
-  let idxs1 = map (*) bits1 (map (+offs) idxs1)
-  let idxs  = map (+) idxs0 idxs1
+  let idxs1 = map2 (*) bits1 (map (+offs) idxs1)
+  let idxs  = map2 (+) idxs0 idxs1
   let idxs  = map (\x->x-1) idxs
   in scatter (Array.copy xs) idxs xs
 

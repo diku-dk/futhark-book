@@ -33,7 +33,7 @@ type points = []point
 
 -- Write to grid
 let upd_grid [h][w][n] (grid:*[h][w]i32)(xs:[n]i32)(ys:[n]i32):[h][w]i32 =
-  let is = map (\x y -> w*y+x) xs ys
+  let is = map2 (\x y -> w*y+x) xs ys
   let flatgrid = reshape (h*w) grid
   let ones = map (\_ -> 1) is
   in reshape (h,w) (scatter flatgrid is ones)
@@ -45,7 +45,7 @@ let drawlines [h][w][n] (grid:*[h][w]i32) (lines:[n]line) :[h][w]i32 =
   let idxs = repl_idx lens
   let iotan = iota n
   let nums = map (\i -> iotan[i]) idxs
-  let flags = map (!=) nums (rotate 1 nums)
+  let flags = map2 (!=) nums (rotate 1 nums)
   let lines1 = map (\i -> unsafe lines[i]) idxs
   let dirxs = map (\((x1,_),(x2,_)) ->
                      if x2 > x1 then 1
@@ -56,9 +56,9 @@ let drawlines [h][w][n] (grid:*[h][w]i32) (lines:[n]line) :[h][w]i32 =
                        if y2 > y1 then 1f32 else -1f32
                      else r32(y2-y1) / f32.abs(r32(x2-x1))) lines1
   let iotas = sgm_iota flags
-  let xs = map (\((x1,_),_) dirx i ->
+  let xs = map3 (\((x1,_),_) dirx i ->
                   x1+dirx*i) lines1 dirxs iotas
-  let ys = map (\((_,y1),_) slop i ->
+  let ys = map3 (\((_,y1),_) slop i ->
                   y1+t32(slop*r32(i))) lines1 slops iotas
   in upd_grid grid xs ys
 

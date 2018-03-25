@@ -26,7 +26,7 @@ let linepoints ((x1,y1):point, (x2,y2):point) : points =
 
 -- Write to grid
 let update [h] [w] [n] (grid:*[h][w]i32)(xs:[n]i32)(ys:[n]i32):*[h][w]i32 =
-  let is = map (\x y -> w*y+x) xs ys
+  let is = map2 (\x y -> w*y+x) xs ys
   let flatgrid = reshape (h*w) grid
   let ones = map (\ _ -> 1) is
   in reshape (h,w) (scatter flatgrid is ones)
