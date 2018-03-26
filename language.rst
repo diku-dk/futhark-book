@@ -7,14 +7,13 @@ Futhark is a pure functional data-parallel array language. It is both
 syntactically and conceptually similar to established functional
 languages, such as Haskell and Standard ML. In contrast to these
 languages, Futhark focuses less on expressivity and elaborate type
-systems, but more on compilation to high-performance parallel code.
-Futhark comes with language constructs for performing bulk operations
-on arrays, called *Second-Order Array Combinators* (SOACs), that
-mirror the higher order functions found in conventional functional
-languages: ``map``, ``reduce``, ``filter``, and so forth. In Futhark,
-SOACs are not library functions, but built-in language features with
-parallel semantics, and which will typically be compiled to parallel
-code.
+systems, and more on compilation to high-performance parallel code.
+Futhark programs are written with bulk operations on arrays, called
+*Second-Order Array Combinators* (SOACs), that mirror the higher-order
+functions found in conventional functional languages: ``map``,
+``reduce``, ``filter``, and so forth.  In Futhark, the parallel SOACs
+have sequential semantics but permit parallel execution, and will
+typically be compiled to parallel code.
 
 The primary idea behind Futhark is to design a language that has enough
 expressive power to conveniently express complex programs, yet is also
@@ -386,8 +385,7 @@ like ``map``, that take a *functional argument* indicating the
 operation to perform. SOACs are absolutely crucial to Futhark
 programming. While they are designed to resemble higher-order
 functions that may be familiar from functional languages, they have
-implicitly parallel semantics, and some restrictions to preserve those
-semantics.
+some restrictions to enable efficient parallel execution.
 
 We can use ``concat`` to combine several arrays:
 
