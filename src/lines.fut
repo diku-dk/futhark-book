@@ -58,9 +58,8 @@ let drawlines_seq [h][w][n] (grid: *[h][w]i32) (lines:[n]line) : [h][w]i32 =
 
 -- Parallel flattened algorithm for drawing multiple lines
 let drawlines_par [h][w][n] (grid:*[h][w]i32) (lines:[n]line) :[h][w]i32 =
-  let lens = map (\line ->
-                   let ((x1,y1),(x2,y2)) = line
-		   in max (i32.abs(x1-x2)) (i32.abs(y1-y2))) lines
+  let lens = map (\((x1,y1),(x2,y2)) ->
+		   max (i32.abs(x1-x2)) (i32.abs(y1-y2))) lines
   let idxs = replIdx lens
   let iotan = iota n
   let nums = map (\i -> iotan[i]) idxs
