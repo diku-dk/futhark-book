@@ -687,7 +687,7 @@ given number until it exceeds a given threshold value:
 ::
 
     let main(x: i32, bound: i32): i32 =
-      loop x = while x < bound do x * 2
+      loop x while x < bound do x * 2
 
 In all respects other than termination criteria, ``while``-loops
 behave identically to ``for``-loops.
