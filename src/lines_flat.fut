@@ -34,9 +34,9 @@ type points = []point
 -- Write to grid
 let upd_grid [h][w][n] (grid:*[h][w]i32)(xs:[n]i32)(ys:[n]i32):[h][w]i32 =
   let is = map2 (\x y -> w*y+x) xs ys
-  let flatgrid = reshape (h*w) grid
+  let flatgrid = flatten grid
   let ones = map (\_ -> 1) is
-  in reshape (h,w) (scatter flatgrid is ones)
+  in unflatten h w (scatter (copy flatgrid) is ones)
 
 -- Parallel flattened algorithm for drawing multiple lines
 let drawlines [h][w][n] (grid:*[h][w]i32) (lines:[n]line) :[h][w]i32 =

@@ -25,11 +25,11 @@ let linepoints ((x1,y1):point, (x2,y2):point) : points =
                 else (x1+t32(slop*r32(i)), y1+i*dir)) (iota len)
 
 -- Write to grid
-let update [h] [w] [n] (grid:*[h][w]i32)(xs:[n]i32)(ys:[n]i32):*[h][w]i32 =
+let update [h] [w] [n] (grid: [h][w]i32)(xs:[n]i32)(ys:[n]i32): [h][w]i32 =
   let is = map2 (\x y -> w*y+x) xs ys
-  let flatgrid = reshape (h*w) grid
+  let flatgrid = flatten grid
   let ones = map (\ _ -> 1) is
-  in reshape (h,w) (scatter flatgrid is ones)
+  in unflatten h w (scatter (copy flatgrid) is ones)
 
 -- Sequential algorithm for drawing multiple lines
 let drawlines [h] [w] [n] (grid: *[h][w]i32) (lines:[n]line) : [h][w]i32 =

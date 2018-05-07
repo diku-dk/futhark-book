@@ -57,7 +57,7 @@ let drawlines_seq [h][w][n] (grid: *[h][w]i32) (lines:[n]line) : [h][w]i32 =
 
 
 -- Parallel flattened algorithm for drawing multiple lines
-let drawlines_par [h][w][n] (grid:*[h][w]i32) (lines:[n]line) :[h][w]i32 =
+let drawlines_par [h][w][n] (grid:[h][w]i32) (lines:[n]line) :[h][w]i32 =
   let lens = map (\((x1,y1),(x2,y2)) ->
 		   max (i32.abs(x1-x2)) (i32.abs(y1-y2))) lines
   let idxs = replIdx lens
@@ -86,8 +86,8 @@ let drawlines_par [h][w][n] (grid:*[h][w]i32) (lines:[n]line) :[h][w]i32 =
   let ys = map3 (\y1 slop i ->
                      y1+t32(slop*r32(i))) ys1 slops iotas
   let is = map2 (\x y -> w*y+x) xs ys
-  let flatgrid = reshape (h*w) grid
-  in reshape (h,w) (scatter flatgrid is (replicate nn 1))
+  let flatgrid = flatten grid
+  in unflatten h w (scatter (copy flatgrid) is (replicate nn 1))
 
 let main () : [][]i32 =
   let height:i32 = 30
