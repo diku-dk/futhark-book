@@ -940,7 +940,7 @@ have used so far:
 ::
 
     let dotprod (xs: []i32) (ys: []i32): i32 =
-      reduce (+) 0 (map (*) xs ys)
+      reduce (+) 0 (map2 (*) xs ys)
 
 The ``dotprod`` function assumes that the two input arrays have the same
 size, or else the ``map`` will fail. However, this constraint is not
@@ -949,8 +949,8 @@ this explicit:
 
 ::
 
-    let dotprod [n] (xs: []i32) (ys: []i32): i32 =
-      reduce (+) 0 (map (*) xs ys)
+    let dotprod [n] (xs: [n]i32) (ys: [n]i32): i32 =
+      reduce (+) 0 (map2 (*) xs ys)
 
 The ``[n]`` preceding the *value parameters* (``xs`` and ``ys``) is
 called a *size parameter*, which lets us assign a name to the dimensions
