@@ -16,7 +16,9 @@ designed to replace general-purpose langages for application
 programming.  The intended use case is that Futhark is only used for
 relatively small but compute-intensive parts of an application, as the
 Futhark compiler generates code that can be easily called from
-non-Futhark code.
+non-Futhark code.  The language was originally developed in Denmark,
+and is therefore named after `the Runic alphabet
+<https://en.wikipedia.org/wiki/Elder_Futhark>`_.
 
 This book is written for a reader who already has some programming
 experience.  Prior experience with functional programming is useful,
