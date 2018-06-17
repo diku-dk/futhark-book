@@ -34,7 +34,7 @@ let linepoints ((x1,y1):point, (x2,y2):point) : points =
 
 -- Sequential algorithm for drawing multiple lines
 let points [n] (lines:[n]line) : [][2]i32 =
-  let points : [][]i32 = empty([2]i32)
+  let points : [][]i32 = []
   in loop (points) for i < n do -- find points for line i
      let ps = map (\(x,y) -> [x,y]) (linepoints (lines[i]))
      in concat points ps
