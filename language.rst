@@ -545,10 +545,10 @@ be associative and have a neutral element.
 There are two main ways to compute scans: *exclusive* and *inclusive*.
 The difference is that the empty prefix is considered in an exclusive
 scan, but not in an inclusive scan. Computing the exclusive ``+``-scan
-of ``[1,2,3]`` thus gives ``[0,1,3,6]``, while the inclusive
+of ``[1,2,3]`` thus gives ``[0,1,3]``, while the inclusive
 ``+``-scan is ``[1,3,6]``. The ``scan`` in Futhark is inclusive, but
 it is easy to generate a corresponding exclusive scan simply by
-prepending the neutral element.
+prepending the neutral element and removing the last element.
 
 While the idea behind ``reduce`` is probably familiar, ``scan`` is a
 little more esoteric, and mostly has applications for handling
