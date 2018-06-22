@@ -508,7 +508,7 @@ have a *neutral element* (i.e, form a monoid):
    :math:`f(x,e) = f(e,x) = x` for all :math:`x`.
 
 Many common mathematical operators fulfill these laws, such as addition:
-:math:`(x+y)+z=x+(y+z)` and :math:`x+0=0+x=0`. But others, like
+:math:`(x+y)+z=x+(y+z)` and :math:`x+0=0+x=x`. But others, like
 subtraction, do not. In Futhark, we can use the addition operator and
 its neutral element to compute the sum of an array of integers:
 
