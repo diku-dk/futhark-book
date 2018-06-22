@@ -37,7 +37,7 @@ integers:
 ::
 
     let main (x: []i32) (y: []i32): i32 =
-      reduce (+) 0 (map (*) x y)
+      reduce (+) 0 (map2 (*) x y)
 
 In Futhark, the notation for an array of element type ``t`` is
 ``[]t``. The program defines a function called ``main`` that takes two
