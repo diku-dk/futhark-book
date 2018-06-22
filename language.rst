@@ -1446,7 +1446,7 @@ this one anonymous
 
     module Prod64s = Sum({
       type t = 64
-      let (x: f64) (y: f64): f64 = x * y
+      let add (x: f64) (y: f64): f64 = x * y
       let zero: f64 = 1.0
     })
 
