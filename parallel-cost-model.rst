@@ -113,7 +113,7 @@ grammar-slightly simplified:
    \tau & ::=~~& \kw{i32} ~~|~~ \kw{f32} ~~|~~ \kw{bool} ~~|~~ \kw{[]}\tau \\
         & ~~|~~& \kw{(}\tau_1,\cdots,\tau_n\kw{)} ~~|~~ \tau \rarr \tau' ~~|~~ \alpha
 
-\noindent We shall refer to the types ``i32``, ``f32``, and ``bool``
+We shall refer to the types ``i32``, ``f32``, and ``bool``
 as *basic types*. Futhark supports more basic types than those
 presented here; consult :ref:`baselang` for a complete list.
 
@@ -228,7 +228,7 @@ type :math:`\tau`.” Finally, type judgments for programs take the form
    & \fraccc{\vd v : \tau}{\Gamma \vd v : \tau} \\[2mm]
    & \fraccc{\Gamma(f) = \kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau ~~~~ \Gamma \vd e_i : \tau_i ~~ i = [1;n]}{\Gamma \vd f~e_1\cdots e_n : \tau} \\[2mm]
    & \fraccc{\Gamma \vd e_i : \tau_i ~~ i = [1;2] \\
-     \mathrm{TypeOf}(\id{binop}) \geq \tau ~~~~ \tau = \tau_1 \rarr \tau_2 \rarr \tau'}{\Gamma \vd e_1 ~\id{binop}_\tau~ e_n : \tau'
+     \mathrm{TypeOf}(\id{binop}) \geq \tau ~~~~ \tau = \tau_1 \rarr \tau_2 \rarr \tau'}{\Gamma \vd e_1 ~\id{binop}_\tau~ e_2 : \tau'
      } \\[2mm]
    & \fraccc{\Gamma \vd e_i : \tau_i ~~ i = [1;n] \\
      \mathrm{TypeOf}(\id{op}) \geq \tau \\ \tau =  \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau'}{\Gamma \vd \id{op}_\tau~ e_1~\cdots~e_n : \tau'
@@ -344,7 +344,7 @@ function parameters. We first give the definition for
        & & ~~~~~\mathrm{and}~ \kw{[}v_1^i,\cdots,v_n^i\kw{]} = \Eval{e_i} ~~~ i=[1..m]
    \end{eqnarray*}
 
-Given a SOAC function parameter :math``F`, we define the utility
+Given a SOAC function parameter :math:`F`, we define the utility
 *extraction function*, :math:`\extractF{F}`, as follows:
 
 .. math::
