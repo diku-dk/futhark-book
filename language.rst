@@ -453,14 +453,17 @@ Haskell:
 
     map (2-) [1,2,3] == [1,0,-1]
 
-In contrast to most other languages, the ``map`` SOAC in Futhark takes any nonzero
-number of array arguments, and requires a function with the same number
-of parameters. For example, we can perform an element-wise sum of two
-arrays:
+There are variants of ``map``, suffixed with an integer, that permit
+simultaneous mapping of multiple arrays, which must all have the same
+size.  This is supported up to ``map5``. For example, we can perform
+an element-wise sum of two arrays:
 
 ::
 
-    map (+) [1,2,3] [4,5,6] == [5,7,9]
+    map2 (+) [1,2,3] [4,5,6] == [5,7,9]
+
+A combination of ``map`` and ``zip`` can be used to handle arbitrary
+numbers of simultaneous arrays.
 
 Be careful when writing ``map`` expressions where the function returns
 an array.  Futhark requires regular arrays, so this is unlikely to go
@@ -522,7 +525,7 @@ to compute the dot product of two vectors of integers:
 ::
 
     let dotprod (xs: []i32) (ys: []i32): i32 =
-      reduce (+) 0 (map (*) xs ys)
+      reduce (+) 0 (map2 (*) xs ys)
 
 A close cousin of ``reduce`` is ``scan``, often called *generalised
 prefix sum*. Where ``reduce`` produces just one result, ``scan``
@@ -819,10 +822,8 @@ alias its source:
 
 Most array combinators produce fresh arrays that initially alias no
 other arrays in the program. In particular, the result of ``map f a``
-does not alias ``a``. One exception is ``split``, used for dividing
-arrays into multiple parts, where each of the partitions are aliased
-to the original array (but the partitions, being non-overlapping, are
-not aliased to each other).
+does not alias ``a``. One exception is array slicing, where the result
+is aliased to the original array.
 
 Let us consider the definition of a function returning a unique array:
 
@@ -1480,7 +1481,7 @@ the names from a module into the current scope
         open M
         let dotprod [n] (xs: [n]scalar) (ys: [n]scalar)
           : scalar =
-          reduce add zero (map mul xs ys)
+          reduce add zero (map2 mul xs ys)
         let matmul [n] [p] [m] (xss: [n][p]scalar)
                                (yss: [p][m]scalar)
           : [n][m]scalar =
