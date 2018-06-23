@@ -480,7 +480,7 @@ well:
 
 ::
 
-    map (\n -> [1...n]) ns
+    map (\n -> 1...n) ns
 
 Unless the array ``ns`` consisted of identical values, the program would
 fail at runtime.
@@ -493,7 +493,7 @@ them using:
 ::
 
       map (\i -> if i < n then xs[i] else ys[i-n])
-          ([0..<n+m])
+          (0..<n+m)
 
 However, it is not a good idea to write code like this, as it hinders
 the compiler from using high-level properties to do
@@ -991,7 +991,7 @@ times:
 ::
 
     let replicate_i32 (n: i32) (x: i32): [n]i32 =
-      map (\_ -> x) [0..<n]
+      map (\_ -> x) (0..<n)
 
 In :ref:`polymorphism` we will see how to write a polymorphic function
 that works for any type.
@@ -1024,7 +1024,7 @@ This restriction means that the following function definition is not valid:
 ::
 
     let doubleup [n] (xs: [n]i32): [2*n]i32 =
-      map (\i -> xs[i/2]) [0..<n*2]
+      map (\i -> xs[i/2]) (0..<n*2)
 
 While size annotations are a simple and limited mechanism, they can help
 make hidden invariants visible to users of your code. In some cases,
@@ -1177,14 +1177,14 @@ Parametric Polymorphism
 Consider the replication function we wrote earlier::
 
     let replicate_i32 (n: i32) (x: i32): [n]i32 =
-      map (\_ -> x) [0..<n]
+      map (\_ -> x) (0..<n)
 
 This function works only for replicating values of type ``i32``.  If
 we wanted to replicate, say, bools, we would have to write another
 function::
 
     let replicate_bool (n: i32) (x: bool): [n]bool =
-      map (\_ -> x) [0..<n]
+      map (\_ -> x) (0..<n)
 
 This duplication is not particularly nice.  Since the only difference
 between the two functions is the type of the ``x`` parameter, and we
@@ -1200,7 +1200,7 @@ apostrophe.  As an example, this is a polymorphic version of
 ``replicate``::
 
     let replicate 't (n: i32) (x: t): [n]t =
-      map (\_ -> x) [0..<n]
+      map (\_ -> x) (0..<n)
 
 Note how how the type parameter is written as ``'t``, but we use just
 ``t`` to refer to the parametric type in the ``x`` parameter and the
