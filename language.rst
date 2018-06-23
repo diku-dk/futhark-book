@@ -733,10 +733,10 @@ This style of code can sometimes make imperative code look more natural.
 In-Place Updates
 ----------------
 
-While Futhark is throughout a pure functional language, it may
-occasionally prove useful to express certain algorithms in an imperative
-style. Consider a function for computing the :math:`n` first Fibonacci
-numbers:
+While Futhark is an uncompromisingly pure functional language, it may
+occasionally prove useful to express certain algorithms in an
+imperative style. Consider a function for computing the :math:`n`
+first Fibonacci numbers:
 
 ::
 
