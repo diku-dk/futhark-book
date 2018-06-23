@@ -705,8 +705,8 @@ In all respects other than termination criteria, ``while``-loops
 behave identically to ``for``-loops.
 
 For brevity, the initial value expression can be elided, in which case
-an expression equivalent to the pattern is implied. This featuremis easier to
-understand with an example. The loop
+an expression equivalent to the pattern is implied. This feature is
+easier to understand with an example. The loop
 
 ::
 
