@@ -256,16 +256,18 @@ exclusive by writing ``x..<y``. For example:
 
 ::
 
-    1...3 == [1,2,3]
-    1..<3 == [1,2]
+    (1...3) == [1,2,3]
+    (1..<3) == [1,2]
 
-A stride can be provided by writing ``x..y...z`, with the
-interpretation "first ``x``, then ``y``, up to ``z``". For example:
+We use parentheses here because the range operators bind less tightly
+than comparison operators.  A stride can be provided by writing
+``x..y...z`, with the interpretation "first ``x``, then ``y``, up to
+``z``". For example:
 
 ::
 
-    1..3...7 == [1,3,5,7]
-    1..3..<7 == [1,3,5]
+    (1..3...7) == [1,3,5,7]
+    (1..3..<7) == [1,3,5]
 
 The element type of the produced array is the same as the type of the
 integers used to specify the bounds, which must all have the same type
