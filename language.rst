@@ -287,24 +287,38 @@ definition has the following form:
 
     let name params... : return_type = body
 
-A function must declare both its return type and the types of all its
-parameters. All functions (except for inline anonymous functions, as we
-will get to later) are defined globally. Futhark does not yet support
-type inference. As a concrete example, here is the definition of the
+A function may optionally declare its return type and the types of its
+parameters.  If type annotations are not provided, the types are
+inferred.  As a concrete example, here is the definition of the
 Mandelbrot set iteration step :math:`Z_{n+1} = Z_{n}^{2} + C`, where
-:math:`Z_n` is the actual iteration value, and :math:`C` is the initial
-point. In this example, all operations on complex numbers are fully
-expanded, though Futhark comes with a library for complex numbers that
-will be presented later.
+:math:`Z_n` is the actual iteration value, and :math:`C` is the
+initial point. In this example, all operations on complex numbers are
+fully expanded, though Futhark comes with a library for complex
+numbers that will be presented later.
 
 ::
 
     let mandelbrot_step ((Zn_r, Zn_i): (f64, f64))
                         ((C_r, C_i): (f64, f64))
                       : (f64, f64) =
-        let real_part = Zn_r*Zn_r - Zn_i*Zn_i + C_r
-        let imag_part = 2.0*Zn_r*Zn_i + C_i
-        in (real_part, imag_part)
+      let real_part = Zn_r*Zn_r - Zn_i*Zn_i + C_r
+      let imag_part = 2.0*Zn_r*Zn_i + C_i
+      in (real_part, imag_part)
+
+Or equivalently, without specifying the types:
+
+::
+
+    let mandelbrot_step (Zn_r, Zn_i)
+                        (C_r, C_i) =
+      let real_part = Zn_r*Zn_r - Zn_i*Zn_i + C_r
+      let imag_part = 2.0*Zn_r*Zn_i + C_i
+      in (real_part, imag_part)
+
+It is generally considered good style to specify the types of the
+parameters and the return value when defining top-level functions.
+Type inference is mostly used for local and anonymous functions, that
+we will get to later.
 
 We can define a constant with very similar notation:
 
