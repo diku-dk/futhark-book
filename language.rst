@@ -742,7 +742,7 @@ first Fibonacci numbers:
 
     let fib (n: i32): []i32 =
       -- Create "empty" array.
-      let arr = iota(n)
+      let arr = replicate n 0
       -- Fill array with Fibonacci numbers.
       in loop (arr) for i < n-2 do
            let arr[i+2] = arr[i] + arr[i+1]
@@ -848,8 +848,8 @@ value. This requirement would be violated if we permitted the return
 value in a unique-returning function to alias its (non-unique)
 parameters.
 
-To summarise: *values are consumed by being the source in a
-``let-with``, or by being passed as a *unique* parameter in a function
+To summarise: *values are consumed by being the source in a in-place
+binding, or by being passed as a unique parameter in a function
 call*. We can crystallise valid usage in the form of three principal
 rules:
 
@@ -873,7 +873,7 @@ rules:
     rule is as follows::
 
       let broken (a: [][]i32, i: i32): *[]i32 =
-      a[i] -- Error: Return value aliased with 'a'.
+        a[i] -- Error: Return value aliased with 'a'.
 
 **Uniqueness Rule 3**
     If a function call yields a unique return value, the caller has
@@ -952,10 +952,10 @@ have used so far:
     let dotprod (xs: []i32) (ys: []i32): i32 =
       reduce (+) 0 (map2 (*) xs ys)
 
-The ``dotprod`` function assumes that the two input arrays have the same
-size, or else the ``map`` will fail. However, this constraint is not
-visible in the type of the function. Size parameters allow us to make
-this explicit:
+The ``dotprod`` function assumes that the two input arrays have the
+same size, or else the ``map2`` will fail. However, this constraint is
+not visible in the type of the function. Size parameters allow us to
+make this explicit:
 
 ::
 
