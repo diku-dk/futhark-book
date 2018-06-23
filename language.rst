@@ -395,20 +395,13 @@ Array Operations
 Futhark provides various combinators for performing bulk
 transformations of arrays. Judicious use of these combinators is key
 to getting good performance. There are two overall categories:
-*first-order array combinators*, like ``concat``, that always perform
-the same operation, and *second-order array combinators* (*SOAC*\ s),
-like ``map``, that take a *functional argument* indicating the
-operation to perform. SOACs are absolutely crucial to Futhark
-programming. While they are designed to resemble higher-order
-functions that may be familiar from functional languages, they have
-some restrictions to enable efficient parallel execution.
-
-We can use ``concat`` to combine several arrays:
-
-::
-
-    concat [1,2] [1,2,3] [1,1,1,1] ==
-      [0,1,1,2,3,1,1,1,1i32]
+*first-order array combinators*, like ``zip``, that always perform the
+same operation, and *second-order array combinators* (*SOAC*\ s), like
+``map``, that take a *functional argument* indicating the operation to
+perform. SOACs are absolutely crucial to Futhark programming. While
+they are designed to resemble higher-order functions that may be
+familiar from functional languages, they have some restrictions to
+enable efficient parallel execution.
 
 We can use ``zip`` to transform :math:`n` arrays to a single array of
 :math:`n`-tuples:
