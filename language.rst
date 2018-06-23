@@ -118,18 +118,19 @@ Basic Language Features
 As a functional or *value-oriented* language, the semantics of Futhark
 can be understood entirely by how values are constructed, and how
 expressions transform one value to another. As a statically typed
-language, all values are classified by their *type*. The primitive types
-in Futhark are the signed integer types ``i8``, ``i16``, ``i32``,
-``i64``, the unsigned integer types ``u8``, ``u16``, ``u32``, ``u64``,
-the floating-point types ``f32``, ``f64``, and the boolean type
-``bool``. An ``f32`` is always a single-precision float and a ``f64`` is
-a double-precision float.
+language, all Futhark values are classified by their *type*. The
+primitive types in Futhark are the signed integer types ``i8``,
+``i16``, ``i32``, ``i64``, the unsigned integer types ``u8``, ``u16``,
+``u32``, ``u64``, the floating-point types ``f32``, ``f64``, and the
+boolean type ``bool``. An ``f32`` is always a single-precision float
+and a ``f64`` is a double-precision float.
 
-Futhark does not yet support type inference, so numeric literals must be
-suffixed with their intended type. For example, ``42i8`` is of type
-``i8``, and ``1337e2f64`` is of type ``f64``. If no suffix is given,
-integer literals are assumed to be of type ``i32``, and decimal literals
-of type ``f64``. Boolean literals are written as ``true`` and ``false``.
+Numeric literals can be suffixed with their intended type. For
+example, ``42i8`` is of type ``i8``, and ``1337e2f64`` is of type
+``f64``. If no suffix is given, the type is inferred by the context.
+In case of ambiguity, integral literals are given type ``i32`` and
+decimal literals are given ``f64``.  Boolean literals are written as
+``true`` and ``false``.
 
 All values can be combined in tuples and arrays. A tuple value or type
 is written as a sequence of comma-separated values or types enclosed in
@@ -142,17 +143,17 @@ but empty tuples are permitted, although they are not very useful — these
 are written ``()`` and are of type ``()``. *Records* exist as syntactic
 sugar on top of tuples, and will be discussed in :ref:`records`.
 
-An array value is written as a nonempty sequence of comma-separated
-values enclosed in square brackets: ``[1,2,3]``. An array type is
-written as ``[d]t``, where ``t`` is the element type of the array, and
-``d`` is an integer indicating the size. We often elide ``d``, in
-which case the size will be inferred. As an example, an array of three
-integers could be written as ``[1,2,3]``, and has type ``[3]i32``.  An
-empty array must be written as ``empty(t)``, where ``t`` is the
-element type.
+An array value is written as a sequence of comma-separated values
+enclosed in square brackets: ``[1,2,3]``. An array type is written as
+``[d]t``, where ``t`` is the element type of the array, and ``d`` is
+an integer indicating the size. We often elide ``d``, in which case
+the size will be inferred. As an example, an array of three integers
+could be written as ``[1,2,3]``, and has type ``[3]i32``.  An empty
+array is written simply as ``[]``, although the context must make the
+type of an empty array unambiguous.
 
 Multi-dimensional arrays are supported in Futhark, but they must be
-*regular*, meaning that all inner arrays must have the same shape. For
+*regular*, meaning that all inner arrays have the same shape. For
 example, ``[[1,2], [3,4], [5,6]]`` is a valid array of type
 ``[3][2]i32``, but ``[[1,2], [3,4,5], [6,7]]`` is not, because there
 we cannot determine integers ``m`` and ``n`` such that ``[m][n]i32``
@@ -167,13 +168,13 @@ restriction in later chapters.
 Simple Expressions
 ~~~~~~~~~~~~~~~~~~
 
-The Futhark expression syntax is mostly conventional ML-derived syntax,
-and supports the usual binary and unary operators, with few surprises.
-Futhark does not have syntactically significant indentation, so feel
-free to put whitespace whenever you like. This section will not try to
-cover the entire Futhark expression language in complete detail. See the
-reference manual at http://futhark.readthedocs.io for a comprehensive
-treatment.
+The Futhark expression syntax is mostly conventional ML-derived
+syntax, and supports the usual binary and unary operators, with few
+surprises.  Futhark does not have syntactically significant
+indentation, so feel free to put whitespace whenever you like. This
+section will not try to cover the entire Futhark expression language
+in complete detail. See the `reference manual
+<http://futhark.readthedocs.io>`_ for a comprehensive treatment.
 
 Function application is via juxtaposition. For example, to apply a
 function ``f`` to a constant argument, we write:
@@ -230,10 +231,9 @@ A two-way if-then-else is the only branching construct in Futhark:
     if x < 0 then -x else x
 
 Arrays are indexed using the common row-major notation, as in the
-expression ``a[i1, i2, i3, ...]``. An indexing is said to be *full* if
-the number of given indices is equal to the dimensionality of the array.
-All array accesses are checked at runtime, and the program will
-terminate abnormally if an invalid access is attempted.
+expression ``a[i1, i2, i3, ...]``.  All array accesses are checked at
+runtime, and the program will terminate abnormally if an invalid
+access is attempted.
 
 Whitespace is used to disambiguate indexing from application to array
 literals. For example, the expression ``a b [i]`` means “apply the
@@ -247,25 +247,25 @@ be done by separating with commas, and may be intermixed freely with
 indexing.
 
 If the stride is positive, then ``i <= j`` must hold, and if the stride
-is negativ, then ``j <= i`` must hold.
+is negative, then ``j <= i`` must hold.
 
 Some syntactic sugar is provided for concisely specifying arrays of intervals of
-integers. The expression ``[x...y]`` produces an array of the integers
+integers. The expression ``x...y`` produces an array of the integers
 from ``x`` to ``y``, both inclusive. The upper bound can be made
-exclusive by writing ``[x..<y]``. For example:
+exclusive by writing ``x..<y``. For example:
 
 ::
 
-    [1...3] == [1,2,3]
-    [1..<3] == [1,2]
+    1...3 == [1,2,3]
+    1..<3 == [1,2]
 
-A stride can be provided by writing ``[x..y...z]``, with the
-interpretation “first ``x``, then ``y``, up to ``z``\ “. For example:
+A stride can be provided by writing ``x..y...z`, with the
+interpretation "first ``x``, then ``y``, up to ``z``". For example:
 
 ::
 
-    [1..3...7] == [1,3,5,7]
-    [1..3..<7] == [1,3,5]
+    1..3...7 == [1,3,5,7]
+    1..3..<7 == [1,3,5]
 
 The element type of the produced array is the same as the type of the
 integers used to specify the bounds, which must all have the same type
