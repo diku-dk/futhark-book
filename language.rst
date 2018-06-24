@@ -892,12 +892,12 @@ low-level optimisation.
 When To Use In-Place Updates
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you are used to programming in impure languages, in-place updates may
-seem a natural and convenient tool that you may use frequently. However,
-Futhark is a functional array language, and should be used as such.
-In-place updates are restricted to simple cases that the compiler is
-able to analyze, and should only be used when absolutely necessary. Many
-interesting and complicated Futhark programs can be written without
+If you are used to programming in impure languages, in-place updates
+may seem a natural and convenient tool that you may use
+frequently. However, Futhark is a functional array language, and
+should be used as such.  In-place updates are restricted to simple
+cases that the compiler is able to analyze, and should only be used
+when absolutely necessary. Most Futhark programs are written without
 making use of in-place updates at all.
 
 Typically, we use in-place updates to express efficiently sequential
@@ -931,7 +931,7 @@ Size Annotations
 Functions on arrays typically impose constraints on the shape of their
 parameters, and often the shape of the result depends on the shape of
 the parameters. Futhark provides a language construct called *size
-annotations* that give the programmer the option of encoding these
+annotations*, that give the programmer the option of encoding these
 properties directly into the type of a function. Consider first the
 trivial case of a function that packs a single ``i32`` value in an
 array:
@@ -981,7 +981,7 @@ averages:
 ::
 
     let average [n] (xs: [n]f64): f64 =
-      reduce (+) 0.0 xs / f64 n
+      reduce (+) 0 xs / f64 n
 
 Size parameters are always of type ``i32``, and in fact, *any*
 ``i32``-typed variable in scope can be used as a size annotation. This feature
@@ -993,19 +993,23 @@ times:
     let replicate_i32 (n: i32) (x: i32): [n]i32 =
       map (\_ -> x) (0..<n)
 
-In :ref:`polymorphism` we will see how to write a polymorphic function
-that works for any type.
+In :ref:`polymorphism` we will see how to write a polymorphic
+``replicate`` function that works for any type.
 
-As a more complicated example of using size parameters, consider the
-following function for performing matrix multiplication:
+As a more complicated example of using size parameters, consider
+multipliying two matrixes ``x`` and ``y``.  This is only defined if
+the number of columns in ``x`` equals the number of rows in ``y``.  In
+Futhark, we can encode this as follows:
 
 ::
 
     let matmult [n][m][p] (x: [n][m]i32, y: [m][p]i32): [n][p]i32 =
       map (\xr -> map (dotprod xr) (transpose y)) x
 
-Futhark’s support for size annotations permits us to succintly encode
-the usual size invariants for matrix multiplication.
+Three sizes are involved, ``n``, ``m``, and ``p``.  We indicate that
+the number of columns in ``x`` must match the number of columns in
+``y``, and that the size of the returned matrix has the same number of
+rows as ``x``, and the same number of columns as ``y``.
 
 Be aware that size annotations are checked dynamically, not statically.
 Whenever we call a function or return a value, an error is raised if its
