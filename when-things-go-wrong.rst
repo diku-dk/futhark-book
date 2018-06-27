@@ -60,7 +60,7 @@ workaround. We could rewrite the program as:
 ::
 
     let main(n: i32): [][]i32 =
-      let scratch = (0...<n)
+      let scratch = (0..<n)
       in map (\i ->
                 let res = (0..<n)
                 let res[i:n] = scratch[0:n-i]
