@@ -8,7 +8,7 @@ Consider an implementation of the dot product of two vectors:
 ::
 
     let main (x: []i32) (y: []i32): i32 =
-      reduce (+) 0 (map (*) x y)
+      reduce (+) 0 (map2 (*) x y)
 
 We previously mentioned that, for small data sets, sequential execution
 is likely to be much faster than parallel execution. But how much
