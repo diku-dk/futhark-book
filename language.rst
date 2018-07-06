@@ -403,29 +403,31 @@ they are designed to resemble higher-order functions that may be
 familiar from functional languages, they have some restrictions to
 enable efficient parallel execution.
 
-We can use ``zip`` to transform :math:`n` arrays to a single array of
-:math:`n`-tuples:
+We can use ``zip`` to transform two arrays to a single array of
+pairs:
 
 ::
 
-    zip [1,2,3] [true,false,true] [7.0,8.0,9.0] ==
-      [(1,true,7.0),(2,false,8.0),(3,true,9.0)]
+    zip [1,2,3] [true,false,true] ==
+      [(1,true),(2,false),(3,true)]
 
 Notice that the input arrays may have different types. We can use
 ``unzip`` to perform the inverse transformation:
 
 ::
 
-    unzip [(1,true,7.0),(2,false,8.0),(3,true,9.0)] ==
-      ([1,2,3], [true,false,true], [7.0,8.0,9.0])
+    unzip [(1,true),(2,false),(3,true)] ==
+      ([1,2,3], [true,false,true])
 
-Be aware that ``zip`` requires all of the input arrays to have the
-same length.  Transforming between arrays of tuples and tuples of
-arrays is common in Futhark programs, as many array operations accept
-only one array as input. Due to a clever implementation technique,
-``zip`` and ``unzip`` have no runtime cost (no copying or allocation
-whatsoever), so you should not shy away from using them out of
-efficiency concerns.
+Be aware that ``zip`` requires all input arrays to have the same
+length.  Transforming between arrays of tuples and tuples of arrays is
+common in Futhark programs, as many array operations accept only one
+array as input.  Due to a clever implementation technique, ``zip`` and
+``unzip`` usually have no runtime cost (they are fused into other
+operations), so you should not shy away from using them out of
+efficiency concerns.  For operating on arrays of tuples with more than
+two elements, there are ``zip``/``unzip`` variants called ``zip3``,
+``zip4``, etc, up to ``zip8``/``unzip8``.
 
 Now let’s take a look at some SOACs.
 
