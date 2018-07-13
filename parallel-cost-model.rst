@@ -481,10 +481,10 @@ the following code:
 Determining Work and Span
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To determine the work and span of the algorithm , we first determine the
-work and span for , for which we again need to determine the work and
-span for . From simple inspection we have
-:math:`W(\kw{nextpow2 n}) = S(\kw{nextpow2 n}) =
+To determine the work and span of the algorithm ``red``, we first
+determine the work and span for ``padpow2``, for which we again need
+to determine the work and span for ``nextpow2``. From simple
+inspection we have :math:`W(\kw{nextpow2 n}) = S(\kw{nextpow2 n}) =
 O(\mathrm{log}\,\kw{n})`. Now, from the definition of :math:`W` and
 :math:`S` and because :math:`\kw{nextpow2 n} \leq 2\,\kw{n}`, we have
 
