@@ -38,7 +38,7 @@ function. Thus, we have
 .. math::
    W(\fop{map}~\kw{(\j -> i * j)}~(\fop{iota}~n)) = n+1
 
-Applying a similar agument to the outer map, we get
+Applying a similar argument to the outer map, we get
 
 .. math::
    W(\fop{map}~\kw{(\i -> $\cdots$)}~(\fop{iota}~\kw{$n$})) = (n+1)^2
@@ -170,7 +170,7 @@ follows:
                  &       & \rarr [](\alpha_1,\cdots,\alpha_n)
 
 The type schemes for Futhark's built-in infix scalar operations are as
-folllows:
+follows:
 
 .. math::
 
@@ -270,7 +270,7 @@ type :math:`\tau`.” Finally, type judgments for programs take the form
             {\Gamma \vd \fw{let}~f~\kw{(}x_1,\cdots,x_n\kw{)}~\kw{=} ~e : \{f:\kw{(}\tau_1,\cdots,\tau_n\kw{)} \rarr \tau\}}
    \end{eqnarray*}
 
-For brewity, we have eluded some of the typing rules and we leave it
+For brevity, we have eluded some of the typing rules and we leave it
 to the reader to create typing rules for ``rearrange``, ``shape``,
 ``reshape``, ``loop-for``, ``loop-while``, and array ranging (``e[i:j:o]``).
 
@@ -375,7 +375,7 @@ Work and Span
 
 In this section we give a cost model for Futhark in terms of functions
 for determining the total *work* done by a program, in terms of
-operations done by the big-step evalutation semantics, and the *span*
+operations done by the big-step evaluation semantics, and the *span*
 of the program execution, in terms of the maximum depth of the
 computation, assuming an infinite amount of parallelism in the SOAC
 computations. The functions for work and span, denoted by :math:`W :
@@ -459,7 +459,7 @@ neutral element of type :math:`A`, and a vector :math:`v` of size
 Otherwise, the algorithm performs a contraction by splitting the vector
 in two and applies the reduction operator elementwise on the two
 subvectors, thereby obtaining a contracted vector, which is then used as
-input to a recursive call to the algorithm. In Futhark, the funcion can
+input to a recursive call to the algorithm. In Futhark, the function can
 be implemented as follows:
 
 .. literalinclude:: src/reduce_contract.fut
@@ -470,7 +470,7 @@ The function specializes the reduction operator :math:`\oplus` to be
 argument vector ``xs`` with neutral elements to ensure that its size
 is a power of two. It then implements a sequential loop with the
 contraction step as its loop body, implemented by a parallel
-:math:`\fop{map}` over an appropriately splitted input vector.
+:math:`\fop{map}` over an appropriately split input vector.
 
 The auxiliary function for padding the input vector is implemented by
 the following code:
