@@ -132,6 +132,32 @@ In case of ambiguity, integral literals are given type ``i32`` and
 decimal literals are given ``f64``.  Boolean literals are written as
 ``true`` and ``false``.
 
+.. admonition:: Note: converting between primitive values
+
+   Futhark provides a collection of functions for performing
+   straightforward conversions between primitive types.  These are all
+   of the form ``to.from``.  For example, ``i32.f64`` converts a value
+   of type ``f64`` (double-precision float) to a value of type ``i32``
+   (32-bit signed integer), by truncating the fractional part::
+
+     i32.f64 2.1 == 2
+
+     f64.i32 2 == 2.0
+
+   Technically, ``i32.f64`` is not the name of the function.  Rather,
+   this is a reference to the function ``f64`` in the module ``i32``.
+   We will not discuss modules further until :ref:`modules`, so for
+   now it suffices to think of ``i32.f64`` as a function name.  The
+   only wrinkle is that if a variable with the name ``i32`` is in
+   scope, the entire ``i32`` module becomes inaccessible by shadowing.
+
+   Futhark provides shorthand for the most common conversions::
+
+     r32 == f32.i32
+     t32 == i32.f32
+     r64 == f64.i32
+     t64 == i64.f32
+
 All values can be combined in tuples and arrays. A tuple value or type
 is written as a sequence of comma-separated values or types enclosed in
 parentheses. For example, ``(0, 1)`` is a tuple value of type
