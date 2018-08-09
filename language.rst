@@ -773,8 +773,19 @@ first Fibonacci numbers:
       let arr = replicate n 0
       -- Fill array with Fibonacci numbers.
       in loop (arr) for i < n-2 do
-           let arr[i+2] = arr[i] + arr[i+1]
-           in arr
+           arr with [i+2] <- arr[i] + arr[i+1]
+
+The notation ``arr with [i+2] <- arr[i] + arr[i+1]`` produces an array
+equivalent to ``arr``, but with a new value for the element at
+position ``i+2``.  A shorthand syntax is available for the (common)
+case where we immediately bind the array to a variable of the same
+name::
+
+  let arr = arr with [i+2] <- arr[i] + arr[i+1]
+
+  -- Can be shortened to:
+
+  let arr[i+2] = arr[i] + arr[i+1]
 
 If the array ``arr`` were to be copied for each iteration of the loop,
 we would spend a lot of time moving around data, even though it is
@@ -809,8 +820,7 @@ that end, let us consider the following function definition.
 ::
 
     let modify (a: *[]i32) (i: i32) (x: i32): *[]i32 =
-      let a[i] = a[i] + x
-      in a
+      a with [i] <- a[i] + x
 
 The function call ``modify a i x`` returns :math:`a`, but where the
 element at index ``i`` has been increased by :math:`x`. Notice the
@@ -888,8 +898,7 @@ rules:
     it, may be used on any execution path following the function call. A
     violation of this rule is as follows::
 
-      let b = a -- Now 'b' aliases 'a'
-      let b[i] = 2 in
+      let b = a with [i] <- 2 in -- Consumes 'a'
       f(b,a) -- Error: a used after being consumed
 
 
