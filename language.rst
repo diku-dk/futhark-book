@@ -776,24 +776,24 @@ first Fibonacci numbers:
            let arr[i+2] = arr[i] + arr[i+1]
            in arr
 
-If the array ``arr`` is copied for each iteration of the loop, we would
-put enormous pressure on memory, and spend a lot of time moving around
-data, even though it is clear in this case that the ”old” value of
-``arr`` will never be used again. Precisely, what should be an algorithm
-with complexity :math:`O(n)` becomes :math:`O(n^2)`, due to copying the
-size :math:`n` array (an :math:`O(n)` operation) for each of the
-:math:`n` iterations of the loop.
+If the array ``arr`` were to be copied for each iteration of the loop,
+we would spend a lot of time moving around data, even though it is
+clear in this case that the ”old” value of ``arr`` will never be used
+again. Precisely, what should be an algorithm with complexity
+:math:`O(n)` would become :math:`O(n^2)`, due to copying the size
+:math:`n` array (an :math:`O(n)` operation) for each of the :math:`n`
+iterations of the loop.
 
-To prevent this copying, we want to update the array *in-place*, that is, with a
-static guarantee that the operation will not require any additional
-memory allocation, or copying the array. An *in-place update* can modify
-the array in time proportional to the elements being updated
-(:math:`O(1)` in the case of the Fibonacci function), rather than time
-proportional to the size of the final array, as would the case if we
-perform a copy. In order to perform the update without violating
-referential transparency, we need to know that no other references to
-the array exists, or at least that such references will not be used on
-any execution path following the in-place update.
+To prevent this copying, Futhark updates the array *in-place*, that
+is, with a static guarantee that the operation will not require any
+additional memory allocation, or copying the array. An *in-place
+update* can modify the array in time proportional to the elements
+being updated (:math:`O(1)` in the case of the Fibonacci function),
+rather than time proportional to the size of the final array, as would
+the case if we perform a copy. In order to perform the update without
+violating referential transparency, Futhark must know that no other
+references to the array exists, or at least that such references will
+not be used on any execution path following the in-place update.
 
 In Futhark, this is done through a type system feature called
 *uniqueness types*, similar to, although simpler than, the uniqueness
@@ -808,27 +808,27 @@ that end, let us consider the following function definition.
 
 ::
 
-    let modify(a: *[]i32, i: i32, x: i32): *[]i32 =
+    let modify (a: *[]i32) (i: i32) (x: i32): *[]i32 =
       let a[i] = a[i] + x
       in a
 
-The function call ``modify(a,i,x)`` returns :math:`a`, but where the
+The function call ``modify a i x`` returns :math:`a`, but where the
 element at index ``i`` has been increased by :math:`x`. Notice the
-asterisks: in the parameter declaration ``a: *[i32]``, the asterisk means that
-the function ``modify`` has been given “ownership” of the array
-:math:`a`, meaning that any caller of ``modify`` will never reference
-array :math:`a` after the call again. In particular, ``modify`` can
-change the element at index ``i`` without first copying the array, i.e.
-``modify`` is free to do an in-place modification. Furthermore, the
-return value of ``modify`` is also unique - this means that the result
-of the call to ``modify`` does not share elements with any other visible
-variables.
+asterisks: in the parameter declaration ``(a: *[i32])``, the asterisk
+means that the function ``modify`` has been given “ownership” of the
+array :math:`a`, meaning that any caller of ``modify`` will never
+reference array :math:`a` after the call again. In particular,
+``modify`` can change the element at index ``i`` without first copying
+the array, i.e.  ``modify`` is free to do an in-place
+modification. Furthermore, the return value of ``modify`` is also
+unique - this means that the result of the call to ``modify`` does not
+share elements with any other visible variables.
 
 Let us consider a call to ``modify``, which might look as follows.
 
 ::
 
-    let b = modify(a, i, x)
+    let b = modify a i x
 
 Under which circumstances is this call valid? Two things must hold:
 
@@ -888,8 +888,9 @@ rules:
     it, may be used on any execution path following the function call. A
     violation of this rule is as follows::
 
-      let b = a with [i] <- 2 in
-      f(b,a) -- Error: a used after being source in a let-with
+      let b = a -- Now 'b' aliases 'a'
+      let b[i] = 2 in
+      f(b,a) -- Error: a used after being consumed
 
 
 **Uniqueness Rule 2**
