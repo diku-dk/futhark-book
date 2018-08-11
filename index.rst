@@ -48,6 +48,9 @@ research center HIPERFIT: Functional High Performance Computing for
 Financial Information Technology (`hiperfit.dk <hiperfit.dk>`__) under
 contract number 10-092299.
 
+When citing this work, please use `this BibTeX entry
+<_static/book.bib>`_.
+
 Table of contents
 -----------------
 
