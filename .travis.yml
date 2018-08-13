@@ -7,7 +7,6 @@ addons:
     - wget
     - libgmp-dev
     - libffi6
-    - libc6:i386
 before_install:
 - export PATH=$HOME/.local/bin:$PATH
 - wget https://futhark-lang.org/releases/futhark-nightly-linux-x86_64.tar.xz
