@@ -17,7 +17,7 @@ made programs running on single Central Processing Units (CPUs) double
 in speed whenever new processors hit the market.
 
 The days of the “free lunches” for sequentially written programs is
-over. The physical speed limit for sequential processing unit has pretty
+over. The physical speed limit for sequential processing units has pretty
 much been reached. Increases in processor clock frequency introduces
 heat problems that are difficult to deal with and chip providers have
 instead turned their focus on providing multiple cores in the same chip.
@@ -33,7 +33,7 @@ In this book we distinguish between the notions of parallelism and
 concurrency. By *concurrency*, we refer to programming language controls
 for coordinating work done by multiple virtual processes. Such processes
 may in principle run on the same physical processor (using for instance
-time sharing) or they may run on multiple processors. Controlling the
+time slicing) or they may run on multiple processors. Controlling the
 communication and dependencies between multiple processes turns out to
 be immensely difficult and programmers need to deal with problems such
 as unforeseen non-determinism and dead-locks, collectively named *race
@@ -160,20 +160,33 @@ well-performing GPU code :cite:`finpar,apltofuthark2016`.
 Structure of the Book
 ---------------------
 
-The book is organised into two parts. In :ref:`futlang`, we introduce
-the Futhark language, including its basic syntax, the semantics of the
-core language, and the built-in array second-order array combinators
-and their parallel semantics. We also describe how to compile and
-execute Futhark programs using both the sequential C backend and the
-parallel GPU backend. In :ref:`costmodel`, we introduce an “ideal”
+The book is organised into several parts. In :ref:`futlang`, we
+introduce the Futhark language, including its basic syntax, the
+semantics of the core language, and the built-in array second-order
+array combinators and their parallel semantics. We also describe how
+to compile and execute Futhark programs using both the sequential C
+backend and the parallel GPU backend. Finally, we describe Futhark's
+module system, which allows for programmers to organise code into
+reusable components that carry no overhead whatsoever, due to
+Futhark's aggressive strategy of eliminating all module system
+constructs at compile time. We also describe Futhark's support for
+parametric polymorphism and restricted form of higher-order functions,
+which provide programmers with excellent tooling for writing abstract
+reusable code.
+
+In :ref:`costmodel`, we introduce an “ideal”
 cost model for the Futhark language based on the notions of work and
 span. In :ref:`soac-algebra`, we present to the reader the underlying
 algebraic reasoning principles that lie behind the Futhark internal
 fusion technology. In particular, we introduce the reader to the
-list-homorphism theorem, which forms the basis of map-reduce reasoning
+list-homomorphism theorem, which forms the basis of map-reduce reasoning
 and which turns out to play an important role in the fusion engine of
 Futhark.
 
-In Part 2 of the book, we present a number of parallel algorithms that
-can be used as building blocks for programming more complex parallel
-programs.
+In :ref:`parallel-algorithms`, we present a number of parallel
+algorithms that can be used as building blocks for programming more
+complex parallel programs. Some of these algorithms have made it into
+Futhark libraries, which may be organised, managed, and documented
+using Futhark's package manager and Futhark's documentation
+tool. These tools are described in the Futhark User's Guide available
+at https://futhark.readthedocs.io/en/latest/.
