@@ -588,7 +588,7 @@ range :math:`\sqrt n` up to :math:`n` that are multiples of the primes smaller t
 :math:`\sqrt n`.
 
 Unfortunately, Futhark does not presently support recursion, thus, one
-needs to use a construct instead to implement the sieve. A Futhark
+needs to use a :math:`\fw{loop}` construct instead to implement the sieve. A Futhark
 program calculating the number of primes below some number :math:`n`,
 also denoted in the literature as the :math:`\pi` function, is shown
 below:
