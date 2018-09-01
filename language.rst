@@ -1312,7 +1312,7 @@ multiple files. And in most languages, the module system is indeed
 little more than this. But in Futhark, we have adopted an ML-style
 higher-order module system that permits *abstraction* over modules. The
 module system is not just a method for organising Futhark programs, but
-also the sole facility for writing generic code.
+also a powerful facility for writing generic code.
 
 Simple Modules
 ~~~~~~~~~~~~~~
@@ -1322,20 +1322,20 @@ is merely a collection of declarations
 
 ::
 
-    module AddI32 = {
+    module add_i32 = {
       type t = i32
       let add (x: t) (y: t): t = x + y
       let zero: t = 0
     }
 
-Now, ``AddI32.t`` is an alias for the type ``i32``, and ``Addi32.add``
+Now, ``add_i32.t`` is an alias for the type ``i32``, and ``Addi32.add``
 is a function that adds two values of type ``i32``. The only peculiar
 thing about this notation is the equal sign before the opening brace.
 The declaration above is actually a combination of a \*module binding\*
 
 ::
 
-    module ADDI32 = ...
+    module add_i32 = ...
 
 and a *module expression*
 
@@ -1359,9 +1359,9 @@ merely the name of another module
 
 ::
 
-    module Foo = AddInt32
+    module foo = add_i32
 
-Now every name defined in ``AddInt32`` is also available in ``Foo``. At
+Now every name defined in ``add_i32`` is also available in ``foo``. At
 compile-time, only a single version of the ``add`` function is defined.
 
 Module Types
@@ -1374,11 +1374,11 @@ called *signatures* and *functors*).
 
 A module type is the counterpart to a value type. It describes which
 names are defined, and as what. We can define a module type that
-describes ``AddInt32``:
+describes ``add_i32``:
 
 ::
 
-    module type Int32Adder = {
+    module type i32_adder = {
       type t = i32
       val add : t -> t -> t
       val zero : t
@@ -1391,45 +1391,39 @@ defined: as a value (including functions) of some type, as a type
 abbreviation, or as an abstract type (which we will return to later).
 
 We can assert that some module implements a specific module type via a
-module type ascription
+*module type ascription*::
 
-::
+    module foo = add_i32 : i32_adder
 
-    module Foo = AddInt32 : Int32Adder
+Syntactical sugar lets us move the module type to the left of the
+equal sign::
 
-Syntactical sugar that allows us to move the module type to the left of
-the equal sign makes a common case look smoother
-
-::
-
-    module AddInt32: Int32Adder = {
+    module add_i32: i32_adder = {
       ...
     }
 
 When we are ascribing a module with a module type, the module type
 functions as a filter, removing anything not explicitly mentioned in the
-module type
+module type::
 
-::
+    module bar = add_i32 : { type t = int
+                             val zero : t }
 
-    module Bar = AddInt32 : { type t = int
-                              val zero : t }
-
-An attempt to access ``Bar.add`` will result in a compilation error, as
-the ascription has hidden it. This is known as an *opaque* ascription,
-because it obscures anything not explicitly mentioned in the module
-type. The module systems in Standard ML and OCaml support both opaque
-and *transparent* ascription, but in Futhark we support only the former.
-This example also demonstrates the use of an anonymous module type.
-Module types work much like structural types known from e.g. Go
-("compile-time duck typing"), and are named only for convenience.
+An attempt to access ``bar.add`` will result in a compilation error,
+as the ascription has hidden it. This is known as an *opaque*
+ascription, because it obscures anything not explicitly mentioned in
+the module type. The module systems in Standard ML and OCaml support
+both opaque and *transparent* ascription, but in Futhark we support
+only opaque ascription.  This example also demonstrates the use of an
+anonymous module type.  Module types are structural (just like value
+types), and are named only for convenience.
 
 We can use type ascription with abstract types to hide the definition of
 a type from the users of a module
 
 ::
 
-    module Speeds: { type thing
+    module speeds: { type thing
                      val car : thing
                      val plane : thing
                      val futhark : thing
@@ -1443,17 +1437,16 @@ a type from the users of a module
       let speed (x: thing): i32 =
         if      x == car     then 120
         else if x == plane   then 800
-        else if x == futhark then 10000
+        else if x == futhark then 10001
         else                      0 -- will never happen
     }
 
-The (anonymous) module type asserts that a distinct type ``thing`` must
-exist, but does not mention its definition. There is no way for a user
-of the ``Speeds`` module to do anything with a value of type
-``Speeds.thing`` apart from passing it to ``Speeds.speed`` (except
-putting it in an array or tuple, or returning it from a function). Its
+The (anonymous) module type asserts that a distinct type ``thing``
+must exist, but does not mention its definition. There is no way for a
+user of the ``speeds`` module to do anything with a value of type
+``speeds.thing`` apart from passing it to ``speeds.speed``. The
 definition is entirely abstract. Furthermore, no values of type
-``Speeds.thing`` exist except those that are created by the ``Speeds``
+``speeds.thing`` exist except those that are created by the ``speeds``
 module.
 
 Parametric Modules
@@ -1468,19 +1461,19 @@ given a module type
 
 ::
 
-    module type Monoid = {
+    module type monoid = {
       type t
       val add : t -> t -> t
       val zero : t
     }
 
 We can define a parametric module that accepts a module satisfying the
-``Monoid`` module type, and produces a module containing a function for
+``monoid`` module type, and produces a module containing a function for
 collapsing an array
 
 ::
 
-    module Sum(M: Monoid) = {
+    module sum (M: monoid) = {
       let sum (a: []M.t): M.t =
         reduce M.add M.zero a
     }
@@ -1489,30 +1482,30 @@ There is an implied assumption here, which is not captured by the type
 system: the function ``add`` must be associative and have ``zero`` as
 its neutral element. These constraints are from the parallel semantics
 of ``reduce``, and the algebraic concept of a *monoid*. Note that in
-``Monoid``, no definition is given of the type ``t`` - we only assert
+``monoid``, no definition is given of the type ``t`` - we only assert
 that there must be some type ``t``, and that certain operations are
 defined for it.
 
-We can use the parametric module ``Sum`` thus
+We can use the parametric module ``sum`` thus
 
 ::
 
-      module SumI32s = Sum(AddInt32)
+      module sum_i32 = sum add_i32
 
-We can now refer to the function ``SumI32s.sum``, which has type
+We can now refer to the function ``sum_i32.sum``, which has type
 ``[]i32 -> i32``. The type is only abstract inside the definition of the
-parametric module. We can instantiate ``Sum`` again with another module;
+parametric module. We can instantiate ``sum`` again with another module;
 this one anonymous
 
 ::
 
-    module Prod64s = Sum({
-      type t = 64
+    module prod_f64 = sum {
+      type t = f64
       let add (x: f64) (y: f64): f64 = x * y
       let zero: f64 = 1.0
-    })
+    }
 
-The function ``Prodf64s.sum`` has type ``[]f64 -> f64``, and computes
+The function ``prod_f64.sum`` has type ``[]f64 -> f64``, and computes
 the product of an array of numbers (we should probably have picked a
 more generic name than ``sum`` for this function).
 
@@ -1534,16 +1527,18 @@ the names from a module into the current scope
 
 ::
 
-      module Linalg(M : {
+      module linalg(M : {
         type scalar
         val zero : scalar
         val add : scalar -> scalar -> scalar
         val mul : scalar -> scalar -> scalar
       }) = {
         open M
+
         let dotprod [n] (xs: [n]scalar) (ys: [n]scalar)
           : scalar =
           reduce add zero (map2 mul xs ys)
+
         let matmul [n] [p] [m] (xss: [n][p]scalar)
                                (yss: [p][m]scalar)
           : [n][m]scalar =
