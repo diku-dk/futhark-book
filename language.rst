@@ -319,8 +319,8 @@ inferred.  As a concrete example, here is the definition of the
 Mandelbrot set iteration step :math:`Z_{n+1} = Z_{n}^{2} + C`, where
 :math:`Z_n` is the actual iteration value, and :math:`C` is the
 initial point. In this example, all operations on complex numbers are
-fully expanded, though Futhark comes with a library for complex
-numbers that will be presented later.
+written as operations on pairs of numbers.  In practice, we would use
+a library for complex numbers.
 
 ::
 
@@ -358,14 +358,13 @@ For example:
 
     let physicists_pi: f64 = 4.0
 
-A value definition is semantically similar to a function that ignores
-its argument and always returns the same value. Top-level definitions
-are declared in strict order, and a definition may refer *only* to
-those names that have been defined before it occurs. This means that
-circular definitions are not permitted. We will return to function
-definitions in :ref:`size-annotations` and :ref:`polymorphism`, where
-we will look at more advanced features, such as parametric
-polymorphism and implicit size parameters.
+Top-level definitions are declared in order, and a definition may
+refer *only* to those names that have been defined before it
+occurs. This means that circular and recursive definitions are not
+permitted. We will return to function definitions in
+:ref:`size-annotations` and :ref:`polymorphism`, where we will look at
+more advanced features, such as parametric polymorphism and implicit
+size parameters.
 
 .. admonition:: Exercise: Simple Futhark programming
    :class: exercise
@@ -424,10 +423,10 @@ to getting good performance. There are two overall categories:
 *first-order array combinators*, like ``zip``, that always perform the
 same operation, and *second-order array combinators* (*SOAC*\ s), like
 ``map``, that take a *functional argument* indicating the operation to
-perform. SOACs are absolutely crucial to Futhark programming. While
-they are designed to resemble higher-order functions that may be
-familiar from functional languages, they have some restrictions to
-enable efficient parallel execution.
+perform. SOACs are the basic parallel building blocks of Futhark
+programming. While they are designed to resemble familiar higher-order
+functions from other functional languages, they have some restrictions
+to enable efficient parallel execution.
 
 We can use ``zip`` to transform two arrays to a single array of
 pairs:
@@ -462,7 +461,7 @@ Map
 
 The simplest SOAC is probably ``map``. It takes two arguments: a
 function and an array. The function argument can be a function name,
-or an anonymous function. The function is called for every element of
+or an anonymous function. The function is applied to every element of
 the input array, and an array of the result is returned. For example:
 
 ::
@@ -470,7 +469,7 @@ the input array, and an array of the result is returned. For example:
     map (\x -> x + 2) [1,2,3] == [3,4,5]
 
 Anonymous functions need not define their parameter- or return types,
-but you are free to do so to increase readability:
+but you are free to do so in cases where it aids readability:
 
 ::
 
@@ -483,12 +482,23 @@ in parentheses:
 
     map (!) [true, false, true] == [false, true, false]
 
-Currying for operators is also supported using a syntax taken from
-Haskell:
+Partially applying operators is also supported using so-called
+*operator sections*, with a syntax taken from Haskell:
 
 ::
 
+    map (+2) [1,2,3] == [3,4,5]
     map (2-) [1,2,3] == [1,0,-1]
+
+However, note that the following will *not* work::
+
+    map (-2) [1,2,3]
+
+This is because the expression ``(-2)`` is taken as negative number
+``-2`` encloses in parentheses.  Instead, we have to write it with an
+explicit lambda::
+
+  map (\x -> x-2) [1,2,3] == [1,0,-1]
 
 There are variants of ``map``, suffixed with an integer, that permit
 simultaneous mapping of multiple arrays, which must all have the same
@@ -535,8 +545,9 @@ Scan and Reduce
 While ``map`` is an array transformer, the ``reduce`` SOAC is an array
 aggregator: it uses some function of type ``t -> t -> t`` to combine
 the elements of an array of type ``[]t`` to a value of type ``t``. In
-order to perform this aggregation in parallel, the function must be *associative* and
-have a *neutral element* (i.e, form a monoid):
+order to perform this aggregation in parallel, the function must be
+*associative* and have a *neutral element* (in algebraic terms,
+constitute a `monoid <https://en.wikipedia.org/wiki/Monoid>`_):
 
 -  A function :math:`f` is associative if
    :math:`f(x,f(y,z)) = f(f(x,y),z)` for all :math:`x,y,z`.
