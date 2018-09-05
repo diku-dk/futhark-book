@@ -13,7 +13,7 @@ module Array = import "/futlib/array"
 
 -- Store elements for which bitn is not set first
 let rs_step_asc [n] ((xs:[n]u32,is:[n]i32),bitn:i32) : ([n]u32,[n]i32) =
-  let bits1 = map (\x -> (i32.u32 x >>> bitn) & 1) xs
+  let bits1 = map (\x -> (i32.u32 (x >> u32.i32 bitn)) & 1) xs
   let bits0 = map (1-) bits1
   let idxs0 = map2 (*) bits0 (scan (+) 0 bits0)
   let idxs1 = scan (+) 0 bits1
@@ -32,7 +32,7 @@ let rsort_asc [n] (xs: [n]u32) : ([n]u32,[n]i32) =
 
 -- Store elements for which bitn is set first
 let rs_step_desc [n] ((xs:[n]u32,is:[n]i32),bitn:i32) : ([n]u32,[n]i32) =
-  let bits1 = map (\x -> (i32.u32 x >>> bitn) & 1) xs
+  let bits1 = map (\x -> (i32.u32 (x >> u32.i32 bitn)) & 1) xs
   let bits0 = map (1-) bits1
   let idxs1 = map2 (*) bits1 (scan (+) 0 bits1)
   let idxs0 = scan (+) 0 bits0

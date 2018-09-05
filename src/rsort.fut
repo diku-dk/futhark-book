@@ -17,7 +17,7 @@ module Array = import "/futlib/array"
 -- all elements with bitn set to the end of the array (and
 -- otherwise preserve the order of elements)
 let rsort_step [n] (xs: [n]u32, bitn: i32): [n]u32 =
-  let bits1 = map (\x -> (i32.u32 x >>> bitn) & 1) xs
+  let bits1 = map (\x -> (i32.u32 (x >> u32.i32 bitn)) & 1) xs
   let bits0 = map (1-) bits1
   let idxs0 = map2 (*) bits0 (scan (+) 0 bits0)
   let idxs1 = scan (+) 0 bits1
