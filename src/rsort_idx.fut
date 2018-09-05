@@ -57,7 +57,7 @@ let grade_down [n] (xs: [n]u32) : [n]i32 =
 let eq_vec [n] (v1: [n]i32) (v2: [n]i32) : bool =
   reduce (&&) true (map2 (==) v1 v2)
 
-let main() : []bool =
+let main : []bool =
   let xs = map u32.i32 ([83,1,4,99,33,0,6,5])
   in [eq_vec (grade_up xs) ([5,1,2,7,6,4,0,3]),
       eq_vec (grade_down xs) ([3,0,4,6,7,2,1,5])]

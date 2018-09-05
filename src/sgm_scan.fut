@@ -10,7 +10,7 @@ let sgm_scan_add [n] (vals:[n]i32) (flags:[n]bool) : [n]i32 =
   let (res,_) = unzip pairs
   in res
 
-let main () : []i32 =
+let main : []i32 =
   let data = [2,3,63,2,4,7,3,4,6,3]
   let flags = [false,false,true,true,false,false,
                false,true,false,false]

@@ -37,7 +37,7 @@ let sgm_streak [n] (xs: [n]i32) : i32  =
   let res = reduce max 0 ss
   in res
 
-let main() : []bool =
+let main : []bool =
   [sgm_streak ([1, 2, 3, 4, 5, 6, 7, 8, 9]) == 8,
    sgm_streak ([1]) == 0,
    sgm_streak ([9, 8, 7, 6, 5, 4]) == 0,

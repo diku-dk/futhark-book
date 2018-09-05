@@ -39,7 +39,7 @@ let drawlines [h] [w] [n] (grid: *[h][w]i32) (lines:[n]line) : [h][w]i32 =
 
 
 -- Draw lines on a 70 by 30 grid
-let main () : [][]i32 =
+let main : [][]i32 =
   let height:i32 = 30
   let width:i32 = 70
   let grid : *[][]i32 = replicate height (replicate width 0)

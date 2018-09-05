@@ -21,5 +21,5 @@ let sgm_repl [n] (reps:[n]i32) (vs:[n]i32) : []i32 =
   let idxs = repl_idx reps
   in map (\i -> vs[i]) idxs
 
-let main () : []i32 =
+let main : []i32 =
   sgm_repl ([2,1,0,3,0]) ([5,6,9,8,4])  -- [5,5,6,8,8,8]

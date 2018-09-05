@@ -33,6 +33,6 @@ let radix_sort [n] (xs: [n]u32): [n]u32 =
   loop (xs) for i < 32 do
     radix_sort_step(xs, i)
 
-let main(): []u32 =
+let main: []u32 =
   let arg = map u32.i32 ([83, 1, 4, 99, 33, 0, 6, 5])
   in radix_sort(arg)

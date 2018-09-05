@@ -16,7 +16,7 @@ let red (xs : []i32) : i32 =
     in map2 (+) xs[0:n] xs[n:2*n]
   in xs[0]
 
-let main () : bool =
+let main : bool =
   let vals = [58,20,3,3,2,28,5,20,10,25,26,2,23,56,895,23,43]  -- 18 values
   let res = red vals
   let real = reduce (+) 0 vals
