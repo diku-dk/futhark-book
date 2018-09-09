@@ -172,10 +172,10 @@ figure out how predictable the performance is.
 However, we can do better still.  Futhark comes with a tool for
 performing automated benchmark runs of programs, called
 ``futhark-bench``.  This tool relies on a specially formatted header
-comment that contains input/output pairs.  The `Futhark User's Guide`_
-contains a full description, but here is a quick taste. First, we
-introduce a new program, ``sumsquares.fut``, with smaller data sets
-for convenience:
+comment that contains input/output pairs, just like ``futhark-test``
+(see :ref:`testing`).  The `Futhark User's Guide`_ contains a full
+description, but here is a quick taste. First, we introduce a new
+program, ``sumsquares.fut``, with smaller data sets for convenience:
 
 .. _`Futhark User's Guide`: https://futhark.readthedocs.org
 

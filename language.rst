@@ -110,6 +110,36 @@ As compiled Futhark executables are intended for testing, they take a
 range of command line options to manipulate their behaviour and print
 debugging information. These will be introduced as needed.
 
+For most of this book, we will be making use of the interactive
+Futhark *interpreter*: ``futharki``.  When launched with no options,
+it provides a Futhark REPL into which you can enter arbitrary
+expressions and declarations:
+
+.. code-block:: none
+
+    $ futharki
+    |// |\    |   |\  |\   /
+    |/  | \   |\  |\  |/  /
+    |   |  \  |/  |   |\  \
+    |   |   \ |   |   | \  \
+    Version 0.7.0.
+    Copyright (C) DIKU, University of Copenhagen, released under the ISC license.
+
+    Run :help for a list of commands.
+
+    [0]> 1 + 2
+    3i32
+    [1]>
+
+The prompts are numbered to permit error messages to refer to previous
+inputs.  We will generally elide the numbers in this book, and just
+write the prompt as ``>`` (do not confuse this with the Unix prompt,
+which we write as ``$``).
+
+``futharki`` supports a variety of commands for inspecting and
+debugging Futhark code.  These will be introduced as necessary, in
+particular in :ref:`testing`.
+
 .. _baselang:
 
 Basic Language Features
@@ -140,9 +170,11 @@ decimal literals are given ``f64``.  Boolean literals are written as
    of type ``f64`` (double-precision float) to a value of type ``i32``
    (32-bit signed integer), by truncating the fractional part::
 
-     i32.f64 2.1 == 2
+     > i32.f64 2.1
+     2
 
-     f64.i32 2 == 2.0
+     > f64.i32 2
+     2.0
 
    Technically, ``i32.f64`` is not the name of the function.  Rather,
    this is a reference to the function ``f64`` in the module ``i32``.
@@ -282,18 +314,22 @@ exclusive by writing ``x..<y``. For example:
 
 ::
 
-    (1...3) == [1,2,3]
-    (1..<3) == [1,2]
+    > 1...3
+    [1i32, 2i32, 3i32]
+    > 1..<3
+    [1i32, 2i32]
 
-We use parentheses here because the range operators bind less tightly
-than comparison operators.  A stride can be provided by writing
+It is usually necessary to enclose a range expression in parentheses,
+because they bind very loosely.  A stride can be provided by writing
 ``x..y...z`, with the interpretation "first ``x``, then ``y``, up to
 ``z``". For example:
 
 ::
 
-    (1..3...7) == [1,3,5,7]
-    (1..3..<7) == [1,3,5]
+    > 1..3...7
+    [1i32, 3i32, 5i32, 7i32]
+    > (1..3..<7)
+    [1i32, 3i32, 5i32]
 
 The element type of the produced array is the same as the type of the
 integers used to specify the bounds, which must all have the same type
@@ -366,6 +402,32 @@ permitted. We will return to function definitions in
 more advanced features, such as parametric polymorphism and implicit
 size parameters.
 
+.. admonition:: Note: Loading files into ``futharki``
+
+   At this point you may want to start writing and applying funtions.
+   It is possible to do this directly in ``futharki``, but it quickly
+   becomes awkward for multi-line functions.  You can use the
+   ``:load`` command to read declarations from a file:
+
+   .. code-block:: none
+
+      > :load test.fut
+      Loading test.fut
+
+   The ``:load`` command will remove any previously entered
+   declarations and provide you with a clean slate.  You can reload
+   the file by running ``:load`` without further arguments:
+
+   .. code-block:: none
+
+      > :load
+      Loading test.fut
+
+   Emacs users may want to consider `futhark-mode
+   <https://github.com/diku-dk/futhark-mode>`_, which is able to load
+   the file being edited into ``futharki`` with ``C-c C-l``, and
+   provides other useful features as well.
+
 .. admonition:: Exercise: Simple Futhark programming
    :class: exercise
 
@@ -410,9 +472,15 @@ We can now define ``mandelbrot_step`` as follows:
         in (real_part, imag_part)
 
 Type abbreviations are purely a syntactic convenience — the type
-``complex`` is fully interchangeable with the type ``(f64, f64)``. For
-abstract types, that hide their definition, we have to use the module
-system discussed in :ref:`modules`.
+``complex`` is fully interchangeable with the type ``(f64, f64)``::
+
+  > type complex = (f64, f64)
+  > let f (x: (f64, f64)): complex = x
+  > f (1,2)
+  (1.0f64, 2.0f64)
+
+For abstract types, that hide their definition, we have to use the
+module system discussed in :ref:`modules`.
 
 Array Operations
 ----------------
@@ -433,26 +501,27 @@ pairs:
 
 ::
 
-    zip [1,2,3] [true,false,true] ==
-      [(1,true),(2,false),(3,true)]
+    > zip [1,2,3] [true,false,true]
+    [(1i32, true), (2i32, false), (3i32, true)]
 
 Notice that the input arrays may have different types. We can use
 ``unzip`` to perform the inverse transformation:
 
 ::
 
-    unzip [(1,true),(2,false),(3,true)] ==
-      ([1,2,3], [true,false,true])
+    > unzip [(1,true),(2,false),(3,true)]
+    ([1i32, 2i32, 3i32], [true, false, true])
 
 Be aware that ``zip`` requires all input arrays to have the same
-length.  Transforming between arrays of tuples and tuples of arrays is
-common in Futhark programs, as many array operations accept only one
-array as input.  Due to a clever implementation technique, ``zip`` and
-``unzip`` usually have no runtime cost (they are fused into other
-operations), so you should not shy away from using them out of
-efficiency concerns.  For operating on arrays of tuples with more than
-two elements, there are ``zip``/``unzip`` variants called ``zip3``,
-``zip4``, etc, up to ``zip8``/``unzip8``.
+length.  This is checked at runtime.  Transforming between arrays of
+tuples and tuples of arrays is common in Futhark programs, as many
+array operations accept only one array as input.  Due to a clever
+implementation technique, ``zip`` and ``unzip`` usually have no
+runtime cost (they are fused into other operations), so you should not
+shy away from using them out of efficiency concerns.  For operating on
+arrays of tuples with more than two elements, there are
+``zip``/``unzip`` variants called ``zip3``, ``zip4``, etc, up to
+``zip8``/``unzip8``.
 
 Now let’s take a look at some SOACs.
 
@@ -466,39 +535,52 @@ the input array, and an array of the result is returned. For example:
 
 ::
 
-    map (\x -> x + 2) [1,2,3] == [3,4,5]
+    > map (\x -> x + 2) [1,2,3]
+    [3i32, 4i32, 5i32]
 
 Anonymous functions need not define their parameter- or return types,
 but you are free to do so in cases where it aids readability:
 
 ::
 
-    map (\(x:i32): i32 -> x + 2) [1,2,3]
+    > map (\(x:i32): i32 -> x + 2) [1,2,3]
+    [3i32, 4i32, 5i32]
 
 The functional argument can also be an operator, which must be enclosed
 in parentheses:
 
 ::
 
-    map (!) [true, false, true] == [false, true, false]
+    > map (!) [true, false, true]
+    [false, true, false]
 
 Partially applying operators is also supported using so-called
 *operator sections*, with a syntax taken from Haskell:
 
 ::
 
-    map (+2) [1,2,3] == [3,4,5]
-    map (2-) [1,2,3] == [1,0,-1]
+    > map (+2) [1,2,3]
+    [3i32, 4i32, 5i32]
+
+    > map (2-) [1,2,3]
+    [1i32, 0i32, -1i32]
 
 However, note that the following will *not* work::
 
-    map (-2) [1,2,3]
+    [0]> map (-2) [1,2,3]
+    Error at [0]> :1:5-1:8:
+    Cannot unify `t2' with type `a0 -> x1' (must be one of i8, i16, i32, i64, u8, u16, u32, u64, f32, f64 due to use at [0]> :1:7-1:7).
+    When matching type
+      a0 -> x1
+    with
+      t2
 
 This is because the expression ``(-2)`` is taken as negative number
 ``-2`` encloses in parentheses.  Instead, we have to write it with an
 explicit lambda::
 
-  map (\x -> x-2) [1,2,3] == [1,0,-1]
+  > map (\x -> x-2) [1,2,3]
+  [-1i32, 0i32, 1i32]
 
 There are variants of ``map``, suffixed with an integer, that permit
 simultaneous mapping of multiple arrays, which must all have the same
@@ -507,7 +589,8 @@ an element-wise sum of two arrays:
 
 ::
 
-    map2 (+) [1,2,3] [4,5,6] == [5,7,9]
+    > map2 (+) [1,2,3] [4,5,6]
+    [5i32, 7i32, 9i32]
 
 A combination of ``map`` and ``zip`` can be used to handle arbitrary
 numbers of simultaneous arrays.
@@ -520,8 +603,8 @@ well:
 
     map (\n -> 1...n) ns
 
-Unless the array ``ns`` consisted of identical values, the program would
-fail at runtime.
+Unless the array ``ns`` consists of identical values, this expression
+will fail at runtime.
 
 We can use ``map`` to duplicate many other language constructs. For
 example, if we have two arrays ``xs:[n]i32`` and ``ys:[m]i32`` — that
@@ -562,7 +645,8 @@ its neutral element to compute the sum of an array of integers:
 
 ::
 
-    reduce (+) 0 [1,2,3] == 6
+    > reduce (+) 0 [1,2,3]
+    6i32
 
 It turns out that combining ``map`` and ``reduce`` is both powerful
 and has remarkable optimisation properties, as we will discuss in
@@ -615,7 +699,8 @@ some predicate.
 
 ::
 
-    filter (<3) [1,5,2,3,4] == [1,2]
+    > filter (<3) [1,5,2,3,4]
+    [1i32, 2i32]
 
 The use of ``filter`` is mostly straightforward, but there are some
 patterns that may appear subtle at first glance. For example, how do
@@ -624,22 +709,35 @@ Finding the values is simple enough:
 
 ::
 
-    filter (!=0) [0,5,2,0,1] ==
-      [5,2,1]
+    > filter (!=0) [0,5,2,0,1]
+    [5i32, 2i32, 1i32]
 
 But what are the corresponding indices? We can solve this using a
 combination of ``zip``, ``filter``, and ``unzip``:
 
 ::
 
-    let indices_of_nonzero [n] (xs: [n]i32): []i32 =
-      let xs_and_is = zip xs (iota n)
-      let xs_and_is' = filter (\(x,_) -> x != 0) xs_and_is
-      let (_, is') = unzip xs_and_is'
-      in is'
+    > let indices_of_nonzero (xs: []i32): []i32 =
+        let n = length xs
+        let xs_and_is = zip xs (0..<n)
+        let xs_and_is' = filter (\(x,_) -> x != 0) xs_and_is
+        let (_, is') = unzip xs_and_is'
+        in is'
+    > indices_of_nonzero [1, 0, -2, 4, 0, 0]
+    [0i32, 2i32, 3i32]
 
 Be aware that ``filter`` is a somewhat expensive SOAC, corresponding
 roughly to a ``scan`` plus a ``map``.
+
+The idiom ``0..<n`` for constructing an array of the valid indices
+into an array of size ``n`` is so common that a predefined library
+function ``iota`` exists for this purpose::
+
+  > iota 5
+  [0i32, 1i32, 2i32, 3i32, 4i32]
+
+The term ``iota`` is inherited from APL, where the corresponding
+operation is written with an actual ⍳.
 
 .. _sequential-loops:
 
@@ -648,8 +746,9 @@ Sequential Loops
 
 Futhark does not directly support recursive functions, but instead
 provides syntactical sugar for expressing the equivalent of certain
-tail-recursive functions. Consider the following tail-recursive
-formulation of a function for computing the Fibonacci numbers
+tail-recursive functions. Consider the following hypothetical
+tail-recursive formulation of a function for computing the Fibonacci
+numbers
 
 ::
 
@@ -658,7 +757,8 @@ formulation of a function for computing the Fibonacci numbers
 
     let fib(n: i32): i32 = fibhelper(1,1,n)
 
-We can rewrite this using the following Futhark syntax:
+We cannot write this directly in Futhark, but we can express the same
+idea using the ``loop`` construct:
 
 ::
 
@@ -766,6 +866,27 @@ can also be written:
       in x
 
 This style of code can sometimes make imperative code look more natural.
+
+.. admonition:: Note: Type-checking with ``futharki``
+
+   If you are uncertain about the type of some Futhark expression, the
+   ``:type`` command (or ``:t`` for short) can help.  For example::
+
+     > :t 2
+     2 : i32
+
+     > :t (+2)
+     (+ 2) : i32 -> i32
+
+   You will also be informed if the expression is ill-typed::
+
+     [1]> :t true : i32
+     Error at [1]> :1:1-1:10:
+     Couldn't match expected type `i32' with actual type `bool'.
+     When matching type
+       i32
+     with
+       bool
 
 .. _in-place-updates:
 
@@ -949,7 +1070,7 @@ cases that the compiler is able to analyze, and should only be used
 when absolutely necessary. Most Futhark programs are written without
 making use of in-place updates at all.
 
-Typically, we use in-place updates to express efficiently sequential
+Typically, we use in-place updates to efficiently express sequential
 algorithms that are then mapped on some array. Somewhat
 counter-intuitively, however, in-place updates can also be used for
 expressing irregular nested parallel algorithms (which are otherwise
@@ -1021,7 +1142,8 @@ example, the ``dotprod`` function can be used as follows:
 
 ::
 
-    dotprod [1,2] [3,4]
+    > dotprod [1,2] [3,4]
+    11i32
 
 A size parameter is in scope in both the body of a function and its
 return type, which we can use, for instance, for defining a function for computing
@@ -1060,16 +1182,20 @@ the number of columns in ``x`` must match the number of columns in
 ``y``, and that the size of the returned matrix has the same number of
 rows as ``x``, and the same number of columns as ``y``.
 
-Be aware that size annotations are checked dynamically, not statically.
-Whenever we call a function or return a value, an error is raised if its
-size does not match the annotations. However, nothing prevents this
-following expression from passing the type checker:
+Be aware that size annotations are checked dynamically, not
+statically.  Whenever we call a function or return a value, an error
+is raised if its size does not match the annotations. However, nothing
+prevents th following expression from passing the type checker:
 
 ::
 
-    dotprod [1,2] [1,2,3]
+    > :t dotprod [1,2] [1,2,3]
+    dotprod [1, 2] [1, 2, 3] : i32
 
-Although it will fail if actually executed.
+Although it will fail if actually executed::
+
+  [1]> dotprod [1,2] [1,2,3]
+  Error at [1]> :1:1-1:21 -> [35]> :1:35-1:44: Size annotation 2 does not match observed size 3.
 
 Presently, only variables and constants are legal as size annotations.
 This restriction means that the following function definition is not valid:
@@ -1448,6 +1574,8 @@ user of the ``speeds`` module to do anything with a value of type
 definition is entirely abstract. Furthermore, no values of type
 ``speeds.thing`` exist except those that are created by the ``speeds``
 module.
+
+.. _parametric-modules:
 
 Parametric Modules
 ~~~~~~~~~~~~~~~~~~

@@ -59,6 +59,7 @@ Table of contents
 
    introduction.rst
    language.rst
+   testing.rst
    benchmarking.rst
    interoperability.rst
    when-things-go-wrong.rst
