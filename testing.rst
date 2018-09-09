@@ -98,11 +98,11 @@ This is done with the notation ``@ file``:
    :lines: 12-13
 
 This also shows another feature of ``futhark-test``: if we precede
-``input`` with the word ``compiled``, that test is skipped when
-testing with ``futharki``.  This is useful for large tests that would
-take too long to run interpreted.  There are more ways to filter which
-tests and programs should be skipped for a given invocation of
-``futharki``; see the `manual
+``input`` with the word ``compiled``, that test is not run with
+``futharki``.  This is useful for large tests that would take too long
+to run interpreted.  There are more ways to filter which tests and
+programs should be skipped for a given invocation of ``futhark-test``;
+see the `manual
 <https://futhark.readthedocs.io/en/latest/man/futhark-test.html>`_ for
 more information.
 
