@@ -110,7 +110,7 @@ Testing a Futhark Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A Futhark library typically comprises a number of ``.fut`` files means
-to be ``include``ed by Futhark programs.  Libraries typically do not
+to be ``include``-ed by Futhark programs.  Libraries typically do not
 define entry points of the form required by ``futhark-test``.  Indeed,
 it is not unusual for Futhark libraries to consist entirely of
 parametric modules and higher-order functions!  These are not directly
