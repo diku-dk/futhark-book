@@ -181,7 +181,7 @@ us inspect the variables in scope.  At the moment, this works *only*
 when running an expression within the ``futharki`` REPL, *not* when
 running directly from the command line.  Suppose ``break.fut`` is:
 
-.. literalinclude:: src/trace.fut
+.. literalinclude:: src/break.fut
 
 Then we can load and run it from ``futharki``:
 
