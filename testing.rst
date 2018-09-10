@@ -158,7 +158,7 @@ compiling your Futhark code, this is indeed all that will happen.
 However, ``futharki`` treats ``trace`` specially, and will print the
 argument to the screen.  This is useful for seeing the value of
 internal variables.  For example, suppose we have the program
-``trace.fut``::
+``trace.fut``:
 
 .. literalinclude:: src/trace.fut
 
@@ -179,7 +179,7 @@ Similarly, the ``break`` function is semantically also the identity function::
 When ``futharki`` encounters ``break``, it suspends execution and lets
 us inspect the variables in scope.  At the moment, this works *only*
 when running an expression within the ``futharki`` REPL, *not* when
-running directly from the command line.  Suppose ``break.fut`` is::
+running directly from the command line.  Suppose ``break.fut`` is:
 
 .. literalinclude:: src/trace.fut
 
