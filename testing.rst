@@ -135,3 +135,76 @@ instantiations of a generic library you feel are worth testing.
 
 Traces and Breakpoints
 ----------------------
+
+Testing is useful for determining the correctness of code, but does
+not in itself pinpoint the source of bugs.  While you can go far
+simply by structuring your code as small functions that can be tested
+in isolation, it is sometimes necessary to inspect internal state and
+behaviour.
+
+Compiled Futhark code does not possess much in the way of debugging
+facilities, but ``futharki`` has a couple of useful tools.  Since
+``futharki`` is very slow when compared to compiled code, this does
+mean that we can only debug on cut-down smaller testing sets, not on
+realistic workloads.
+
+Specifically, we use the two functions ``trace`` and ``break``.  The
+``trace`` function has the following type::
+
+  trace 't : t -> t
+
+Semantically, ``trace`` just returns its argument unchanged, and when
+compiling your Futhark code, this is indeed all that will happen.
+However, ``futharki`` treats ``trace`` specially, and will print the
+argument to the screen.  This is useful for seeing the value of
+internal variables.  For example, suppose we have the program
+``trace.fut``::
+
+.. literalinclude:: src/trace.fut
+
+We can then run it with ``futharki`` to get the following output:
+
+.. code-block:: none
+
+   $ echo [1,2,3] | futharki trace.fut
+   Trace at trace.fut:1:24-1:49: 1i32
+   Trace at trace.fut:1:24-1:49: 2i32
+   Trace at trace.fut:1:24-1:49: 3i32
+   [3i32, 4i32, 5i32]
+
+Similarly, the ``break`` function is semantically also the identity function::
+
+  break 't : t -> t
+
+When ``futharki`` encounters ``break``, it suspends execution and lets
+us inspect the variables in scope.  At the moment, this works *only*
+when running an expression within the ``futharki`` REPL, *not* when
+running directly from the command line.  Suppose ``break.fut`` is::
+
+.. literalinclude:: src/trace.fut
+
+Then we can load and run it from ``futharki``:
+
+.. code-block:: none
+
+   [1]> main [1,2,3]
+   Breaking at [1]> :1:1-1:12 -> break.fut:1:24-1:49 -> /futlib/soacs.fut:35:3-35:24 -> break.fut:1:35-1:41.
+   <Enter> to continue.
+   > x
+   1i32
+   >
+   Continuing...
+   Breaking at [1]> :1:1-1:12 -> break.fut:1:24-1:49 -> /futlib/soacs.fut:35:3-35:24 -> break.fut:1:35-1:41.
+   <Enter> to continue.
+   >
+   Continuing...
+   Breaking at [1]> :1:1-1:12 -> break.fut:1:24-1:49 -> /futlib/soacs.fut:35:3-35:24 -> break.fut:1:35-1:41.
+   <Enter> to continue.
+   >
+   Continuing...
+   [3i32, 4i32, 5i32]
+   >
+
+Whenever we are stopped at a breakpoint, we can enter arbitrary
+Futhark expressions to inspect the state of the environment.  This is
+useful when operating on complex values.
