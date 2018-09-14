@@ -42,11 +42,14 @@ repository is https://github.com/diku-dk/futhark-book.
 Acknowledgments
 ---------------
 
-This work has been partially supported by the Danish Strategic Research
-Council, Program Committee for Strategic Growth Technologies, for the
-research center HIPERFIT: Functional High Performance Computing for
-Financial Information Technology (`hiperfit.dk <hiperfit.dk>`__) under
-contract number 10-092299.
+This work has been partially supported by the Danish Strategic
+Research Council, Program Committee for Strategic Growth Technologies,
+for the research center *HIPERFIT: Functional High Performance
+Computing for Financial Information Technology* (`hiperfit.dk
+<hiperfit.dk>`__) under contract number 10-092299.  The work has also
+been supported by `Independent Research Fund Denmark
+<https://dff.dk/>`_ as part of the project *Functional Technology for
+High-performance Architectures (FUTHARK)*.
 
 When citing this work, please use `this BibTeX entry
 <_static/book.bib>`_.
