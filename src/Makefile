@@ -24,13 +24,20 @@ testopencl:
 
 .PHONY: clean
 clean:
-	rm -f *~ *.c *.exe *.bin *.res *.out *-c *-opencl
+	rm -f *~ *.c *.exe *.bin *.res *-c *-opencl *.viz break
+	rm -f concat_with_map debug dotprod fib_sequential find_idx
+	rm -f indices_of_nonzero lines lines_flat lines_seq2 matmul maxidx
+	rm -f multable primes radix_sort reduce_contract rsort rsort_idx
+	rm -f sgm_repl sgm_scan sgm_streak streak sum sum_tests sumsquares
+	rm -f trace lines_seq
 
 .PHONY: viz
-viz:
-	futhark-c -o lines.exe lines.fut
+viz: lines.exe
 	./lines.exe | ./viz.sh
 
-viz0:
-	futhark-c -o lines.exe lines.fut
+viz0: lines.exe
 	./lines.exe
+
+%.viz: %.exe
+	./$< | ./viz.sh > $@
+	cat $@

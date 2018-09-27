@@ -1,4 +1,5 @@
--- Utilities
+-- ==
+-- input {} output @ lines_flat.ok
 
 import "/futlib/math"
 
@@ -75,7 +76,7 @@ let drawlines [h][w][n] (grid:*[h][w]i32)
                  else p1.2+i*dirx) lns dirs sls is
   in update grid xs ys
 
-let main () : [][]i32 =
+let main : [][]i32 =
   let height:i32 = 30
   let width:i32 = 70
   let grid : *[][]i32 = replicate height (replicate width 0)

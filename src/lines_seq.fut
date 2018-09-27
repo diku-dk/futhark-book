@@ -44,5 +44,5 @@ let main : [][]i32 =
   let width:i32 = 70
   let grid : *[][]i32 = replicate height (replicate width 0)
   let lines = [((58,20),(2,3)),((27,3),(2,28)),((5,20),(20,20)),
-               ((4,10),(6,25)),((26,25),(26,2))]
+               ((4,10),(6,25)),((26,25),(26,2)),((58,20),(52,3))]
   in drawlines grid lines

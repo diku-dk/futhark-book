@@ -280,7 +280,7 @@ defined by all lines simultaneously. The code for such an approach
 looks as follows:
 
 .. literalinclude:: src/lines_flat.fut
-   :lines: 46-76
+   :lines: 46-77
 
 The function first computes a vector ``lens`` containing the lengths
 of the lines. It then applies the ``repl_idx`` function, defined
