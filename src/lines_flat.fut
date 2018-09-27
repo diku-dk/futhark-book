@@ -20,51 +20,65 @@ let repl_idx [n] (reps:[n]i32) : []i32 =
   let flags = map (>0) tmp
   in sgm_scan_add tmp flags
 
-let sgm_iota [n] (flags:[n]bool) : [n]i32 =
-  let iotas = sgm_scan_add (replicate n 1) flags
-  in map (\x->x-1) iotas
-
-let max (x:i32) (y:i32) : i32 = if x > y then x else y
-
 -- Drawing lines
 type point = (i32,i32)
 type line = (point,point)
 type points = []point
 
 -- Write to grid
-let upd_grid [h][w][n] (grid:*[h][w]i32)(xs:[n]i32)(ys:[n]i32):[h][w]i32 =
+let update [h][w][n] (grid:*[h][w]i32) (xs:[n]i32)
+                     (ys:[n]i32) : [h][w]i32 =
   let is = map2 (\x y -> w*y+x) xs ys
   let flatgrid = flatten grid
   let ones = map (\_ -> 1) is
   in unflatten h w (scatter (copy flatgrid) is ones)
 
+let max = i32.max
+let abs = i32.abs
+
+let compare (v1:i32) (v2:i32) : i32 =
+  if v2 > v1 then 1 else if v1 > v2 then -1 else 0
+
+let slo ((x1,y1):point) ((x2,y2):point) : f32 =
+  if x2==x1 then if y2>y1 then r32(1) else r32(-1)
+                 else r32(y2-y1) / r32(abs(x2-x1))
+
+-- Utility functions
+let xmax ((x1,y1):point) ((x2,y2):point) : bool =
+  abs(x1-x2) > abs(y1-y2)
+
+let swap ((x,y):point) : point = (y,x)
+
+let sgm_iota [n] (flags:[n]bool) : [n]i32 =
+  let iotas = sgm_scan_add (replicate n 1) flags
+  in map (\x->x-1) iotas
+
 -- Parallel flattened algorithm for drawing multiple lines
-let drawlines [h][w][n] (grid:*[h][w]i32) (lines:[n]line) :[h][w]i32 =
-  let lens = map (\((x1,y1),(x2,y2)) ->
-                   1 + i32.max (i32.abs(x1-x2)) (i32.abs(y1-y2))) lines
+let drawlines [h][w][n] (grid:*[h][w]i32)
+                        (lines:[n]line) :[h][w]i32 =
+  let lens = map (\ ((x1,y1),(x2,y2)) ->
+                   1 + max (abs(x2-x1)) (abs(y2-y1))) lines
   let idxs = repl_idx lens
-  let iotan = iota n
-  let nums = map (\i -> iotan[i]) idxs
-  let flags = map2 (!=) nums (rotate 1 nums)
-  let lines1 = map (\i -> unsafe lines[i]) idxs
-  let dirxs = map (\((x1,_),(x2,_)) ->
-                     if x2 > x1 then 1
-                     else if x1 > x2 then -1
-                     else 0) lines1
-  let slops = map (\((x1,y1),(x2,y2)) ->
-                     if x2 == x1 then
-                       if y2 > y1 then 1f32 else -1f32
-                     else r32(y2-y1) / f32.abs(r32(x2-x1))) lines1
-  let iotas = sgm_iota flags
-  let xs = map3 (\((x1,_),_) dirx i ->
-                  x1+dirx*i) lines1 dirxs iotas
-  let ys = map3 (\((_,y1),_) slop i ->
-                  y1+t32(slop*r32(i))) lines1 slops iotas
-  in upd_grid grid xs ys
+  let lns = map (\ i -> unsafe lines[i]) idxs
+  let dirs = map (\ (p1,p2) ->
+                   if xmax p1 p2 then compare (p1.1) (p2.1)
+                   else compare (p1.2) (p2.2)) lns
+  let sls = map (\ (p1,p2) ->
+                  if xmax p1 p2 then slo p1 p2
+                  else slo (swap p1) (swap p2)) lns
+  let is = sgm_iota (map2 (!=) idxs (rotate 1 idxs))
+  let xs = map4 (\ (p1,p2) dirx slop i ->
+                 if xmax p1 p2 then p1.1+dirx*i
+                 else p1.1+t32(slop*r32(i))) lns dirs sls is
+  let ys = map4 (\ (p1,p2) dirx slop i ->
+                 if xmax p1 p2 then p1.2+t32(slop*r32(i))
+                 else p1.2+i*dirx) lns dirs sls is
+  in update grid xs ys
 
 let main () : [][]i32 =
   let height:i32 = 30
   let width:i32 = 70
   let grid : *[][]i32 = replicate height (replicate width 0)
-  let lines = [((58,20),(2,3)),((27,3),(2,28)),((5,20),(20,20)),((6,10),(6,25)),((26,25),(26,2))]
+  let lines = [((58,20),(2,3)),((27,3),(2,28)),((5,20),(20,20)),
+               ((4,10),(6,25)),((26,25),(26,2)),((58,20),(52,3))]
   in drawlines grid lines

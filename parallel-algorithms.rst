@@ -22,14 +22,27 @@ Segmented Scan
 --------------
 
 The segmented scan operator is quite essential as we shall see
-demonstrated in many of the algorithms explained later. The segmented
-scan operator can be implemented with a simple scan using an
-associative function that operates on pairs of values
+demonstrated in many of the algorithms explained later. The operator
+can be implemented with a simple scan using an associative function
+that operates on pairs of values
 :cite:`Schwartz:1980:ULT:357114.357116,blelloch1990vector`.  Here is
-the definition of the segmented scan operation:
+the definition of the segmented scan operation, hardcoded to work with
+addition:
 
 .. literalinclude:: src/sgm_scan.fut
-   :lines: 5-11
+   :lines: 4-11
+
+We can make use of Futhark's support for higher-order functions and
+polymorphism to define a generic version of segmented scan that will
+work for other monoidal structures than addition on ``i32`` values:
+
+.. literalinclude:: src/sgm_scan.fut
+   :lines: 13-20
+
+We leave it up to the reader to prove that, given an associative
+function ``g``, (1) the operator passed to ``scan`` is associative
+and (2) ``(ne, false)`` is a neutral element for the operator.
+
 
 Parallel Utility Functions
 --------------------------
@@ -49,25 +62,17 @@ and returns the smallest index ``i`` into ``xs`` for which ``xs[i] =
 e``:
 
 .. literalinclude:: src/find_idx.fut
-   :lines: 7-11
+   :lines: 4-8
 
 The second function, ``find_idx_last``, also takes a value and an
 array but returns the largest index ``i`` into ``xs`` for which
 ``xs[i] = e``:
 
 .. literalinclude:: src/find_idx.fut
-   :lines: 13-16
+   :lines: 10-13
 
-The above two functions make use of the auxiliary functions ``min``
-and ``max``:
-
-::
-
-    let max (a:i32) (b:i32): i32 = if a > b then a else b
-    let min (a:i32) (b:i32): i32 = if a < b then a else b
-
-These are also present in Futhark’s basis library in
-``/futlib/math`` under the names ``i32.max`` and ``i32.min``.
+The above two functions make use of the auxiliary functions
+``i32.max`` and ``i32.min``.
 
 Finding the Largest Element and its Index in an Array
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,13 +85,15 @@ homomorphism for finding the largest element and its index in an array:
    :lines: 4-11
 
 The function is a *homomorphism* :cite:`BirdListTh`: For any :math:`x`
-and :math:`y`, there exists an associative operator :math:`\oplus`
-such that
+and :math:`y`, and with :math:`++` denoting array concatenation, there
+exists an associative operator :math:`\oplus` such that
 
 .. math::
    \kw{maxidx}(x \pp y) = \kw{maxidx}(x) \oplus \kw{maxidx}(y)
 
-The operator :math:`\oplus = \kw{mx}`.
+The operator :math:`\oplus = \kw{mx}`. We will leave it up to the
+reader to verify that the ``maxidx`` function will operate efficiently
+on large inputs.
 
 Radix Sort
 ----------
@@ -95,7 +102,7 @@ A simple radix sort algorithm was presented already in
 :ref:`radixsort`. In this section, we present two generalized versions
 of radix sort, one for ascending sorting and one for descending
 sorting. As a bonus, the sorting routines return both the sorted
-arrays and an index array that can be used together with to sort an
+array and an index array that can be used to sort an
 array with respect to a permutation obtained by sorting another
 array. The generalised ascending radix sort is as follows:
 
@@ -232,16 +239,17 @@ segments, each defined by its end points :math:`(x_1,y_1)` and
 :math:`(x_2,y_2)`, the algorithm will find the set of all points
 constituting all the line segments.
 
-We first present an algorithm that will find all points that constitutes
-a single line segment. For computing this set, observe that the number
-of points that make up the constituting set is the maximum of
-:math:`|x_2-x_1|` and :math:`|y_2-y_1|`, the absolute values of the
-difference in :math:`x`-coordinates and :math:`y`-coordinates. Using
-this observation, the algorithm can idependently compute the
-constituting set by first calculating the proper direction and slope of
-a line, relative to a particular starting point.
+We first present an algorithm that will find all points that
+constitutes a single line segment. For computing this set, observe
+that the number of points that make up the constituting set is the
+maximum of :math:`|x_2-x_1|` and :math:`|y_2-y_1|`, the absolute
+values of the difference in :math:`x`-coordinates and
+:math:`y`-coordinates, respectively. Using this observation, the
+algorithm can idependently compute the constituting set by first
+calculating the proper direction and slope of a line, relative to a
+particular starting point.
 
-The simple line drawing routine is as follows:
+The simple line drawing routine is given as follows:
 
 .. literalinclude:: src/lines_seq.fut
    :lines: 6-25
@@ -259,6 +267,34 @@ the grid with constituting points for each line, computed using the
 
 .. image:: img/lines.svg
    :scale: 50%
+
+An unfortunate problem with the line drawing routine shown above is
+that it draws the lines sequentially and therefore makes only very
+limited use of a GPU's parallel cores. There are various ways one may
+mitigate this problem. One way could be to use ``map`` to draw lines
+in parallel. However, such an approach will require some kind of
+padding to ensure that the map function will compute data of the same
+length, no matter the length of the line. A more resource aware
+approach will apply a flattening technique for computing all points
+defined by all lines simultaneously. The code for such an approach
+looks as follows:
+
+.. literalinclude:: src/lines_flat.fut
+   :lines: 46-76
+
+The function first computes a vector ``lens`` containing the lengths
+of the lines. It then applies the ``repl_idx`` function, defined
+above, to the ``lens`` vector to associate line information with each
+point on the lines. After computing the direction and slope associated
+with each line (variables ``dirs`` and ``sls``), the function uses the
+``sgm_iota`` function for computing the line point number associated
+with each point (variable ``is``). Based on the computed information,
+the function can now establish the ``xs`` and ``ys`` vectors
+containing coordinate information for each point on the
+lines. Finally, the ``update`` function is called to update the
+grid. Notice that due to the semantics of ``scatter``, a value of
+``1`` is written to points for which lines cross.
+
 
 Low-Discrepancy Sequences
 -------------------------

@@ -10,23 +10,23 @@ Consider an implementation of the dot product of two vectors:
     let main (x: []i32) (y: []i32): i32 =
       reduce (+) 0 (map2 (*) x y)
 
-We previously mentioned that, for small data sets, sequential execution
-is likely to be much faster than parallel execution. But how much
-faster? To answer this question, we need to measure measure the run time
-of the program on some data sets. This is called *benchmarking*. There
+We previously mentioned that, for small data sets, sequential
+execution is likely to be much faster than parallel execution. But how
+much faster? To answer this question, we need to measure the run time
+of the program on some data sets. This task is called *benchmarking*. There
 are many properties one can benchmark: memory usage, size of compiled
-executable, robustness to errors, and so forth. In this section, we are
-only concerned with run time. Specifically, we wish to measure *wall
-time*, which is how much time elapses in the real world from the time
-the computation starts, to the time it ends.
+executable, robustness to errors, and so forth. In this section, we
+are only concerned with run time. Specifically, we wish to measure
+*wall time*, which is how much time elapses in the real world from the
+time the computation starts, to the time it ends.
 
-There is still some wiggle room in how we benchmark — for example,
+There is still some wiggle room in how we benchmark. For example,
 should we measure the time it takes to load the input data from disk?
-Initialise various devices and drivers? Perform a clean shutdown? How
-many times should we run the program, and should we report maximum,
-minimum, or average run time? We will not try to answer all of these
-questions, but instead merely describe the benchmarking tools provided
-by Futhark.
+Should we initialise various devices and drivers? Should we perform a
+clean shutdown? How many times should we run the program, and should
+we report maximum, minimum, or average run time? We will not try to
+answer all of these questions, but instead merely describe the
+benchmarking tools provided by Futhark.
 
 Simple Measurements
 -------------------
@@ -52,7 +52,7 @@ One way to time execution is to use the standard ``time(1)`` tool:
 
 It seems that ``dotprod-c`` executes in less than 10 milliseconds,
 while ``dotprod-opencl`` takes about 290 milliseconds. However, this
-is not a useful comparison, as it also measures time taken to read the
+comparison is not useful, as it also measures time taken to read the
 input (for both executables), as well as time taken to initialise the
 OpenCL driver (for ``dotprod-opencl``). Recall that in a real
 application, the Futhark program would be compiled as a *library*, and
@@ -97,9 +97,9 @@ GPU startup cost:
     $ cat input | ./dotprod-c -t /dev/stderr > /dev/null
     3801
 
-That’s more like it - parallel execution is now more than ten times
+That’s more like it! Parallel execution is now more than ten times
 faster than sequential execution. This program is entirely
-memory-bound - on a compute-bound program we can expect much larger
+memory-bound; on a compute-bound program we can expect much larger
 speedups.
 
 You may have notice that these programs take *significantly* longer to
@@ -108,7 +108,7 @@ initialisation does take some time, most of the actual run-time in the
 example above is spent reading the data file from disk.  By default,
 ``futhark-dataset`` produces output in a data format that is
 human-readable, but very slow for programs to process.  We can use the
-``-b`` option to make ``futhark-dataset`` to generate data in an
+``-b`` option to make ``futhark-dataset`` generate data in an
 efficient binary format (which takes up less space on disk as well):
 
 .. code-block:: none
@@ -118,7 +118,7 @@ efficient binary format (which takes up less space on disk as well):
 Reading binary data files is often orders of magnitude faster than
 reading textual input files.  Compiled Futhark programs also support
 binary output via a ``-b`` option.  The ``futhark-dataset`` tool can
-perform conversion between the binary and human-readable formats - see
+perform conversion between the binary and human-readable formats; see
 the manual page for more information.
 
 Multiple Measurements
@@ -126,9 +126,9 @@ Multiple Measurements
 
 The technique presented in the previous section still has some
 problems.  In particular, it is impractical if you want several
-measurements on the same dataset, which you generally do even out
-noise. While you can just repeat the above line the desired number of
-times, this has two problems:
+measurements on the same dataset, which is in general preferable to
+even out noise. While you can just repeat execution the desired number
+of times, this method has two problems:
 
 1. The input file will be read multiple times, which can be slow for
    large data sets.
@@ -141,8 +141,8 @@ operations (such as memory allocation) are relatively costly, and
 Futhark uses various caches and buffers to minimise the number of
 expensive OpenCL operations.  However, these caches will all be cold
 the first time the program runs.  Hence we wish to perform more than
-one run per program instance, so we can take advantage of the warm
-caches.  This is also a more plausible proxy for real-world usage of
+one run per program instance, so that we can take advantage of the warm
+caches.  This method is also a more plausible proxy for real-world usage of
 Futhark, as Futhark is typically compiled to a library, where the same
 functions are called repeatedly by some client code.
 
@@ -165,8 +165,8 @@ use it like this:
     284
     282
 
-Our runtimes are now much better. And importantly—there are more of
-them, so we can perform analyses like determine the variance, to
+Our runtimes are now much better. And importantly, there are more of
+them, so we can perform analyses like, such as determining the variance, to
 figure out how predictable the performance is.
 
 However, we can do better still.  Futhark comes with a tool for
@@ -188,7 +188,7 @@ keep the data set is located in an external file (see the `manual page
 more information.).
 
  We can use ``futhark-bench`` to measure the performance of
- ``sumsquares.fut`` as such:
+ ``sumsquares.fut`` as follows:
 
 .. code-block:: none
 
@@ -201,7 +201,7 @@ more information.).
 
 These are measurements using the default compiler, which is
 ``futhark-c``. If we want to see how our program performs when compiled
-with ``futhark-opencl``, we can invoke ``futhark-bench`` as such:
+with ``futhark-opencl``, we can invoke ``futhark-bench``:
 
 .. code-block:: none
 
@@ -217,5 +217,5 @@ execution.  The tool takes care of the mechanics of run-time
 measurements, and even computes the relative standard deviation
 ("RSD") of the measurements for us. The correctness of the output is
 also automatically checked. By default, ``futhark-bench`` performs ten
-runs for every data set, but this can be changed with the ``--runs``
-command line option.
+runs for every data set, but this number can be changed with
+the ``--runs`` command line option.

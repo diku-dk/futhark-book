@@ -321,7 +321,7 @@ exclusive by writing ``x..<y``. For example:
 
 It is usually necessary to enclose a range expression in parentheses,
 because they bind very loosely.  A stride can be provided by writing
-``x..y...z`, with the interpretation "first ``x``, then ``y``, up to
+``x..y...z``, with the interpretation "first ``x``, then ``y``, up to
 ``z``". For example:
 
 ::
