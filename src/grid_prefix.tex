@@ -1,0 +1,11 @@
+\documentclass[tikz,convert={outfile=\jobname.svg}]{standalone}
+\usepackage{xcolor}
+\definecolor{eclipsePurple}{RGB}{127,0,85}
+\begin{document}
+\begin{tikzpicture}[scale=0.30]
+
+  \newcommand{\p}[2]{\node[anchor=center] at (#1 + 0.5, 29 - #2 + 0.5) {{\color{eclipsePurple}\rule{0.7em}{0.7em}}};}
+
+  \begin{scope}
+    \draw (0, 0) grid (62, 30);
+%
