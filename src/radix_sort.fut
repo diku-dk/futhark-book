@@ -11,7 +11,7 @@
 --
 --
 
-module Array = import "/futlib/array"
+
 
 -- A least significant digit radix sort to test out `write`.
 let radix_sort_step [n] (xs: [n]u32, digit_n: i32): [n]u32 =
@@ -27,7 +27,7 @@ let radix_sort_step [n] (xs: [n]u32, digit_n: i32): [n]u32 =
   let ps1_clean' = map2 (*) bits ps1_clean
   let ps         = map2 (+) ps0_clean ps1_clean'
   let ps_actual  = map (\(p: i32): i32 -> p - 1) ps
-  in scatter (Array.copy xs) ps_actual xs
+  in scatter (copy xs) ps_actual xs
 
 let radix_sort [n] (xs: [n]u32): [n]u32 =
   loop (xs) for i < 32 do
