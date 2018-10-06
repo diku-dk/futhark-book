@@ -37,7 +37,6 @@ let drawlines [h] [w] [n] (grid: *[h][w]i32) (lines:[n]line) : [h][w]i32 =
     let (xs,ys) = unzip (linepoints (lines[i]))
     in update grid xs ys
 
-
 -- Draw lines on a 70 by 30 grid
 let main : [][]i32 =
   let height:i32 = 30

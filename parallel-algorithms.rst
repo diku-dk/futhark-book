@@ -186,58 +186,156 @@ The morale here is that the segmented scan operation provides us with
 a great abstraction.  However, for now, we have to get by with Futhark
 not providing us with proper polymorphism.
 
+Flattening by Expansion
+-----------------------
+
+For dealing with large non-regular problems, we need ways to
+regularise the problems so that they become tractable with the regular
+parallel techniques that we have seen demonstrated previously. One way
+to regularise a problem is by *padding* data such that the data fits a
+regular parallel schema. However, by doing so, we run the risk that
+the program will use too many parallel resources for computations on
+the padding data. This problem will arise, in particular, if the data
+is very irregular. As a simple, and also visualisable, example,
+consider the task of determining the points that make up a number of
+line segments given by sets of two points in a 2D grid. Whereas we may
+easily devise an algorithm for determining the grid points that make
+up a single line segment, it is not immediately obvious how we can
+efficiently regularise the problem of drawing multiple line segments,
+as each line segment will end up being represented by a different
+number of points. If we choose to implement a padding regularisation
+scheme by introducing a notion of ''an empty point'', each line can be
+represented as the same number of points, which will allow us to map
+over an array of such line points for processing the lines using
+regular parallelism. However, the cost we pay is that even the
+smallest line will be represented as the same number of points as the
+longest line.
+
+Another strategy for regularisation is to *flatten* the irregular
+parallelism into regular parallelism and use segmented operations to
+process each particular object. It turns out that there, in many
+cases, is a simple approach to implement such flattening, using, as we
+shall see, a technique called *expansion*, which will take care of all
+the knitty gritty details of the flattening. The expansion approach is
+centered around a function that we shall call ``expand``, which, as
+the name suggests, expands a source array into a longer target array,
+by expanding each individual source element into multiple target
+elements, which can then be processed in parallel.
+
+For implementing the ``expand`` function, we first need to define a
+few helper functions.
+
+Replicated Iota and Segmented Iota
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The first helper function that we need is called
+``replicated_iota``. Given an array of natural numbers specifying
+repetitions, the function returns an array of weakly increasing
+indices (starting from 0) and with each index repeated according to
+the repetition array. As an example, ``replicated_iota [2,3,1,1]``
+returns the array ``[0,0,1,1,1,2,3]``. The function is defined in terms of
+other parallel operations, including ``scan``, ``map``, ``scatter``,
+and ``segmented_scan``:
+
+.. literalinclude:: src/segmented.fut
+   :lines: 44-49
+
+An example evaluation of a call to the function ``replicated_iota`` is
+provided below.  Notice that in order to use this Futhark code with
+``futhark-opencl``, we need to prefix the array indexing in line 3 and
+line 4 with the ``unsafe`` keyword.
+
++--------------------+---+---+---+---+---+---+---+---+
+| Args/Result        |   |   |   |   |   |   |   |   |
++====================+===+===+===+===+===+===+===+===+
+| ``reps``           | = | 2 | 3 | 1 | 1 |   |   |   |
++--------------------+---+---+---+---+---+---+---+---+
+| ``s1``             | = | 2 | 5 | 6 | 7 |   |   |   |
++--------------------+---+---+---+---+---+---+---+---+
+| ``s2``             | = | 0 | 2 | 5 | 6 |   |   |   |
++--------------------+---+---+---+---+---+---+---+---+
+| ``replicate``      | = | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
++--------------------+---+---+---+---+---+---+---+---+
+| ``tmp``            | = | 0 | 0 | 1 | 0 | 0 | 2 | 3 |
++--------------------+---+---+---+---+---+---+---+---+
+| ``flags``          | = | 0 | 0 | 1 | 0 | 0 | 1 | 1 |
++--------------------+---+---+---+---+---+---+---+---+
+| ``segmented_scan`` | = | 0 | 0 | 1 | 1 | 1 | 2 | 3 |
++--------------------+---+---+---+---+---+---+---+---+
+
+The second helper function that we need is called
+``segmented_iota``. Given a flags array, the function returns an array
+of index sequences, each of which is reset according to the flags
+array. As an example, the expression
+
+::
+
+    segmented_iota [false,false,false,true,false,false,false]
+
+returns the array ``[0,1,2,0,1,2,3]``. This function
+``segmented_iota`` can be implemented with the use of a simple call to
+``segmented_scan`` followed by a call to ``map``:
+
+.. literalinclude:: src/segmented.fut
+   :lines: 57-59
+
+Expansion
+~~~~~~~~~
+
+The generic expansion function that we set out to construct is now
+somewhat simple to implement using only parallel operations. Here is
+the generic type of the function:
+
+::
+
+    val expand 'a 'b : (sz: a -> i32) -> (get: a -> i32 -> b) -> []a -> []b
+
+The function expands a source array into a target array given (1) a
+function that determines, for each source element, how many target
+elements it expands to and (2) a function that computes a particular
+target element based on a source element and the target element number
+associated with the source. As an example, the expression ``expand
+(\x->x) (*) [2,3,1]`` returns the array ``[0,2,0,3,6,0]``. The
+function is defined as follows:
+
+.. literalinclude:: src/segmented.fut
+   :lines: 69-73
+
+
 Segmented Replication
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
-We shall now investigate how to replicate elements in a
-one-dimensional data array according to natural numbers appearing in a
-*replication* array of the same length. We shall call such an
-operation a *segmented replicate* and we shall provide the replication
-array as the first argument and the data vector as the second
-argument. If we call the operation ``sgm_repl``, a call ``sgm_repl
-[2,1,0,3,0] [5,6,9,8,4]`` should result in the array
-``[5,5,6,8,8,8]``.
+MEMO: revise:
 
-Here is code that implements the function ``sgm_repl`` and a more
-general function ``repl_idx``, which returns an index array providing
+The first helper function that we need is a function for replicating
+elements in a one-dimensional data array according to natural numbers
+appearing in a *replication* array of the same length. We shall call
+such an operation a *segmented replicate* and we shall provide the
+replication array as the first argument and the data vector as the
+second argument. If we call the operation ``segmented_replicate``, a
+call ``segmented_replicate [2,1,0,3,0] [5,6,9,8,4]`` should result in
+the array ``[5,5,6,8,8,8]``.
+
+Here is code that implements the function ``segmented_replicate`` and a more
+general function ``replicated_iota``, which returns an index array providing
 replicating indexes into any argument array of the same length as the
 argument array.
 
 .. literalinclude:: src/sgm_repl.fut
    :lines: 13-22
 
-An example evaluation of a call to the function ``repl_idx`` is
-provided in below.  Notice that in order to use this Futhark code with
-``futhark-opencl``, we need to prefix the array indexing in line 3,
-line 4, and line 10 with the ``unsafe`` keyword.
-
-+------------------+---+---+---+---+---+---+---+---+--+
-| Args/Result      |   |   |   |   |   |   |   |   |  |
-+==================+===+===+===+===+===+===+===+===+==+
-| ``reps``         | = | 2 | 3 | 1 | 1 |   |   |   |  |
-+------------------+---+---+---+---+---+---+---+---+--+
-| ``s1``           | = | 2 | 5 | 6 | 7 |   |   |   |  |
-+------------------+---+---+---+---+---+---+---+---+--+
-| ``s2``           | = | 0 | 2 | 5 | 6 |   |   |   |  |
-+------------------+---+---+---+---+---+---+---+---+--+
-| ``replicate``    | = | 0 | 0 | 0 | 0 | 0 | 0 | 0 |  |
-+------------------+---+---+---+---+---+---+---+---+--+
-| ``tmp``          | = | 0 | 0 | 1 | 0 | 0 | 2 | 3 |  |
-+------------------+---+---+---+---+---+---+---+---+--+
-| ``flags``        | = | 0 | 0 | 1 | 0 | 0 | 1 | 1 |  |
-+------------------+---+---+---+---+---+---+---+---+--+
-| ``sgm_scan_add`` | = | 0 | 0 | 1 | 1 | 1 | 2 | 3 |  |
-+------------------+---+---+---+---+---+---+---+---+--+
 
 Line Drawing
 ------------
 
-In this section we demonstrate how to use a flattening technique for
-obtaining a work efficient line drawing routine that draws lines fully
-in parallel :cite:`blelloch1990vector`. Given a number of line
-segments, each defined by its end points :math:`(x_1,y_1)` and
-:math:`(x_2,y_2)`, the algorithm will find the set of all points
-constituting all the line segments.
+In this section we demonstrate how to apply the
+flattening-by-expansion technique for obtaining a work efficient line
+drawing routine that draws lines fully in parallel. The technique
+resembles the development by Blelloch :cite:`blelloch1990vector` with
+the difference that it makes use of the ``expand`` function defined in
+the previous section. Given a number of line segments, each defined by its
+end points :math:`(x_1,y_1)` and :math:`(x_2,y_2)`, the algorithm will
+find the set of all points constituting all the line segments.
 
 We first present an algorithm that will find all points that
 constitutes a single line segment. For computing this set, observe
@@ -258,7 +356,7 @@ Futhark code that uses the ``linepoints`` function for drawing
 concrete lines is shown below:
 
 .. literalinclude:: src/lines_seq.fut
-   :lines: 27-48
+   :lines: 27-47
 
 The function ``main`` sets up a grid and calls
 the function ``drawlines``, which takes care of sequentially updating
@@ -268,31 +366,26 @@ the grid with constituting points for each line, computed using the
 .. image:: img/lines_grid.svg
 
 An unfortunate problem with the line drawing routine shown above is
-that it draws the lines sequentially and therefore makes only very
-limited use of a GPU's parallel cores. There are various ways one may
-mitigate this problem. One way could be to use ``map`` to draw lines
-in parallel. However, such an approach will require some kind of
-padding to ensure that the map function will compute data of the same
-length, no matter the length of the line. A more resource aware
-approach will apply a flattening technique for computing all points
-defined by all lines simultaneously. The code for such an approach
-looks as follows:
+that it draws the lines sequentially, one by one, and therefore makes
+only very limited use of a GPU's parallel cores. There are various
+ways one may mitigate this problem. One way could be to use ``map`` to
+draw lines in parallel. However, such an approach will require some
+kind of padding to ensure that the map function will compute data of
+the same length, no matter the length of the line. A more resource
+aware approach will apply a flattening technique for computing all
+points defined by all lines simultaneously. Using the ``expand``
+function defined in the previous section, all we need to do to
+implement this approach is to provide (1) a function that determines
+for a given line, the number of points that make up the line and (2) a
+function that determines the ``n``'th point of a particular line, given
+the index ``n``. The code for such an approach looks as follows:
 
-.. literalinclude:: src/lines_flat.fut
-   :lines: 46-77
+.. literalinclude:: src/lines_flat2.fut
+   :lines: 29-50
 
-The function first computes a vector ``lens`` containing the lengths
-of the lines. It then applies the ``repl_idx`` function, defined
-above, to the ``lens`` vector to associate line information with each
-point on the lines. After computing the direction and slope associated
-with each line (variables ``dirs`` and ``sls``), the function uses the
-``sgm_iota`` function for computing the line point number associated
-with each point (variable ``is``). Based on the computed information,
-the function can now establish the ``xs`` and ``ys`` vectors
-containing coordinate information for each point on the
-lines. Finally, the ``update`` function is called to update the
-grid. Notice that due to the semantics of ``scatter``, a value of
-``1`` is written to points for which lines cross.
+The function ``get_point_in_line`` distinguishes between whether the
+number of points in the line is counted by the x-axis or the y-axis.
+
 
 
 Low-Discrepancy Sequences
