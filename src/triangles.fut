@@ -34,10 +34,10 @@ let get_point_in_line ((p1,p2):line) (i:i32) =
   then let dir = compare (p1.1) (p2.1)
        let sl = slope p1 p2
        in (p1.1+dir*i,
-           p1.2+t32(sl*r32 i))
+           p1.2+i32.f32(f32.round(sl*r32 i)))
     else let dir = compare (p1.2) (p2.2)
          let sl = slope (p1.2,p1.1) (p2.2,p2.1)
-         in (p1.1+t32(sl*r32 i),
+         in (p1.1+i32.f32(f32.round(sl*r32 i)),
              p1.2+i*dir)
 
 let drawlines [h][w][n] (grid:*[h][w]i32)
@@ -74,15 +74,15 @@ let get_line_in_triangle ((p,q,r):triangle) (i:i32) =
   in if i <= q.2 - p.2 then     -- upper half
        let sl1 = dxdy p q
        let sl2 = dxdy p r
-       let x1 = p.1 + i32.f32(sl1 * f32.i32 i)
-       let x2 = p.1 + i32.f32(sl2 * f32.i32 i)
+       let x1 = p.1 + i32.f32(f32.round(sl1 * f32.i32 i))
+       let x2 = p.1 + i32.f32(f32.round(sl2 * f32.i32 i))
        in ((x1,y),(x2,y))
      else                       -- lower half
        let sl1 = dxdy r p
        let sl2 = dxdy r q
        let dy = (r.2 - p.2) - i
-       let x1 = r.1 - i32.f32(sl1 * f32.i32 dy)
-       let x2 = r.1 - i32.f32(sl2 * f32.i32 dy)
+       let x1 = r.1 - i32.f32(f32.round(sl1 * f32.i32 dy))
+       let x2 = r.1 - i32.f32(f32.round(sl2 * f32.i32 dy))
        in ((x1,y),(x2,y))
 
 let lines_of_triangles (xs:[]triangle) : []line =

@@ -37,10 +37,10 @@ let get_point_in_line ((p1,p2):line) (i:i32) =
   then let dir = compare (p1.1) (p2.1)
        let sl = slope p1 p2
        in (p1.1+dir*i,
-           p1.2+t32(sl*r32 i))
+           p1.2+i32.f32(f32.round(sl*r32 i)))
     else let dir = compare (p1.2) (p2.2)
          let sl = slope (p1.2,p1.1) (p2.2,p2.1)
-         in (p1.1+t32(sl*r32 i),
+         in (p1.1+i32.f32(f32.round(sl*r32 i)),
              p1.2+i*dir)
 
 let drawlines [h][w][n] (grid:*[h][w]i32)

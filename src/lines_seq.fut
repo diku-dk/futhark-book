@@ -21,8 +21,11 @@ let linepoints ((x1,y1):point, (x2,y2):point) : points =
   let (dir,sl) =
     if xmax then (compare x1 x2, slope (x1,y1) (x2,y2))
     else (compare y1 y2, slope (y1,x1) (y2,x2))
-  in map (\i -> if xmax then (x1+i*dir, y1+t32(sl*r32(i)))
-                else (x1+t32(sl*r32(i)), y1+i*dir)) (iota len)
+  in map (\i -> if xmax
+                then (x1+i*dir,
+                      y1+i32.f32(f32.round(sl*r32(i))))
+                else (x1+i32.f32(f32.round(sl*r32(i))),
+                      y1+i*dir)) (iota len)
 
 -- Write to grid
 let update [h] [w] [n] (grid: [h][w]i32)(xs:[n]i32)(ys:[n]i32): [h][w]i32 =

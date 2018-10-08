@@ -344,18 +344,18 @@ particular starting point.
 The simple line drawing routine is given as follows:
 
 .. literalinclude:: src/lines_seq.fut
-   :lines: 6-25
+   :lines: 6-28
 
 Futhark code that uses the ``linepoints`` function for drawing
 concrete lines is shown below:
 
 .. literalinclude:: src/lines_seq.fut
-   :lines: 27-47
+   :lines: 30-50
 
-The function ``main`` sets up a grid and calls
-the function ``drawlines``, which takes care of sequentially updating
-the grid with constituting points for each line, computed using the
-``linepoints`` function. The resulting points look like this:
+The function ``main`` sets up a grid and calls the function
+``drawlines``, which takes care of sequentially updating the grid with
+constituting points for each line, computed using the ``linepoints``
+function. The resulting points look like this:
 
 .. image:: img/lines_grid.svg
 
