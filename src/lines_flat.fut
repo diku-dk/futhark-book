@@ -40,7 +40,7 @@ let abs = i32.abs
 let compare (v1:i32) (v2:i32) : i32 =
   if v2 > v1 then 1 else if v1 > v2 then -1 else 0
 
-let slo ((x1,y1):point) ((x2,y2):point) : f32 =
+let slope ((x1,y1):point) ((x2,y2):point) : f32 =
   if x2==x1 then if y2>y1 then r32(1) else r32(-1)
                  else r32(y2-y1) / r32(abs(x2-x1))
 
@@ -65,14 +65,14 @@ let drawlines [h][w][n] (grid:*[h][w]i32)
                    if xmax p1 p2 then compare (p1.1) (p2.1)
                    else compare (p1.2) (p2.2)) lns
   let sls = map (\ (p1,p2) ->
-                  if xmax p1 p2 then slo p1 p2
-                  else slo (swap p1) (swap p2)) lns
+                  if xmax p1 p2 then slope p1 p2
+                  else slope (swap p1) (swap p2)) lns
   let is = sgm_iota (map2 (!=) idxs (rotate 1 idxs))
-  let xs = map4 (\ (p1,p2) dirx slop i ->
+  let xs = map4 (\ (p1,p2) dirx sl i ->
                  if xmax p1 p2 then p1.1+dirx*i
-                 else p1.1+t32(slop*r32(i))) lns dirs sls is
-  let ys = map4 (\ (p1,p2) dirx slop i ->
-                 if xmax p1 p2 then p1.2+t32(slop*r32(i))
+                 else p1.1+t32(sl*r32(i))) lns dirs sls is
+  let ys = map4 (\ (p1,p2) dirx sl i ->
+                 if xmax p1 p2 then p1.2+t32(sl*r32(i))
                  else p1.2+i*dirx) lns dirs sls is
   in update grid xs ys
 

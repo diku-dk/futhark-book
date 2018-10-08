@@ -29,7 +29,7 @@ clean:
 	rm -f indices_of_nonzero lines lines_flat lines_seq2 matmul maxidx
 	rm -f multable primes radix_sort reduce_contract rsort rsort_idx
 	rm -f sgm_repl sgm_scan sgm_streak streak sum sum_tests sumsquares
-	rm -f trace lines_seq lines_grid.pdf lines_grid.tex lines_grid.aux lines_grid.svg lines_grid.log
+	rm -f trace lines_seq *_grid.pdf *_grid.tex *_grid.aux *_grid.svg *_grid.log
 	rm -f lines_seq_coords
 
 .PHONY: viz
@@ -43,13 +43,18 @@ viz0: lines.exe
 	./$< | ./viz.sh > $@
 	cat $@
 
+%_grid.pdf: %_grid.tex
+	pdflatex $<
+
+%_grid.svg: %_grid.pdf
+	pdf2svg $< $@
+
 lines_grid.tex: lines_seq_coords.exe
 	cat grid_prefix.tex > $@
 	./$< | ./points.sh >> $@
 	cat grid_postfix.tex >> $@
 
-lines_grid.pdf: lines_grid.tex
-	pdflatex $<
-
-lines_grid.svg: lines_grid.pdf
-	pdf2svg $< $@
+triangles_grid.tex: triangles.exe
+	cat grid_prefix.tex > $@
+	./$< -e coords | ./points.sh >> $@
+	cat grid_postfix.tex >> $@

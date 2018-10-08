@@ -22,7 +22,7 @@ let abs = i32.abs
 let compare (v1:i32) (v2:i32) : i32 =
   if v2 > v1 then 1 else if v1 > v2 then -1 else 0
 
-let slo ((x1,y1):point) ((x2,y2):point) : f32 =
+let slope ((x1,y1):point) ((x2,y2):point) : f32 =
   if x2==x1 then if y2>y1 then r32(1) else r32(-1)
                  else r32(y2-y1) / r32(abs(x2-x1))
 
@@ -35,11 +35,11 @@ let points_in_line ((x1,y1),(x2,y2)) =
 let get_point_in_line ((p1,p2):line) (i:i32) =
   if i32.abs(p1.1-p2.1) > i32.abs(p1.2-p2.2)
   then let dir = compare (p1.1) (p2.1)
-       let sl = slo p1 p2
+       let sl = slope p1 p2
        in (p1.1+dir*i,
            p1.2+t32(sl*r32 i))
     else let dir = compare (p1.2) (p2.2)
-         let sl = slo (p1.2,p1.1) (p2.2,p2.1)
+         let sl = slope (p1.2,p1.1) (p2.2,p2.1)
          in (p1.1+t32(sl*r32 i),
              p1.2+i*dir)
 

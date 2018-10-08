@@ -11,18 +11,18 @@ type points = []point
 let compare (v1:i32) (v2:i32) : i32 =
   if v2 > v1 then 1 else if v1 > v2 then -1 else 0
 
-let slo ((x1,y1):point) ((x2,y2):point) : f32 =
+let slope ((x1,y1):point) ((x2,y2):point) : f32 =
   if x2==x1 then if y2>y1 then 1f32 else -1f32
                  else r32(y2-y1) / f32.abs(r32(x2-x1))
 
 let linepoints ((x1,y1):point, (x2,y2):point) : points =
   let len = 1 + i32.max (i32.abs(x2-x1)) (i32.abs(y2-y1))
   let xmax = i32.abs(x2-x1) > i32.abs(y2-y1)
-  let (dir,slop) =
-    if xmax then (compare x1 x2, slo (x1,y1) (x2,y2))
-    else (compare y1 y2, slo (y1,x1) (y2,x2))
-  in map (\i -> if xmax then (x1+i*dir, y1+t32(slop*r32(i)))
-                else (x1+t32(slop*r32(i)), y1+i*dir)) (iota len)
+  let (dir,sl) =
+    if xmax then (compare x1 x2, slope (x1,y1) (x2,y2))
+    else (compare y1 y2, slope (y1,x1) (y2,x2))
+  in map (\i -> if xmax then (x1+i*dir, y1+t32(sl*r32(i)))
+                else (x1+t32(sl*r32(i)), y1+i*dir)) (iota len)
 
 -- Write to grid
 let update [h] [w] [n] (grid: [h][w]i32)(xs:[n]i32)(ys:[n]i32): [h][w]i32 =

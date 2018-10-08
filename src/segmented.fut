@@ -70,4 +70,4 @@ let expand 'a 'b (sz: a -> i32) (get: a -> i32 -> b) (arr:[]a) : []b =
   let szs = map sz arr
   let idxs = replicated_iota szs
   let iotas = segmented_iota (map2 (!=) idxs (rotate (i32.negate 1) idxs))
-  in map2 (\i j -> get arr[i] j) idxs iotas
+  in map2 (\i j -> unsafe get arr[i] j) idxs iotas

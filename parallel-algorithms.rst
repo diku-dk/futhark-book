@@ -263,10 +263,27 @@ line 4 with the ``unsafe`` keyword.
 | ``segmented_scan`` | = | 0 | 0 | 1 | 1 | 1 | 2 | 3 |
 +--------------------+---+---+---+---+---+---+---+---+
 
-The second helper function that we need is called
-``segmented_iota``. Given a flags array, the function returns an array
-of index sequences, each of which is reset according to the flags
-array. As an example, the expression
+An example application of ``replicated_iota`` is for defining a
+function for replicating elements in a one-dimensional data array
+according to natural numbers appearing in a *replication* array of the
+same length. We shall call this operation a *segmented replicate* and
+we shall provide the replication array as the first argument and the
+data vector as the second argument. If we call the operation
+``segmented_replicate``, a call ``segmented_replicate [2,1,0,3,0]
+[5,6,9,8,4]`` should result in the array ``[5,5,6,8,8,8]``. Here is
+the code that implements the function ``segmented_replicate``:
+
+.. literalinclude:: src/sgm_repl.fut
+   :lines: 20-22
+
+Notice the use of the ``unsafe`` keyword in the last line; it is
+necessary because Futhark cannot prove that the index ``i`` will
+always be within bounds of the array ``vs``.
+
+The second helper function that we need for defining the ``expand``
+function is called ``segmented_iota``. Given a flags array, the
+function returns an array of index sequences, each of which is reset
+according to the flags array. As an example, the expression
 
 ::
 
@@ -302,31 +319,8 @@ function is defined as follows:
    :lines: 69-73
 
 
-Segmented Replication
-~~~~~~~~~~~~~~~~~~~~~
-
-MEMO: revise:
-
-The first helper function that we need is a function for replicating
-elements in a one-dimensional data array according to natural numbers
-appearing in a *replication* array of the same length. We shall call
-such an operation a *segmented replicate* and we shall provide the
-replication array as the first argument and the data vector as the
-second argument. If we call the operation ``segmented_replicate``, a
-call ``segmented_replicate [2,1,0,3,0] [5,6,9,8,4]`` should result in
-the array ``[5,5,6,8,8,8]``.
-
-Here is code that implements the function ``segmented_replicate`` and a more
-general function ``replicated_iota``, which returns an index array providing
-replicating indexes into any argument array of the same length as the
-argument array.
-
-.. literalinclude:: src/sgm_repl.fut
-   :lines: 13-22
-
-
-Line Drawing
-------------
+Drawing Lines
+-------------
 
 In this section we demonstrate how to apply the
 flattening-by-expansion technique for obtaining a work efficient line
@@ -383,8 +377,77 @@ the index ``n``. The code for such an approach looks as follows:
 .. literalinclude:: src/lines_flat2.fut
    :lines: 29-50
 
-The function ``get_point_in_line`` distinguishes between whether the
-number of points in the line is counted by the x-axis or the y-axis.
+Notice that the function ``get_point_in_line`` distinguishes between
+whether the number of points in the line is counted by the x-axis or
+the y-axis. Notice also that the flattening technique can be applied
+only because all lines have the same color. Otherwise, when two lines
+intersect, the result would be undefined, due to the fact that
+``scatter`` results in undefined behaviour when multiple values are
+written into the same location of an array.
+
+Drawing Triangles
+-----------------
+
+Another example of an algorithm worthy of flattening is an algorithm
+for drawing triangles. The algorithm that we present here is based on
+the assumption that we already have a function for drawing multiple
+horizontal lines in parallel. Luckily, we have such a function! The
+algorithm is based on the property that any triangle can be split into
+an *upper triangle* with a horizontal baseline and a *lower triangle*
+with a horizontal ceiling. Just as the algorithm for drawing lines
+makes use of the ``expand`` function defined earlier, so will the
+flattened algorithm for drawing triangles. A triangle is defined by
+the three points representing the corners of the triangle:
+
+::
+
+    type triangle = (point, point, point)
+
+We shall make the assumption that the three points that define the
+triangle have already been sorted according to the y-axis. Thus, we can
+assume that the first point is the top point, the third point is the
+lowest point, and the second point is the middle point (according to
+the y-axis).
+
+The first function we need to pass to the ``expand`` function is a
+function that determines the number of horizontal lines in triangle:
+
+.. literalinclude:: src/triangles.fut
+   :lines: 63-64
+
+The second function we need to pass to the ``expand`` function is
+somewhat more involved. We first define a function ``dxdy``, which
+computes the inverse slope of a line between two points:
+
+.. literalinclude:: src/triangles.fut
+   :lines: 66-70
+
+We can now define the function that, given a triangle and the
+horizontal line number in the triangle (counted from the top), returns
+the corresponding line:
+
+.. literalinclude:: src/triangles.fut
+   :lines: 72-86
+
+The function distinguishes between whether the line to compute resides
+in the upper or the lower subtriangle. Finally, we can define a
+parallel, work-efficient function that converts a number of triangles
+into lines:
+
+.. literalinclude:: src/triangles.fut
+   :lines: 88-90
+
+To see the code in action, here is a function that draws three
+triangles on a grid of height 30 and width 62:
+
+.. literalinclude:: src/triangles.fut
+   :lines: 92-98
+
+The function makes use of both the ``lines_of_triangles`` function
+that we have defined here and the work efficient ``drawlines``
+function defined previously. Here is a plot of the result:
+
+.. image:: img/triangles_grid.svg
 
 
 
@@ -406,14 +469,15 @@ true value of :math:`\pi` compared to if a simpler stratified sampling
 approach is used.
 
 To calculate an approximation to the value of :math:`\pi`, we will use
-a simple dart-throwing approach. We will throw darts randomly at a 2
-by 2 square, centered around the origin, and then establish the ratio between the number of darts
-hitting within the unit circle with the number of darts hitting the
-square. This ration multiplied with 4 will be our approximation of
-:math:`\pi`. The more darts we throw, the better our approximation. To
-calculate whether a particular dart, thrown at the point
-:math:`(x,y)`, is within the unit circle, we can apply the standard
-Pythagoras formula:
+a simple dart-throwing approach. We will throw darts at a 2 by 2
+square, centered around the origin, and then establish the ratio
+between the number of darts hitting within the unit circle with the
+number of darts hitting the square. This ratio multiplied with 4 will
+be our approximation of :math:`\pi`. The more darts we throw, the
+better our approximation, assuming that the darts we throw hit the
+board somewhat evenly. To calculate whether a particular dart, thrown
+at the point :math:`(x,y)`, is within the unit circle, we can apply
+the standard Pythagoras formula:
 
 .. math::
    \pi ~~\approx~~ \frac{4}{N} \sum_{i=1}^N \left \{ \begin{array}{ll} 1 & \mbox{if} ~ x_i^2 + y_i^2 < 1 \\ 0 & \mbox{otherwise} \end{array} \right .
@@ -428,6 +492,7 @@ performs poorly compared to the efficient recurrent formula, which
 makes it possible to calculate the :math:`n`'th Sobol number if we
 know the previous Sobol number.  The Futhark library makes essential
 use of both formulas.
+
 
 #. pseudo random numbers
 
