@@ -1433,12 +1433,16 @@ Modules
 -------
 
 When most programmers think of module systems, they think of rather
-utilitarian systems for namespace control and splitting programs across
-multiple files. And in most languages, the module system is indeed
-little more than this. But in Futhark, we have adopted an ML-style
-higher-order module system that permits *abstraction* over modules. The
-module system is not just a method for organising Futhark programs, but
-also a powerful facility for writing generic code.
+utilitarian systems for namespace control and splitting programs
+across multiple files. And in most languages, the module system is
+indeed little more than this. But in Futhark, we have adopted an
+ML-style higher-order module system that permits *abstraction* over
+modules :cite:`Elsman:2018:SIH:3243631.3236792`. The module system is
+not just a method for organising Futhark programs, it is also a
+powerful facility for writing generic code. Most importantly, all
+module language constructs are eliminated from the program at compile
+time, thus, there is no overhead involved with making use of the
+module language features.
 
 Simple Modules
 ~~~~~~~~~~~~~~

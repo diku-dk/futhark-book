@@ -455,18 +455,23 @@ Low-Discrepancy Sequences
 -------------------------
 
 Futhark comes with a library for generating Sobol sequences, which are
-examples of so-called low-discrepancy sequences, sequences that, when
-combined with Monte-Carlo methods, make numeric integration converge
-faster than if ordinary pseudo-random numbers are used. Sobol
-sequences may be multi-dimensional and a calculation of a sequence
-depends on a set of direction-vectors, which are also provided by the
-Futhark Sobol library.
+examples of so-called *low-discrepancy sequences*, sequences that,
+when combined with Monte-Carlo methods, make numeric integration
+converge faster than if ordinary pseudo-random numbers are used and
+are more flexible than if uniform sampling techniques are used. Sobol
+sequences may be multi-dimensional and a key property of using Sobol
+sequences is that we can freely choose the number of points that
+should span the multi-dimensional space. In contrast, if we set out to
+use a simpler uniform sampling technique for spanning two dimensions,
+we can only span the space properly if we choose the number of points
+to be on the form :math:`x^2`, for some natural number :math:`x`. This
+spanning problem becomes worse for higher dimensions.
 
 As an example, we shall see how we can use Sobol sequences together
-with Monte-Carlo simulation to compute the value of :math:`\pi`. We shall
-also see that doing so will result in faster conversion towards the
-true value of :math:`\pi` compared to if a simpler stratified sampling
-approach is used.
+with Monte-Carlo simulation to compute the value of :math:`\pi`. We
+shall also see that doing so will result in faster conversion towards
+the true value of :math:`\pi` compared to if pseudo-random numbers are
+used.
 
 To calculate an approximation to the value of :math:`\pi`, we will use
 a simple dart-throwing approach. We will throw darts at a 2 by 2
@@ -482,16 +487,65 @@ the standard Pythagoras formula:
 .. math::
    \pi ~~\approx~~ \frac{4}{N} \sum_{i=1}^N \left \{ \begin{array}{ll} 1 & \mbox{if} ~ x_i^2 + y_i^2 < 1 \\ 0 & \mbox{otherwise} \end{array} \right .
 
-For the actual throwing of darts, we need to establish :math:`N` pairs of numbers, each
-in the interval [-1;1]. We will need a two-dimensional Sobol sequence.
+For the actual throwing of darts, we need to establish :math:`N` pairs
+of numbers, each in the interval [-1;1]. Now, it turns out that it
+matters significantly how we choose to throw the darts. Some obvious
+choices would be to throw the darts in a regular grid (uniform
+sampling), or to choose points using a pseudo-random number generator.
 
-The Futhark library, as we shall see, makes essential use of the
-formula for calculating the :math:`n`'th Sobol number. However, even
-though such a formula is essential for achieving parallelism, it
-performs poorly compared to the efficient recurrent formula, which
-makes it possible to calculate the :math:`n`'th Sobol number if we
-know the previous Sobol number.  The Futhark library makes essential
-use of both formulas.
+The Futhark library, as we shall see, makes essential use of an
+*independent formula* for calculating, independently, the :math:`n`'th
+Sobol number. However, even though such a formula is essential for
+achieving parallelism, it performs poorly compared to the more
+efficient *recurrent formula*, which makes it possible to calculate
+the :math:`n`'th Sobol number if we know the previous Sobol number.
+The Futhark library makes essential use of both formulas. The
+calculation of a sequence of Sobol numbers depends on a set of
+direction vectors, which are also provided by the library.
+
+The key functionality of the library comes in the form of a
+higher-order module `Sobol`, which takes as arguments a direction
+vector module and a module specifying the dimensionality of the
+generated Sobol numbers:
+
+::
+
+    module type sobol_dir  = { ... }
+    module sobol_dir       : sobol_dir  -- file sobol-dir-50, e.g.
+
+    module type sobol = {
+      val D : i32
+      val norm : f64
+      val independent : i32 -> [D]u32
+      val recurrent   : i32 -> [D]u32 -> [D]u32
+      val sobol       : (n: i32) -> [n][D]f64
+    }
+    module Sobol : (DM : sobol_dir) -> (X : { val D : i32 }) -> sobol
+
+For estimating the value of :math:`\pi`, we will need a
+two-dimensional Sobol sequence, thus we apply the `Sobol` higher-order
+module to the direction vector module that works for upto 50
+dimensions and a module specifying a dimensionality of two:
+
+.. literalinclude:: src/pi.fut
+   :lines: 1-4
+
+We can now complete the program by writing a `main` function that
+computes an array of Sobol numbers of a size given by the parameter
+given to `main` and feed this array into a function that will compute
+the estimation of :math:`\pi` using the function shown above:
+
+.. literalinclude:: src/pi.fut
+   :lines: 6-17
+
+The use of Sobol numbers for estimating :math:`\pi` turns out to be
+about three times slower than using a uniform grid on a standard
+GPU. However, it converges towards :math:`\pi` equally well (with
+increasing :math:`N`) and is supperior for larger dimensions
+:cite:`futhark:fhpc18`. In general, there are other good reasons to
+avoid uniform sampling in relation to Monte-Carlo methods.
+
+
 
 
 #. pseudo random numbers
