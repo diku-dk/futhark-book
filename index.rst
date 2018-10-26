@@ -24,7 +24,7 @@ This book is written for a reader who already has some programming
 experience.  Prior experience with functional programming is useful,
 but not required.  We will be learning Futhark through small examples
 that each aim to demonstrate some feature or facet of the language.
-Furthermore, we will discusss some of the theorical background of
+Furthermore, we will discuss some of the theorical background of
 data-parallel programming, as well as elaborate on some of the
 optimisations that can be expected from the compiler.
 
