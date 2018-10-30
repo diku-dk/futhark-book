@@ -149,7 +149,7 @@ Algorithms” :cite:`algdesign:parseq2016`.
 We shall primarily look at parallelism from a data-parallel functional
 programming perspective. The development in the book is made through
 the introduction of the Futhark data-parallel functional language
-:cite:`henriksen2014size,henriksen2016design,henriksen2014bounds,henriksen2013t2`,
+:cite:`Henriksen:2017:FPF:3062341.3062354,Larsen:2017:SRS:3122948.3122952,henriksen:phdthesis,henriksen2014size,henriksen2016design,henriksen2014bounds,henriksen2013t2`,
 which readily will generate GPU-executable code for a Futhark program
 by compiling the program into a number of OpenCL kernels and
 coordinating host code for spawning the kernels. Besides the OpenCL
@@ -168,10 +168,11 @@ execute Futhark programs using both the sequential C backend and the
 parallel GPU backend. Finally, we describe Futhark's module system,
 which allows for programmers to organise code into reusable components
 that carry no overhead whatsoever, due to Futhark's aggressive
-strategy of eliminating all module system constructs at compile
-time. We also describe Futhark's support for parametric polymorphism
-and restricted form of higher-order functions, which provide
-programmers with excellent tooling for writing abstract reusable code.
+strategy of eliminating all module system constructs at compile time
+:cite:`elsman99,Elsman:2018:SIH:3243631.3236792`. We also describe
+Futhark's support for parametric polymorphism and restricted form of
+higher-order functions, which provide programmers with excellent
+tooling for writing abstract reusable code.
 
 In :ref:`testing`, :ref:`benchmarking`, and
 :ref:`when-things-go-wrong`, we describe how to work with Futhark in

@@ -1,7 +1,8 @@
 .. _costmodel:
 
-A Parallel Cost Model for Futhark Programs
-==========================================
+============================================
+ A Parallel Cost Model for Futhark Programs
+============================================
 
 In this chapter we develop a more formal model for Futhark and provide
 an ideal cost model for the language in terms of the concepts of work
@@ -36,24 +37,24 @@ size of the argument array with the work of the body of the argument
 function. Thus, we have
 
 .. math::
-   W(\fop{map}~\kw{(\j -> i * j)}~(\fop{iota}~n)) = n+1
+   W(\fop{map}~(\lamK{j}{i * j})~(\fop{iota}~n)) = n+1
 
 Applying a similar argument to the outer map, we get
 
 .. math::
-   W(\fop{map}~\kw{(\i -> $\cdots$)}~(\fop{iota}~\kw{$n$})) = (n+1)^2
+   W(\fop{map}~(\lamK{i}{$\cdots$})~(\fop{iota}~\kw{$n$})) = (n+1)^2
 
 Most often we are interested in finding the asymptotical complexity of
 the algorithm we are analyzing, in which case we will simply write
 
 .. math::
-   W(\fop{map}~\kw{(\i -> $\cdots$)} (\fop{iota}~n) = O(n^2)
+   W(\fop{map}~(\lamK{i}{$\cdots$}) (\fop{iota}~n) = O(n^2)
 
 In a similar way we can derive that the span of a call ``multable n``,
 written :math:`S(\kw{multable n})`, is :math:`O(1)`.
 
 Futhark - the Language
-----------------------
+======================
 
 In this section we present a simplified version of the Futhark
 language in terms of syntax, a type system for the language, and a
@@ -87,7 +88,7 @@ types.
    \\
    \id{ps} &::=~~ p_1 \cdots p_n \\
    \\
-   F &::=~~ \kw{\ } ps ~\kw{->}~ e ~~|~~  e~\id{binop}  ~~|~~  \id{binop}~e \\
+   F &::=~~ \lam{ps}{e} ~~|~~  e~\id{binop}  ~~|~~  \id{binop}~e \\
    \\
    P &::=~~ \fw{let}~f~\id{ps}~\kw{=}~e ~~|~~  P_1 P_2 ~~|~~ \fw{let}~p~\kw{=}~e \\
    \\
@@ -103,7 +104,7 @@ types.
      &~~|~~ \id{soac}~F~e_1~\cdots~e_n
 
 Futhark Type System
--------------------
+===================
 
 Without considering Futhark's uniqueness type system, Futhark's type
 system is simple. Types (:math:`\tau`) follow the following
@@ -252,7 +253,7 @@ type :math:`\tau`.” Finally, type judgments for programs take the form
 
 .. math::
    \fraccc{\Gamma,x_1:\tau_1~\cdots~x_n:\tau_n \vd e : \tau}{
-       \Gamma \vd \kw{\ } x_1:\tau_1~\cdots~x_n:\tau_n ~ \kw{->} ~e : \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau
+       \Gamma \vd \lam{x_1:\tau_1~\cdots~x_n:\tau_n}{e} : \tau_1 \rarr \cdots \rarr \tau_n \rarr \tau
      } \\[2mm]
 
 .. math::
@@ -283,7 +284,7 @@ to the reader to create typing rules for ``rearrange``, ``shape``,
 ``reshape``, ``loop-for``, ``loop-while``, and array ranging (``e[i:j:o]``).
 
 Futhark Evaluation Semantics
-----------------------------
+============================
 
 In this section we develop a simple evaluation semantics for Futhark
 programs. The semantics is presented as a *big step* evaluation function
@@ -353,7 +354,7 @@ Given a SOAC function parameter :math:`F`, we define the utility
 
 .. math::
 
-     \extractF{\kw{\ }x_1\cdots x_n~\kw{->}~ e} & =~~ \lambda x_1 \cdots x_n . e \\
+     \extractF{\lam{x_1\cdots x_n}{e}} & =~~ \lambda x_1 \cdots x_n . e \\
      \extractF{\id{binop}~e} & =~~ \lambda x . x~\id{binop}~v \\
        & ~ ~~~~~\mathrm{where}~v = \Eval{e} \\
      \extractF{e~\id{binop}} & =~~ \lambda x . v~\id{binop}~x \\
@@ -372,7 +373,7 @@ assuming that arrays with elements of type :math:`\tau` are
 implemented as total functions from :math:`N` to :math:`\Eval{\tau}`.
 
 Work and Span
--------------
+=============
 
 In this section we give a cost model for Futhark in terms of functions
 for determining the total *work* done by a program, in terms of
@@ -435,7 +436,7 @@ the remaining SOACs follow the same lines as the definitions for
      S(\fop{iota}~ e) &=~~ S(e) + 1
 
 Reduction by Contraction
-------------------------
+========================
 
 In this section, we shall investigate an implementation of reduction
 using the general concept of *contraction*, which is the general
@@ -472,7 +473,7 @@ the following code:
    :lines: 4-10
 
 Determining Work and Span
-~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------
 
 To determine the work and span of the algorithm ``red``, we first
 determine the work and span for ``padpow2``, for which we again need
@@ -505,7 +506,7 @@ reduction code to the performance of Futhark’s built-in ``reduce``
 SOAC (see :ref:`benchmarking`).
 
 Radix-Sort by Contraction
--------------------------
+=========================
 
 Another example of a contraction-based algorithm is radix-sort.
 Radix-sort is a non-comparison based sorting routine, which implements
@@ -522,7 +523,7 @@ in the array being sorted in either ascending or descending order.
 .. _radixsort:
 
 Radix-Sort in Futhark
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 A radix-sort algorithm that sorts the argument vector in ascending order
 is shown below:
@@ -566,7 +567,7 @@ constant number of times (i.e., 32 times). Similarly, we can argue that
 calls in ``rsort_step``.
 
 Counting Primes
----------------
+===============
 
 A variant of a contraction algorithm is an algorithm that first solves a
 smaller problem, recursively, and then uses this result to provide a

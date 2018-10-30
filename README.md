@@ -7,7 +7,8 @@ Futhark programming.
 
 ## Reading the Book
 
-The book is readable in HTML form at the following location:
+The book is readable in HTML form and PDF form at the following
+location:
 
 http://futhark-book.readthedocs.io
 
@@ -22,8 +23,6 @@ further necessary dependencies:
 The document is compiled by typing `make html` and the embedded
 Futhark code is compiled, executed, and tested by typing `make test`.
 
-## Generating a PDF version
+## Generating a PDF version yourself
 
-Currently, we create automatically only an HTML version of the
-book. If you want to build a PDF version of the book, first execute
-`make prepare` and then `make latexpdf`.
+Simply type `make latexpdf`.
