@@ -52,8 +52,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Parallel Programming in Futhark'
-copyright = '2017, Troels Henriksen, Martin Elsman, and Cosmin E. Oancea'
-author = 'Troels Henriksen, Martin Elsman, and Cosmin E. Oancea'
+copyright = '2018 Martin Elsman, Troels Henriksen, and Cosmin E. Oancea'
+author = 'Martin Elsman, Troels Henriksen, and Cosmin E. Oancea'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -143,11 +143,11 @@ latex_elements = {
 
     # The font size ('10pt', '11pt' or '12pt').
     #
-    # 'pointsize': '10pt',
+    'pointsize': '12pt',
 
     # Additional stuff for the LaTeX preamble.
     #
-    # 'preamble': '',
+    'preamble': '\\input{../../_templates/layout.tex}',
 
     # Latex figure (float) alignment
     #
@@ -157,7 +157,9 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
-latex_documents = [ ]
+latex_documents = [
+  (master_doc, 'root.tex', 'Parallel Programming in Futhark', 'Martin Elsman \\and Troels Henriksen \\and Cosmin E. Oancea', 'report', False)
+]
 
 
 # -- Options for manual page output ---------------------------------------

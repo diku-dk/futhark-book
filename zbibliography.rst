@@ -1,7 +1,8 @@
 .. _bibliography:
 
-Bibliography
-============
+.. only:: html
+
+   Bibliography
+   ============
 
 .. bibliography:: bib.bib
-   :cited:

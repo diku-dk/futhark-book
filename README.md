@@ -11,8 +11,6 @@ The book is readable in HTML form at the following location:
 
 http://futhark-book.readthedocs.io
 
-There is currently no PDF version.
-
 ## Writing the Book
 
 The book is written using [Sphinx](http://www.sphinx-doc.org), which
@@ -23,3 +21,9 @@ further necessary dependencies:
 
 The document is compiled by typing `make html` and the embedded
 Futhark code is compiled, executed, and tested by typing `make test`.
+
+## Generating a PDF version
+
+Currently, we create automatically only an HTML version of the
+book. If you want to build a PDF version of the book, first execute
+`make prepare` and then `make latexpdf`.

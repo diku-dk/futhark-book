@@ -685,7 +685,7 @@ prepending the neutral element and removing the last element.
 While the idea behind ``reduce`` is probably familiar, ``scan`` is a
 little more esoteric, and mostly has applications for handling
 problems that do not seem parallel at first glance. Several examples
-are discussed in :ref:`parallel-algorithms`.
+are discussed in :ref:`segmentation-and-flattening`.
 
 Filtering
 ~~~~~~~~~
@@ -1259,7 +1259,7 @@ We can make the role of the two floats clear by using a record instead.
 
     type complex = {re: f64, im: f64}
 
-We can construct values of record type with a *record expression*, which
+We can construct values of a record type with a *record expression*, which
 consists of field assignments enclosed in curly braces:
 
 ::
@@ -1381,7 +1381,7 @@ apostrophe.  As an example, this is a polymorphic version of
     let replicate 't (n: i32) (x: t): [n]t =
       map (\_ -> x) (0..<n)
 
-Note how how the type parameter is written as ``'t``, but we use just
+Notice how the type parameter binding is written as ``'t``; we use just
 ``t`` to refer to the parametric type in the ``x`` parameter and the
 function return type.  Type parameters may be freely intermixed with
 size parameters, but must precede all ordinary parameters.  Just as
@@ -1447,7 +1447,7 @@ module language features.
 Simple Modules
 ~~~~~~~~~~~~~~
 
-At the most basic level, a *module* (called a *struct* in Standard ML)
+At the most basic level, a *module* (called a *structure* in Standard ML)
 is merely a collection of declarations
 
 ::
@@ -1461,7 +1461,7 @@ is merely a collection of declarations
 Now, ``add_i32.t`` is an alias for the type ``i32``, and ``Addi32.add``
 is a function that adds two values of type ``i32``. The only peculiar
 thing about this notation is the equal sign before the opening brace.
-The declaration above is actually a combination of a \*module binding\*
+The declaration above is actually a combination of a *module binding*
 
 ::
 
@@ -1477,12 +1477,13 @@ and a *module expression*
       let zero: t = 0
     }
 
-In this case, the module expression is just some declarations enclosed
-in curly braces. But, as the name suggests, a module expression is just
-some expression that returns a module. A module expression is
-syntactically and conceptually distinct from a regular value expression,
-but serves much the same purpose. The module language is designed such
-that evaluation a module expression can always be done at compile time.
+In this case, the module expression encapsulates a number of
+declarations enclosed in curly braces. In general, as the name
+suggests, a module expression is an expression that returns a
+module. A module expression is syntactically and conceptually distinct
+from a regular value expression, but serves much the same purpose. The
+module language is designed such that evaluation of a module
+expression can always be done at compile time.
 
 Apart from a sequence of declarations, a module expression can also be
 merely the name of another module
@@ -1515,18 +1516,22 @@ describes ``add_i32``:
     }
 
 As with modules, we have the notion of a *module type expression*. In
-this case, the module type expression is a sequence of *specs* enclosed
-in curly braces. A spec is a requirement of how some name must be
+this case, the module type expression is a sequence of *specifications* enclosed
+in curly braces. A specification specifies how a name must be
 defined: as a value (including functions) of some type, as a type
 abbreviation, or as an abstract type (which we will return to later).
 
 We can assert that some module implements a specific module type via a
-*module type ascription*::
+*module type ascription*:
+
+::
 
     module foo = add_i32 : i32_adder
 
-Syntactical sugar lets us move the module type to the left of the
-equal sign::
+Syntactic sugar lets us move the module type to the left of the equal
+sign:
+
+::
 
     module add_i32: i32_adder = {
       ...
@@ -1534,7 +1539,9 @@ equal sign::
 
 When we are ascribing a module with a module type, the module type
 functions as a filter, removing anything not explicitly mentioned in the
-module type::
+module type:
+
+::
 
     module bar = add_i32 : { type t = int
                              val zero : t }
@@ -1549,7 +1556,7 @@ anonymous module type.  Module types are structural (just like value
 types), and are named only for convenience.
 
 We can use type ascription with abstract types to hide the definition of
-a type from the users of a module
+a type from the users of a module:
 
 ::
 
@@ -1576,7 +1583,7 @@ must exist, but does not mention its definition. There is no way for a
 user of the ``speeds`` module to do anything with a value of type
 ``speeds.thing`` apart from passing it to ``speeds.speed``. The
 definition is entirely abstract. Furthermore, no values of type
-``speeds.thing`` exist except those that are created by the ``speeds``
+``speeds.thing`` exists except those that are created by the ``speeds``
 module.
 
 .. _parametric-modules:

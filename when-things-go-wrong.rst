@@ -1,7 +1,9 @@
+.. _when-things-go-wrong:
+
 When Things Go Wrong
 ====================
 
-Futhark is a much younger and more raw language than you may be
+Futhark is a much younger and more raw language than languages you may be
 accustomed to, and many common language features are missing. It is
 important to remember that Futhark is an *on-going research project*,
 and you should not expect the same predictability and quality of error

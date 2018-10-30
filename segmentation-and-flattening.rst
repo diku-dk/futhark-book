@@ -1,20 +1,22 @@
-.. _parallel-algorithms:
+.. _segmentation-and-flattening:
 
-Parallel Algorithms
-===================
+Segmented Operations and Irregular Flattening
+=============================================
 
-In this chapter, we will present a number of parallel algorithms for
-solving a number of problems. We will make effective use of the SOAC
-parallel array combinators. In particular, it turns out that the
-operator is critical for writing parallel algorithms. In fact, we shall
-first develop the notion of a *segmented scan* operation, which, as we
-shall see, can be implemented using Futhark’s operator, and which in its
-own right is essential to many of the later algorithms.
+In this chapter, we present a number of tools for implementing
+irregular nested data-parallel algorithms. We will first
+present a number of segmented operations, which, as it turns out, can
+be implemented using Futhark's standard SOAC parallel array
+combinators. In particular, it turns out that the ``scan`` operator is
+of critical importance. In fact, we shall develop the notion of a
+*segmented scan* operation, which, as we shall see, can be implemented
+using Futhark’s ``scan`` operator, and which in its own right is
+essential to many of the later algorithms.
 
 Based on the segmented scan operator and the other Futhark SOAC
-operations, but before investigating more challenges algorithms, we also
-present a set of utility functions as well as their parallel
-implementations.
+operations, but before investigating more challenging irregular
+algorithms, we also present a set of utility functions as well as
+their parallel implementations.
 
 .. sec:sgmscan:
 
@@ -357,7 +359,14 @@ The function ``main`` sets up a grid and calls the function
 constituting points for each line, computed using the ``linepoints``
 function. The resulting points look like this:
 
-.. image:: img/lines_grid.svg
+.. only:: latex
+
+   .. image:: img/lines_grid.pdf
+      :width: 600px
+
+.. only:: html
+
+   .. image:: img/lines_grid.svg
 
 An unfortunate problem with the line drawing routine shown above is
 that it draws the lines sequentially, one by one, and therefore makes
@@ -410,7 +419,7 @@ lowest point, and the second point is the middle point (according to
 the y-axis).
 
 The first function we need to pass to the ``expand`` function is a
-function that determines the number of horizontal lines in triangle:
+function that determines the number of horizontal lines in the triangle:
 
 .. literalinclude:: src/triangles.fut
    :lines: 63-64
@@ -447,112 +456,46 @@ The function makes use of both the ``lines_of_triangles`` function
 that we have defined here and the work efficient ``drawlines``
 function defined previously. Here is a plot of the result:
 
-.. image:: img/triangles_grid.svg
+.. only:: latex
+
+   .. image:: img/triangles_grid.pdf
+      :width: 600px
+
+.. only:: html
+
+   .. image:: img/triangles_grid.svg
 
 
+Complex Flattening
+------------------
 
-Low-Discrepancy Sequences
--------------------------
-
-Futhark comes with a library for generating Sobol sequences, which are
-examples of so-called *low-discrepancy sequences*, sequences that,
-when combined with Monte-Carlo methods, make numeric integration
-converge faster than if ordinary pseudo-random numbers are used and
-are more flexible than if uniform sampling techniques are used. Sobol
-sequences may be multi-dimensional and a key property of using Sobol
-sequences is that we can freely choose the number of points that
-should span the multi-dimensional space. In contrast, if we set out to
-use a simpler uniform sampling technique for spanning two dimensions,
-we can only span the space properly if we choose the number of points
-to be on the form :math:`x^2`, for some natural number :math:`x`. This
-spanning problem becomes worse for higher dimensions.
-
-As an example, we shall see how we can use Sobol sequences together
-with Monte-Carlo simulation to compute the value of :math:`\pi`. We
-shall also see that doing so will result in faster conversion towards
-the true value of :math:`\pi` compared to if pseudo-random numbers are
-used.
-
-To calculate an approximation to the value of :math:`\pi`, we will use
-a simple dart-throwing approach. We will throw darts at a 2 by 2
-square, centered around the origin, and then establish the ratio
-between the number of darts hitting within the unit circle with the
-number of darts hitting the square. This ratio multiplied with 4 will
-be our approximation of :math:`\pi`. The more darts we throw, the
-better our approximation, assuming that the darts we throw hit the
-board somewhat evenly. To calculate whether a particular dart, thrown
-at the point :math:`(x,y)`, is within the unit circle, we can apply
-the standard Pythagoras formula:
-
-.. math::
-   \pi ~~\approx~~ \frac{4}{N} \sum_{i=1}^N \left \{ \begin{array}{ll} 1 & \mbox{if} ~ x_i^2 + y_i^2 < 1 \\ 0 & \mbox{otherwise} \end{array} \right .
-
-For the actual throwing of darts, we need to establish :math:`N` pairs
-of numbers, each in the interval [-1;1]. Now, it turns out that it
-matters significantly how we choose to throw the darts. Some obvious
-choices would be to throw the darts in a regular grid (uniform
-sampling), or to choose points using a pseudo-random number generator.
-
-The Futhark library, as we shall see, makes essential use of an
-*independent formula* for calculating, independently, the :math:`n`'th
-Sobol number. However, even though such a formula is essential for
-achieving parallelism, it performs poorly compared to the more
-efficient *recurrent formula*, which makes it possible to calculate
-the :math:`n`'th Sobol number if we know the previous Sobol number.
-The Futhark library makes essential use of both formulas. The
-calculation of a sequence of Sobol numbers depends on a set of
-direction vectors, which are also provided by the library.
-
-The key functionality of the library comes in the form of a
-higher-order module `Sobol`, which takes as arguments a direction
-vector module and a module specifying the dimensionality of the
-generated Sobol numbers:
+Unfortunately, the flattening-by-expansion technique does not suit all
+irregular problems. We shall now investigate how we can flatten a
+highly irregular algorithm such as quick-sort. The Quick-sort
+algorithm can be presented very elegantly in a functional
+language. Consider the following pseudo-code, which, unfortunately, is
+not immediately Futhark code:
 
 ::
 
-    module type sobol_dir  = { ... }
-    module sobol_dir       : sobol_dir  -- file sobol-dir-50, e.g.
+    let quicksort xs =
+      if length xs < 2 then xs
+      else let (left,middle,right) = partition xs[length xs / 2] xs
+           in quicksort left ++ middle ++ quicksort right
 
-    module type sobol = {
-      val D : i32
-      val norm : f64
-      val independent : i32 -> [D]u32
-      val recurrent   : i32 -> [D]u32 -> [D]u32
-      val sobol       : (n: i32) -> [n][D]f64
-    }
-    module Sobol : (DM : sobol_dir) -> (X : { val D : i32 }) -> sobol
+Here the function ``partition`` returns three arrays with the first
+array containing elements smaller than the *pivot* element ``xs[length xs
+/ 2]``, the second array containing elements equal to the pivot
+element, and the third array containing elements that are greater than
+the pivot element.  There are multiple problems with this code. First,
+the code makes use of recursion, which is not supported by
+Futhark. Second, the kind of recursion used is not tail-recursion,
+which means that it is not directly obvious how to eliminate the
+recursion. Third, it is not clear how the code can avoid using an
+excessive amount of memory instead of making use of inplace-updates
+for the sorting. Finally, it seems that the code is inherently
+task-parallel in nature and not particularly data-parallel.
 
-For estimating the value of :math:`\pi`, we will need a
-two-dimensional Sobol sequence, thus we apply the `Sobol` higher-order
-module to the direction vector module that works for upto 50
-dimensions and a module specifying a dimensionality of two:
-
-.. literalinclude:: src/pi.fut
-   :lines: 1-4
-
-We can now complete the program by writing a `main` function that
-computes an array of Sobol numbers of a size given by the parameter
-given to `main` and feed this array into a function that will compute
-the estimation of :math:`\pi` using the function shown above:
-
-.. literalinclude:: src/pi.fut
-   :lines: 6-17
-
-The use of Sobol numbers for estimating :math:`\pi` turns out to be
-about three times slower than using a uniform grid on a standard
-GPU. However, it converges towards :math:`\pi` equally well (with
-increasing :math:`N`) and is supperior for larger dimensions
-:cite:`futhark:fhpc18`. In general, there are other good reasons to
-avoid uniform sampling in relation to Monte-Carlo methods.
-
-
-
-
-#. pseudo random numbers
-
-#. trees
-
-#. graphs
-#. histograms
-
-#. parenthesis matching
+The solution is to solve a slightly more general problem. More
+precisely, we shall set out to sort a number of segments,
+simultaneously, where each segment comprises a part of the array.

@@ -160,19 +160,31 @@ well-performing GPU code :cite:`finpar,apltofuthark2016`.
 Structure of the Book
 ---------------------
 
-The book is organised into several parts. In :ref:`futlang`, we
-introduce the Futhark language, including its basic syntax, the
-semantics of the core language, and the built-in array second-order
-array combinators and their parallel semantics. We also describe how
-to compile and execute Futhark programs using both the sequential C
-backend and the parallel GPU backend. Finally, we describe Futhark's
-module system, which allows for programmers to organise code into
-reusable components that carry no overhead whatsoever, due to
-Futhark's aggressive strategy of eliminating all module system
-constructs at compile time. We also describe Futhark's support for
-parametric polymorphism and restricted form of higher-order functions,
-which provide programmers with excellent tooling for writing abstract
-reusable code.
+The book is organised in chapters. In :ref:`futlang`, we introduce the
+Futhark language, including its basic syntax, the semantics of the
+core language, and the built-in array second-order array combinators
+and their parallel semantics. We also describe how to compile and
+execute Futhark programs using both the sequential C backend and the
+parallel GPU backend. Finally, we describe Futhark's module system,
+which allows for programmers to organise code into reusable components
+that carry no overhead whatsoever, due to Futhark's aggressive
+strategy of eliminating all module system constructs at compile
+time. We also describe Futhark's support for parametric polymorphism
+and restricted form of higher-order functions, which provide
+programmers with excellent tooling for writing abstract reusable code.
+
+In :ref:`testing`, :ref:`benchmarking`, and
+:ref:`when-things-go-wrong`, we describe how to work with Futhark in
+practice. We discuss techniques for checking the correctness of
+Futhark programs using unit tests, demonstrate how to debug Futhark
+programs using the Futhark debugger, show how to benchmark Futhark
+programs (on both CPU and GPU hardware), and give suggestions of how
+to resolve issues that may occur when writing programs in Futhark.
+
+In :ref:`interoperability`, we describe how Futhark can be used in
+concert with Python, to develop, for instance, interactive, real time
+games. We also outline the possibilities for using Futhark in the
+context of C and .NET programming.
 
 In :ref:`costmodel`, we introduce an “ideal”
 cost model for the Futhark language based on the notions of work and
@@ -183,10 +195,21 @@ list-homomorphism theorem, which forms the basis of map-reduce reasoning
 and which turns out to play an important role in the fusion engine of
 Futhark.
 
-In :ref:`parallel-algorithms`, we present a number of parallel
-algorithms that can be used as building blocks for programming more
-complex parallel programs. Some of these algorithms have made it into
-Futhark libraries, which may be organised, managed, and documented
-using Futhark's package manager and Futhark's documentation
-tool. These tools are described in the Futhark User's Guide available
-at https://futhark.readthedocs.io/en/latest/.
+Futhark allows for programmers to organise and distribute libraries
+and applications in Futhark packages, which may be organised, managed,
+and documented using Futhark's package manager and Futhark's
+documentation tool. These tools are described in the Futhark User's
+Guide available at https://futhark.readthedocs.io/en/latest/.  In
+:ref:`random-sampling`, we show how to program with pseudo-random
+numbers in Futhark using the Futhark package ``cpprandom``. This
+package allows for generating pseudo-random numbers in parallel and
+further allows the programmer to generate random samples for a number
+of distributions, including uniform and normal distributions. In the
+chapter, we also present the Futhark package ``sobol``, which allows
+for generating Sobol numbers efficiently in parallel. This library is
+useful for stochastic modeling and for Monte Carlo Simulation in
+high-dimensional spaces.
+
+In :ref:`segmentation-and-flattening`, we describe the necessary
+tooling and building blocks for implementing irregular data-parallel
+algorithms in Futhark.
