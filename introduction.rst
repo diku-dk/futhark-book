@@ -174,13 +174,14 @@ Futhark's support for parametric polymorphism and restricted form of
 higher-order functions, which provide programmers with excellent
 tooling for writing abstract reusable code.
 
-In :ref:`testing`, :ref:`benchmarking`, and
-:ref:`when-things-go-wrong`, we describe how to work with Futhark in
-practice. We discuss techniques for checking the correctness of
-Futhark programs using unit tests, demonstrate how to debug Futhark
-programs using the Futhark debugger, show how to benchmark Futhark
-programs (on both CPU and GPU hardware), and give suggestions of how
-to resolve issues that may occur when writing programs in Futhark.
+In :ref:`practicals` we discuss various practical matters related to
+Futhark programming.  We discuss techniques for checking the
+correctness of Futhark programs using unit tests, demonstrate how to
+debug Futhark programs using the Futhark debugger, show how to
+benchmark Futhark programs (on both CPU and GPU hardware), and give
+suggestions of how to resolve issues that may occur when writing
+programs in Futhark.  We also show how to use the Futhark package
+manager to download libraries of Futhark code.
 
 In :ref:`interoperability`, we describe how Futhark can be used in
 concert with Python, to develop, for instance, interactive, real time

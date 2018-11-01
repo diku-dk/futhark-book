@@ -18,9 +18,7 @@
 
    introduction.rst
    language.rst
-   testing.rst
-   benchmarking.rst
-   when-things-go-wrong.rst
+   practical-matters.rst
    interoperability.rst
    parallel-cost-model.rst
    soac-algebra.rst

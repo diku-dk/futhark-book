@@ -1683,3 +1683,44 @@ the names from a module into the current scope
           : [n][m]scalar =
           map (\xs -> map (dotprod xs) (transpose yss)) xss
       }
+
+.. _other-files:
+
+Importing other files
+~~~~~~~~~~~~~~~~~~~~~
+
+While Futhark's module system is not directly file-oriented, there is
+still a close interaction.  You can access code in other files as
+follows::
+
+  import "module"
+
+The above will include all non-``local`` top-level definitions from
+``module.fut`` is and make them available in the current Futhark
+program.  The ``.fut`` extension is implied.
+
+You can also include files from subdirectories::
+
+  import "path/to/a/file"
+
+The above will include the file ``path/to/a/file.fut`` relative to the
+including file.
+
+If we are defining a top-level function (or any other top-level
+construct) that we do not want to be visible outside the current file,
+we can prefix it with ``local``::
+
+  local let i_am_hidden x = x + 2
+
+Qualified imports are possible, where a module is created for the
+file::
+
+  module M = import "module"
+
+In fact, a plain ``import "module"`` is equivalent to::
+
+  local open import "module"
+
+This opens ``"module"`` in the current file, but does not propagate
+its contents to anything that is in turn ``import``-ing the current
+file.
