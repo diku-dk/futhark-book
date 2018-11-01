@@ -248,11 +248,11 @@ time the computation starts, to the time it ends.
 
 There is still some wiggle room in how we benchmark. For example,
 should we measure the time it takes to load the input data from disk?
-Should we initialise various devices and drivers? Should we perform a
-clean shutdown? How many times should we run the program, and should
-we report maximum, minimum, or average run time? We will not try to
-answer all of these questions, but instead merely describe the
-benchmarking tools provided by Futhark.
+Or time it takes to initialise various devices and drivers? Should we
+perform a clean shutdown? How many times should we run the program,
+and should we report maximum, minimum, or average run time? We will
+not try to answer all of these questions, but instead merely describe
+the benchmarking tools provided by Futhark.
 
 Simple Measurements
 ~~~~~~~~~~~~~~~~~~~
@@ -443,8 +443,9 @@ execution.  The tool takes care of the mechanics of run-time
 measurements, and even computes the relative standard deviation
 ("RSD") of the measurements for us. The correctness of the output is
 also automatically checked. By default, ``futhark-bench`` performs ten
-runs for every data set, but this number can be changed with
-the ``--runs`` command line option.
+runs for every data set, but this number can be changed with the
+``--runs`` command line option.  Unless you can articulate a good
+reason not to, always use ``futhark-bench`` for benchmarking.
 
 .. _package-management:
 
