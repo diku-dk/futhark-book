@@ -229,12 +229,10 @@ useful when operating on complex values.
 Benchmarking
 ------------
 
-Consider an implementation of the dot product of two vectors:
+Consider an implementation of the dot product of two integer vectors:
 
-::
-
-    let main (x: []i32) (y: []i32): i32 =
-      reduce (+) 0 (map2 (*) x y)
+.. literalinclude:: src/dotprod.fut
+   :lines: 5-
 
 We previously mentioned that, for small data sets, sequential
 execution is likely to be much faster than parallel execution. But how
