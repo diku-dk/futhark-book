@@ -9,10 +9,10 @@ understand, yet can be compiled to very efficient code by an
 optimising compiler.  Futhark is a *small* language - it is not
 designed to replace general-purpose langages for application
 programming.  The intended use case is that Futhark is only used for
-relatively small but compute-intensive parts of an application, as the
+the small but compute-intensive parts of an application, as the
 Futhark compiler generates code that can be easily called from
 non-Futhark code.  The language was originally developed in Denmark,
-and is therefore named after `the Runic alphabet
+and is therefore named after `the runic alphabet
 <https://en.wikipedia.org/wiki/Elder_Futhark>`_.
 
 This book is written for a reader who already has some programming
