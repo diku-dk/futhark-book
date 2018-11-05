@@ -473,15 +473,24 @@ Unfortunately, the flattening-by-expansion technique does not suit all
 irregular problems. We shall now investigate how we can flatten a
 highly irregular algorithm such as quick-sort. The Quick-sort
 algorithm can be presented very elegantly in a functional
-language. Consider the following pseudo-code, which, unfortunately, is
-not immediately Futhark code:
+language. The function ``qsort`` that we will define has the following
+type:
 
 ::
 
-    let quicksort xs =
+    val qsort 't [n] : (t -> t -> bool) -> [n]t -> [n]t
+
+Given a comparison function (``<=``) and an array of elements ``xs``,
+``qsort (<=) xs`` returns an array with the elements in ``xs`` sorted
+according to ``<=``. Consider the following pseudo-code, which,
+unfortunately, is not immediately Futhark code:
+
+::
+
+    let qsort (<=) xs =
       if length xs < 2 then xs
-      else let (left,middle,right) = partition xs[length xs / 2] xs
-           in quicksort left ++ middle ++ quicksort right
+      else let (left,middle,right) = partition (<=) xs[length xs / 2] xs
+           in qsort (<=) left ++ middle ++ qsort (<=) right
 
 Here the function ``partition`` returns three arrays with the first
 array containing elements smaller than the *pivot* element ``xs[length xs
@@ -498,4 +507,74 @@ task-parallel in nature and not particularly data-parallel.
 
 The solution is to solve a slightly more general problem. More
 precisely, we shall set out to sort a number of segments,
-simultaneously, where each segment comprises a part of the array.
+simultaneously, where each segment comprises a part of the
+array. Notice that we are interested in supporting a notion of
+*partial segmentation*, for which the segments of interest are
+disjoint but do not necessarily together span the entire array. In
+particular, the algorithm does not need to sort segments containing
+previously chosen pivot values. Such segments are already located in
+the correct positions, which means that they need not be moved around
+by the segmented quicksort implementation.
+
+We first define a type ``sgm`` that specifies a segment of an
+underlying one-dimensional array of values:
+
+.. literalinclude:: src/quick_sort.fut
+   :lines: 25-25
+
+At top-level, the function ``qsort`` is defined as follows, assuming a
+function ``step`` of type ``(t -> t -> bool) -> *[n]t -> []sgm ->
+(*[n]t,[]sgm)``:
+
+.. literalinclude:: src/quick_sort.fut
+   :lines: 89-93
+
+The ``step`` function is called initially with the array to be sorted
+as argument together with a singleton array containing a segment
+denoting the entire array to be sorted. The ``step`` function is
+called iteratively until the returned array of segments is empty. The
+job of the ``step`` function is to divide each segment into three new
+segments based on pivot values found for each segment. After the step
+function has reordered the values in the segments, the middle segment
+(containing values equal to a pivot) need not be dealt with again in
+the further process. A new array of segment descriptors is then
+defined and after removing empty segment descriptors, the resulting
+array of non-empty segment descriptors is returned by the ``step``
+function together with the reordered value array.
+
+Before we can define the ``step`` function, we first define a few
+helper functions.  Using the functions ``segmented_iota`` and
+``segmented_replicate``, defined earlier, we can define a function for
+finding all the indexes represented by an array of segments:
+
+.. literalinclude:: src/quick_sort.fut
+   :lines: 28-33
+
+We also define a function ``info`` that, given an ordering function
+and two elements, returns ``-1`` if the first element is less than the
+second element, ``0`` if the elements are identical, and ``1`` if the
+first element is greater than the second element:
+
+.. literalinclude:: src/quick_sort.fut
+   :lines: 15-17
+
+The following two functions ``tripit`` and ``tripadd`` are used for
+converting the classification of elements into subsegments:
+
+.. literalinclude:: src/quick_sort.fut
+   :lines: 19-23
+
+We can now define the function ``step`` that, besides from an ordering
+function, takes as arguments (1) the array containing values and (2) an
+array of segments to be sorted. The function returns a pair of a
+reordered array of values and a new array of segments to be
+sorted:
+
+.. literalinclude:: src/quick_sort.fut
+   :lines: 35-79
+
+The algorithm has best case work complexity :math:`O(n)` (when all
+elements are identical), worst case work complexity :math:`O(n^2)`,
+and an average case work complexity of :math:`O(n \log n)`. It has
+best depth complexity :math:`O(1)`, worst depth complexity
+:math:`O(n)` and average depth complexity :math:`O(\log n)`.
