@@ -443,7 +443,7 @@ using the general concept of *contraction*, which is the general
 algorithmic trick of solving a particular problem by first making a
 *contraction step*, which simplifies the problem size, and then
 repeating the contraction algorithm until a final result is reached
-:cite`algdesign:parseq2016`.
+:cite:`algdesign:parseq2016`.
 
 The reduction algorithm that we shall implement assumes an associative
 reduction operator :math:`\oplus : A \rightarrow A \rightarrow A`, a
