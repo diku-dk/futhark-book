@@ -1,7 +1,14 @@
+# Ignore everything
+*
+# Now unignore everything with an extension
+!*.*
+# Ignore some specific files again.
 *.c
 *.res
 *.exe
 *.out
-*-opencl
-*-c
-*.bin
+*.actual
+*.expected
+# Unignore a few other specific files.
+!Makefile
+!futhark.pkg

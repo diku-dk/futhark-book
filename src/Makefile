@@ -8,12 +8,15 @@ all:
 	@echo Run 'make test' or 'make testopencl'
 
 .PHONY: test
-test:
+test: lib
 	futhark-test . --compiler=$(FUTHARKC)
 
 .PHONY: testopencl
 testopencl:
 	futhark-test . --compiler=$(FUTHARKOPENCL) --pass-option=-d$(OPENCL_DEVICE)
+
+lib: futhark.pkg
+	futhark-pkg sync
 
 # Generate executables
 %.exe: %.fut
