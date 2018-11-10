@@ -1423,9 +1423,90 @@ Futhark compiler will prevent us from using the ``+`` operator.  In
 some language, such as Haskell, facilities such as *type classes* to
 support restrictired polymorphism, where we can require that an
 instantiation of a type variable supports certain operations (like
-``+``).  Futhark does not have type classes, but it does have a
-powerful module system that we can use instead.  This module system is
-the subject of the following section.
+``+``).  Futhark does not have type classes, but it does support
+programming with certain kinds of higher-order functions and it does
+have a powerful module system. The support for higher-order functions
+in Futhark and the module system are the subjects of the following
+sections.
+
+.. _higher-order-functions:
+
+Higher-Order Functions
+----------------------
+
+Futhark supports certain kinds of higher-order functions. For
+performance reasons, certain restrictions apply, which means that
+Futhark can eliminate higher-order functions at compile time through a
+technique called *defunctionalization* :cite:`hovgaard18thesis,tfp18hovgaard`. From
+a programmer's point-of-view, the main restrictions are the following:
+
+1. Functions may not be stored inside arrays.
+2. Functions may not be returned from branches in conditional
+   expressions.
+3. Functions are not allowed in loop parameters.
+
+Whereas these restrictions seem daunting, functions may still be
+grouped in records and tuples and such structures may be passed to
+functions and even returned by functions. In effect, quite a few
+functional design patterns may be applied, ranging from defining
+polymorphic higher-order functions, for the purpose of obtaining a
+high degree of abstraction and code reuse (e.g., for defining program
+libraries), to specific uses of higher-order functions for
+representing various concepts as functions. Examples of such uses
+include a library for type-indexed compact serialisation (and
+deserialisation) of Futhark values
+:cite:`tfp05elsman,functional-pearl-pickler-combinators` and encoding
+of Conal Elliott's functional images :cite:`Elliott03:FOP`.
+
+We have seen earlier how annonymous functions may be constructed and
+passed as arguments to SOACs. Here is an example annoymous function
+that takes parameters ``x``, ``y``, and ``z``, returns a value of type ``t``, and
+has body `e`:
+
+::
+
+    \x y z: t -> e
+
+Futhark allows for the programmer to specify so-called *sections*,
+which provide a way to form implicit eta-expansions of partially
+applied operations. Sections are encapsulated in parentheses. Assuming
+``binop`` is a binary operator, such as ``+``, the section ``(binop)``
+is equivalent to the expression ``\x y -> x binop y``. Similarly, the
+section ``(x binop)`` is equivalent to the expression ``\y -> x binop
+y`` and the section ``(binop y)`` is equivalent to the expression ``\x
+-> x binop y``.
+
+For making it easy to select fields from records (and tuples), a
+select-section may be used. An example is the section ``(.a.b.c)``,
+which is equivalent to the expression ``\y -> y.a.b.c``. Similarly,
+the example section ``(.[i])``, for indexing into an array, is
+equivalent to the expression ``\y -> y[i]``.
+
+At a high level, Futhark functions are values, which can be used as
+any other values. However, to ensure that the Futhark compiler is able
+to compile the higher-order functions efficiently via
+defunctionalisation, certain type-driven restrictions exist on how
+functions can be used, as described earlier. Moreover, for Futhark to
+support higher-order polymorphic functions, type variables, when
+bound, are divided into non-lifted (bound with an apostrophe,
+e.g. ``'t``), and lifted (bound with an apostrophe and a hat,
+e.g. ``'^t``). Only lifted type parameters may be instantiated with a
+functional type. Within a function, a lifted type parameter is treated
+as a functional type. All abstract types declared in modules (see
+:ref:`modules`) are considered non-lifted, and may not be functional.
+
+Uniqueness typing generally interacts poorly with higher-order
+functions. The issue is that there is no way to express, in the type
+of a function, how many times a function argument is applied, or to
+what, which means that it will not be safe to pass a function that consumes
+its argument. The following two conservative rules govern the
+interaction between uniqueness types and higher-order functions:
+
+1. In the expression ``let p = e in ...``, if any in-place update
+   takes place in the expression ``e``, the value bound by ``p`` must
+   not be or contain a function.
+2. A function that consumes one of its arguments may not be passed as
+   a higher-order argument to another function.
 
 .. _modules:
 
@@ -1441,8 +1522,10 @@ modules :cite:`Elsman:2018:SIH:3243631.3236792`. The module system is
 not just a method for organising Futhark programs, it is also a
 powerful facility for writing generic code. Most importantly, all
 module language constructs are eliminated from the program at compile
-time, thus, there is no overhead involved with making use of the
-module language features.
+time, using a technique called static interpretation
+:cite:`elsman99,Annenkov:phdthesis`. As a consequence, from a
+programmer's perspective, there is no overhead involved with making
+use of module language features.
 
 Simple Modules
 ~~~~~~~~~~~~~~
