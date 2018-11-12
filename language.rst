@@ -1508,6 +1508,22 @@ interaction between uniqueness types and higher-order functions:
 2. A function that consumes one of its arguments may not be passed as
    a higher-order argument to another function.
 
+A number of higher-order utility functions are available at
+top-level. Amongst these are the following quite useful functions:
+
+::
+
+    val const '^a '^b  : a -> b -> a          -- constant function
+    val id    '^a      : a -> a               -- identity function
+    val |>    '^a '^b  : a -> (a -> b) -> b   -- pipe right
+    val <|    '^a '^b  : (a -> b) -> a -> b   -- pipe left
+
+    val >->     '^a '^b '^c : (a -> b) (b -> c) -> a -> c
+    val <-<     '^a '^b '^c : (b -> c) (a -> b) -> a -> c
+
+    val curry   '^a '^b '^c : ((a,b) -> c) -> a -> b -> c
+    let uncurry '^a '^b '^c : (a -> b -> c) -> (a,b) -> c
+
 .. _modules:
 
 Modules
