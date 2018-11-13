@@ -650,7 +650,7 @@ its neutral element to compute the sum of an array of integers:
 
 It turns out that combining ``map`` and ``reduce`` is both powerful
 and has remarkable optimisation properties, as we will discuss in
-:ref:`soac-algebra`. Many Futhark programs are primarly
+:ref:`fusion`. Many Futhark programs are primarly
 ``map``-``reduce`` compositions. For example, we can define a function
 to compute the dot product of two vectors of integers:
 
@@ -685,7 +685,7 @@ prepending the neutral element and removing the last element.
 While the idea behind ``reduce`` is probably familiar, ``scan`` is a
 little more esoteric, and mostly has applications for handling
 problems that do not seem parallel at first glance. Several examples
-are discussed in :ref:`segmentation-and-flattening`.
+are discussed in the following chapters.
 
 Filtering
 ~~~~~~~~~
@@ -1522,7 +1522,7 @@ top-level. Amongst these are the following quite useful functions:
     val <-<     '^a '^b '^c : (b -> c) (a -> b) -> a -> c
 
     val curry   '^a '^b '^c : ((a,b) -> c) -> a -> b -> c
-    let uncurry '^a '^b '^c : (a -> b -> c) -> (a,b) -> c
+    val uncurry '^a '^b '^c : (a -> b -> c) -> (a,b) -> c
 
 .. _modules:
 
@@ -1717,14 +1717,14 @@ collapsing an array
     }
 
 There is an implied assumption here, which is not captured by the type
-system: the function ``add`` must be associative and have ``zero`` as
-its neutral element. These constraints are from the parallel semantics
-of ``reduce``, and the algebraic concept of a *monoid*. Note that in
-``monoid``, no definition is given of the type ``t`` - we only assert
+system: The function ``add`` must be associative and have ``zero`` as
+its neutral element. These constraints come from the parallel semantics
+of ``reduce``, and the algebraic concept of a *monoid*. Notice that in
+``monoid``, no definition is given of the type ``t``---we only assert
 that there must be some type ``t``, and that certain operations are
 defined for it.
 
-We can use the parametric module ``sum`` thus
+We can use the parametric module ``sum`` as follows:
 
 ::
 
@@ -1732,8 +1732,8 @@ We can use the parametric module ``sum`` thus
 
 We can now refer to the function ``sum_i32.sum``, which has type
 ``[]i32 -> i32``. The type is only abstract inside the definition of the
-parametric module. We can instantiate ``sum`` again with another module;
-this one anonymous
+parametric module. We can instantiate ``sum`` again with another module,
+this time an anonymous module:
 
 ::
 
@@ -1757,11 +1757,12 @@ type-checked when it is instantiated, whereas a parametric module is
 type-checked when it is defined.
 
 Parametric modules, like other modules, can contain more than one
-declaration. This is useful for giving related functionality a common
-abstraction, for example to implement linear algebra operations that are
-polymorphic over the type of scalars. This example uses an anonymous
-module type for the module parameter, and the declaration, which brings
-the names from a module into the current scope
+declaration. This feature is useful for giving related functionality a
+common abstraction, for example to implement linear algebra operations
+that are polymorphic over the type of scalars. The following example
+uses an anonymous module type for the module parameter and the
+``open`` declaration for bringing the names from a module into the
+current scope:
 
 ::
 
@@ -1795,10 +1796,10 @@ follows::
   import "module"
 
 The above will include all non-``local`` top-level definitions from
-``module.fut`` is and make them available in the current Futhark
+``module.fut`` and make them available in the current Futhark
 program.  The ``.fut`` extension is implied.
 
-You can also include files from subdirectories::
+You can also include files from subdirectories:::
 
   import "path/to/a/file"
 
@@ -1812,7 +1813,7 @@ we can prefix it with ``local``::
   local let i_am_hidden x = x + 2
 
 Qualified imports are possible, where a module is created for the
-file::
+file:::
 
   module M = import "module"
 
@@ -1820,6 +1821,6 @@ In fact, a plain ``import "module"`` is equivalent to::
 
   local open import "module"
 
-This opens ``"module"`` in the current file, but does not propagate
-its contents to anything that is in turn ``import``-ing the current
+This declaration opens ``"module"`` in the current file, but does not
+propagate its contents to modules that in turn ``import`` the current
 file.

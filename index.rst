@@ -21,7 +21,9 @@
    practical-matters.rst
    interoperability.rst
    parallel-cost-model.rst
-   soac-algebra.rst
+   fusion.rst
+   regular-flattening.rst
    random-sampling.rst
-   segmentation-and-flattening.rst
+   irregular-flattening.rst
    zbibliography.rst
+   conclusion.rst

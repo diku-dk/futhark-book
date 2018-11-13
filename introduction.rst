@@ -188,14 +188,27 @@ concert with Python, to develop, for instance, interactive, real time
 games. We also outline the possibilities for using Futhark in the
 context of C and .NET programming.
 
-In :ref:`costmodel`, we introduce an “ideal”
-cost model for the Futhark language based on the notions of work and
-span. In :ref:`soac-algebra`, we present to the reader the underlying
-algebraic reasoning principles that lie behind the Futhark internal
-fusion technology. In particular, we introduce the reader to the
-list-homomorphism theorem, which forms the basis of map-reduce reasoning
-and which turns out to play an important role in the fusion engine of
+In :ref:`costmodel`, we introduce an “ideal” cost model for the
+Futhark language based on the notions of work and span. We present
+both a type system for an idealized version of Futhark and present a
+dynamic semantics for the language. The dynamic semantics is used for
+deriving the notions of work and span.
+
+In :ref:`fusion`, we present to the reader the underlying algebraic
+reasoning principles that lie behind the Futhark internal fusion
+technology. We also present to the reader a series of parallel utility
+functions and demonstrate the usefulness of applying the
+list-homomorphism theorem :cite:`BirdListTh`, which forms the basis of
+map-reduce reasoning and which, in many cases, turns out to play an
+important role for implementing efficient data-parallel algorithms in
 Futhark.
+
+In :ref:`regular-flattening`, we present Futhark's way of dealing
+with nested regular parallelism. In this chapter, we also introduce a
+number of segmented operations, including the essential segmented scan
+operation, which turns out to be central to both Futhark's moderate
+flattening technique and as a central tool for programmers to flatten
+irregular data-parallel problems.
 
 Futhark allows for programmers to organise and distribute libraries
 and applications in Futhark packages, which may be organised, managed,
@@ -212,6 +225,9 @@ for generating Sobol numbers efficiently in parallel. This library is
 useful for stochastic modeling and for Monte Carlo Simulation in
 high-dimensional spaces.
 
-In :ref:`segmentation-and-flattening`, we describe the necessary
+In :ref:`irregular-flattening`, we describe the necessary
 tooling and building blocks for implementing irregular data-parallel
 algorithms in Futhark.
+
+In :ref:`conclusion`, we conclude and give directions for further
+reading.
