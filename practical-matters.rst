@@ -41,7 +41,7 @@ after are taken as a description of a test to perform.  When
 ``futhark-test`` is passed one or more ``.fut`` files, it will look
 for test blocks and perform the tests they describe.
 
-As an example, let us consider how to test a funtion for matrix
+As an example, let us consider how to test a function for matrix
 multiplication.  The function itself is defined as thus:
 
 .. literalinclude:: src/matmul.fut
@@ -220,7 +220,7 @@ Then we can load and run it from ``futharki``:
    [3i32, 4i32, 5i32]
    >
 
-Whenever we are stopped at a breakpoint, we can enter arbitrary
+Whenever we are stopped at a break point, we can enter arbitrary
 Futhark expressions to inspect the state of the environment.  This is
 useful when operating on complex values.
 
@@ -372,7 +372,7 @@ functions are called repeatedly by some client code.
 
 Compiled Futhark executables support an ``-r N`` option that asks the
 program to perform ``N`` runs internally, and report runtime for each.
-Additionally, a non-measured warmup run is performed initially. We can
+Additionally, a non-measured warm-up run is performed initially. We can
 use it like this:
 
 .. code-block:: none
@@ -647,7 +647,7 @@ For example, consider this program:
           (0..<n)
 
 At the time of this writing, the ``futhark-opencl`` compiler will fail
-with the not particularly illuminative error message ``Cannot allocate
+with the not particularly illuminating error message ``Cannot allocate
 memory in kernel``. The reason is that the compiler is trying to
 compile the ``map`` to parallel code, which involves pre-allocating
 memory for the ``a`` and ``b`` array. It is unable to do this, as the

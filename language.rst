@@ -229,7 +229,7 @@ Simple Expressions
 The Futhark expression syntax is mostly conventional ML-derived
 syntax, and supports the usual binary and unary operators, with few
 surprises.  Futhark does not have syntactically significant
-indentation, so feel free to put whitespace whenever you like. This
+indentation, so feel free to put white space whenever you like. This
 section will not try to cover the entire Futhark expression language
 in complete detail. See the `reference manual
 <http://futhark.readthedocs.io>`_ for a comprehensive treatment.
@@ -293,7 +293,7 @@ expression ``a[i1, i2, i3, ...]``.  All array accesses are checked at
 runtime, and the program will terminate abnormally if an invalid
 access is attempted.
 
-Whitespace is used to disambiguate indexing from application to array
+White space is used to disambiguate indexing from application to array
 literals. For example, the expression ``a b [i]`` means “apply the
 function ``a`` to the arguments ``b`` and ``[i]``”, while ``a b[i]``
 means “apply the function ``a`` to the argument ``b[i]``”.
@@ -334,7 +334,7 @@ because they bind very loosely.  A stride can be provided by writing
 The element type of the produced array is the same as the type of the
 integers used to specify the bounds, which must all have the same type
 (but need not be constants). We will be making frequent use of this
-notation thoughout this book.
+notation throughout this book.
 
 .. _function-declarations:
 
@@ -404,7 +404,7 @@ size parameters.
 
 .. admonition:: Note: Loading files into ``futharki``
 
-   At this point you may want to start writing and applying funtions.
+   At this point you may want to start writing and applying functions.
    It is possible to do this directly in ``futharki``, but it quickly
    becomes awkward for multi-line functions.  You can use the
    ``:load`` command to read declarations from a file:
@@ -650,7 +650,7 @@ its neutral element to compute the sum of an array of integers:
 
 It turns out that combining ``map`` and ``reduce`` is both powerful
 and has remarkable optimisation properties, as we will discuss in
-:ref:`fusion`. Many Futhark programs are primarly
+:ref:`fusion`. Many Futhark programs are primarily
 ``map``-``reduce`` compositions. For example, we can define a function
 to compute the dot product of two vectors of integers:
 
@@ -1168,7 +1168,7 @@ In :ref:`polymorphism` we will see how to write a polymorphic
 ``replicate`` function that works for any type.
 
 As a more complicated example of using size parameters, consider
-multipliying two matrixes ``x`` and ``y``.  This is only defined if
+multiplying two matrices ``x`` and ``y``.  This is only defined if
 the number of columns in ``x`` equals the number of rows in ``y``.  In
 Futhark, we can encode this as follows:
 
@@ -1359,7 +1359,7 @@ Consider the replication function we wrote earlier::
       map (\_ -> x) (0..<n)
 
 This function works only for replicating values of type ``i32``.  If
-we wanted to replicate, say, bools, we would have to write another
+we wanted to replicate, say, a boolean value, we would have to write another
 function::
 
     let replicate_bool (n: i32) (x: bool): [n]bool =
@@ -1420,8 +1420,8 @@ How do we perform an addition ``x_re`` and ``y_re``?  These are both
 of type ``t``, of which we know nothing.  For all we know, they might
 be instantiated to something that is not numeric at all.  Hence, the
 Futhark compiler will prevent us from using the ``+`` operator.  In
-some language, such as Haskell, facilities such as *type classes* to
-support restrictired polymorphism, where we can require that an
+some languages, such as Haskell, facilities such as *type classes* may be used to
+support a notion of restricted polymorphism, where we can require that an
 instantiation of a type variable supports certain operations (like
 ``+``).  Futhark does not have type classes, but it does support
 programming with certain kinds of higher-order functions and it does
@@ -1437,7 +1437,7 @@ Higher-Order Functions
 Futhark supports certain kinds of higher-order functions. For
 performance reasons, certain restrictions apply, which means that
 Futhark can eliminate higher-order functions at compile time through a
-technique called *defunctionalization* :cite:`hovgaard18thesis,tfp18hovgaard`. From
+technique called *defunctionalisation* :cite:`hovgaard18thesis,tfp18hovgaard`. From
 a programmer's point-of-view, the main restrictions are the following:
 
 1. Functions may not be stored inside arrays.
@@ -1458,8 +1458,8 @@ deserialisation) of Futhark values
 :cite:`tfp05elsman,functional-pearl-pickler-combinators` and encoding
 of Conal Elliott's functional images :cite:`Elliott03:FOP`.
 
-We have seen earlier how annonymous functions may be constructed and
-passed as arguments to SOACs. Here is an example annoymous function
+We have seen earlier how anonymous functions may be constructed and
+passed as arguments to SOACs. Here is an example anonymous function
 that takes parameters ``x``, ``y``, and ``z``, returns a value of type ``t``, and
 has body `e`:
 
@@ -1597,10 +1597,10 @@ compile-time, only a single version of the ``add`` function is defined.
 Module Types
 ~~~~~~~~~~~~
 
-What we have seen so far is nothing more than a simple namespacing
+What we have seen so far is nothing more than a simple namespace
 mechanism. The ML module system only becomes truly powerful once we
-introduce module types and parametric modules (in Standard ML, these are
-called *signatures* and *functors*).
+introduce module types and parametric modules (in Standard ML, these
+are called *signatures* and *functors*).
 
 A module type is the counterpart to a value type. It describes which
 names are defined, and as what. We can define a module type that

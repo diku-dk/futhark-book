@@ -4,14 +4,14 @@ Pseudo-Random Numbers and Monte Carlo Sampling Methods
 ======================================================
 
 Pseudo-random number generation and Monte Carlo sampling are concepts
-that apply to a large number of applicaton areas. In a data-parallel
+that apply to a large number of application areas. In a data-parallel
 setting, these concepts require special treatment beyond the usual
 sequential methods. In this chapter, we first present a Futhark
 package, called ``cpprandom`` for generating pseudo-random numbers in
 parallel. We then present a Futhark package, called ``sobol``, for
 generating Sobol sequences, which are examples of so-called
 low-discrepancy sequences, sequences that make numerical
-multi-dimensional integration converge faster than if psudo-random
+multi-dimensional integration converge faster than if pseudo-random
 numbers were used.
 
 Generating Pseudo-Random Numbers
@@ -162,7 +162,7 @@ generated Sobol numbers:
 
 For estimating the value of :math:`\pi`, we will need a
 two-dimensional Sobol sequence, thus we apply the `Sobol` higher-order
-module to the direction vector module that works for upto 50
+module to the direction vector module that works for up-to 50
 dimensions and a module specifying a dimensionality of two:
 
 .. literalinclude:: src/pi.fut
@@ -179,6 +179,6 @@ the estimation of :math:`\pi` using the function shown above:
 The use of Sobol numbers for estimating :math:`\pi` turns out to be
 about three times slower than using a uniform grid on a standard
 GPU. However, it converges towards :math:`\pi` equally well (with
-increasing :math:`N`) and is supperior for larger dimensions
+increasing :math:`N`) and is superior for larger dimensions
 :cite:`futhark:fhpc18`. In general, there are other good reasons to
 avoid uniform sampling in relation to Monte-Carlo methods.

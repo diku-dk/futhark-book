@@ -15,7 +15,7 @@ On the performance side, there are, of course, always room for
 improvements. In particular, a number of low-level optimisations, such
 as register tiling, could turn out helpful for certain kinds of
 applications. However, even with the current performance level,
-Futhark may turn out fruitful for serious prototying and quick
+Futhark may turn out fruitful for serious prototyping and quick
 time-to-market development.
 
 The Futhark web site at http://futhark-lang.org contains a list of

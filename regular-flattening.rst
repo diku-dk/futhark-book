@@ -3,10 +3,11 @@
 Regular Flattening
 ==================
 
-In this chapter, we introduce the concept of regular moderate
-flattening, which is the essential technique used for making regular
-nested parallel Futhark programs run efficiently in practice on
-parallel hardware such as GPUs.
+In this chapter, we introduce the concept of regular *moderate
+flattening* :cite:`Henriksen:2017:FPF:3062341.3062354`, which is the
+essential technique used for making regular nested parallel Futhark
+programs run efficiently in practice on parallel hardware such as
+GPUs.
 
 We first introduce a number of parallel segmented operations, which
 are essential for dealing with nested parallelism. The segmented
@@ -17,7 +18,7 @@ develop the notion of a *segmented scan* operation, an operation that,
 in its own right, is essential to many parallel algorithms. Based on
 the segmented scan operation and the other Futhark SOAC operations, we
 present a set of utility functions as well as their parallel
-implementations.  The functions are used by the *moderate flattening*
+implementations.  The functions are used by the moderate flattening
 transformation presented in :ref:`moderate-flattening`, but are also
 useful, as we shall see in :ref:`irregular-flattening`, for the
 programmer to manage irregular parallelism through flattening
@@ -157,7 +158,7 @@ array ``vs``.
 Segmented Iota
 --------------
 
-Another useful utlility function is the function ``segmented_iota``
+Another useful utility function is the function ``segmented_iota``
 that, given a array of flags (i.e., booleans), returns an array of
 index sequences, each of which is reset according to the booleans in
 the array of flags. As an example, the expression::
@@ -179,9 +180,9 @@ Indexes to Flags
 Many segmented operations, such as ``segmented_scan`` takes as
 argument an array of boolean flags for specifying when new segments
 start. Often, only the sizes of segments are known, which means that
-it may come in useful to be able to transform an array of segment sizes to a
-corresponding array of boolean flags. Here is one possible parallel
-implementation of such an ``idxs_to_flags`` function:
+it may come in useful to be able to transform an array of segment
+sizes to a corresponding array of boolean flags. Here is one possible
+parallel implementation of such an ``idxs_to_flags`` function:
 
 .. literalinclude:: src/idxs_to_flags.fut
    :lines: 25-27
@@ -199,16 +200,37 @@ Moderate Flattening
 The flattening rules that we shall introduce here allows the Futhark
 compiler to generate parallel kernels for various code block
 patterns. In contrast to the general concept of flattening as
-introduced by Blelloch :cite:`blelloch1994implementation`, Futhark applies a technique called
-*moderate flattening* :cite:`Henriksen:2017:FPF:3062341.3062354` that
-does not cover arbitrary nested parallelism, but which covers well
-many regular nested parallel patterns. We shall come back to the issue of
+introduced by Blelloch :cite:`blelloch1994implementation`, Futhark
+applies a technique called *moderate flattening*
+:cite:`Henriksen:2017:FPF:3062341.3062354`, which does not cover
+arbitrary nested parallelism, but which covers well many regular
+nested parallel patterns. We shall come back to the issue of
 flattening irregular nested parallelism in
 :ref:`irregular-flattening`.
 
 In essence, moderate flattening works by matching compositions of
 fused constructs against a number of flattening rules, which we shall
-describe in the following.
+describe in the following subsections. The aim is to merge (i.e.,
+flatten) nested parallel operations into sequences of parallel
+operations. Although, such flattening is often possible, in particular
+due to an integrated transformation called vectorisation, there are
+situations where choices needs to be made. In particular, when a map
+is nested on top of a loop, we may choose to parallelise the outer map
+and sequentialise the inner loop, which on the GPU will amount to all
+threads running sequential loops in parallel. An alternative, when
+possible, will be to interchange the outer map and the loop and then
+sequentialise the outer loop (on the host) and parallelise the inner
+map, which will then be executed multiple times. It turns out that
+Futhark can make some guesses about which strategy to pursue based on
+possible information about the sizes of the arrays. An extension to
+the static concept moderate flattening, Futhark also supports a notion
+of flattening that generates multiple versions of flattened code,
+guarded by parameters that may be autotuned to achieve good
+performance for a range of different data sets
+:cite:`ppopp19henriksen`.
+
+In the following we shall focus on the transformations performed by
+moderate flattening.
 
 Vectorisation
 ~~~~~~~~~~~~~
@@ -318,3 +340,24 @@ is transformed into::
 
 Map-Replicate Nesting
 ~~~~~~~~~~~~~~~~~~~~~
+
+Recall that ``replicate`` has the type::
+
+   val replicate 't : (n:i32) -> t -> [n]t
+
+A ``map`` over a ``replicate`` expression takes the form::
+
+   map (\x -> replicate n x) xs
+
+where ``n`` is invariant to ``x``. Such an expression can be
+transformed into the expression::
+
+   segmented_replicate (replicate (length xs) n) xs
+
+As an example, consider the expression ``map (replicate 2)
+[8,5,1]``. This expression is transformed into the expression::
+
+   segmented_replicate (replicate 3 2) [8,5,1]
+
+which evaluates to ``[8,8,5,5,1,1]``. Notice that the subexpression
+``replicate 3 2`` evaluates to ``[2,2,2]``.

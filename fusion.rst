@@ -24,7 +24,7 @@ Fusion
 Fusion aims at reducing the overhead of unnecessary repeated
 control-flow or unnecessary temporary storage. In essence, fusion is
 defined in terms of a number of *fusion rules*, which specify how a
-Futhark (intermedidate) expression can be transformed into a
+Futhark (intermediate) expression can be transformed into a
 semantically equivalent expression.
 
 The rules make use of the auxiliary higher-order functions for, for
@@ -56,7 +56,7 @@ The fusion rules that we have presented here generalise to functions
 that take multiple arguments by applying zipping, unzipping, currying,
 and uncurrying strategically. Notice that due to Futhark's strategy of
 automatically transforming arrays of tuples into tuples of arrays, the
-applications of zipping, unzipping, currying, and uncurring have no
+applications of zipping, unzipping, currying, and uncurrying have no
 effect at runtime.
 
 Futhark applies a number of other fusion rules, which are based on the

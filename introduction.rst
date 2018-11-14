@@ -125,7 +125,7 @@ implementor to port the language to new architectures.
 
 The introduction of language based cost models is of course not a
 silver bullet, but they may help isolate the assumptions under which
-performance reasoning is made. Guy Blelloch’s seminal work on NESL
+performance reasoning is made. Guy Blelloch's seminal work on NESL
 :cite:`blelloch1990vector,blelloch1994implementation` introduces a
 cost model based on the concept of *work*, which, in abstract terms,
 defines a notion of the total work done by a program, and the concept

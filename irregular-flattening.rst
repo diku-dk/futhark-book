@@ -85,7 +85,7 @@ that the number of points that make up the constituting set is the
 maximum of :math:`|x_2-x_1|` and :math:`|y_2-y_1|`, the absolute
 values of the difference in :math:`x`-coordinates and
 :math:`y`-coordinates, respectively. Using this observation, the
-algorithm can idependently compute the constituting set by first
+algorithm can independently compute the constituting set by first
 calculating the proper direction and slope of a line, relative to a
 particular starting point.
 
@@ -260,7 +260,7 @@ disjoint but do not necessarily together span the entire array. In
 particular, the algorithm does not need to sort segments containing
 previously chosen pivot values. Such segments are already located in
 the correct positions, which means that they need not be moved around
-by the segmented quicksort implementation.
+by the segmented quick sort implementation.
 
 We first define a type ``sgm`` that specifies a segment of an
 underlying one-dimensional array of values:
