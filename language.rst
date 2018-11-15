@@ -438,6 +438,8 @@ size parameters.
    of ``x``.  Compile your program with ``futhark-c`` and verify that
    it works, then try with ``futhark-opencl``.
 
+.. only:: html
+
    .. admonition:: Solution (click to show)
       :class: solution
 
@@ -737,7 +739,7 @@ function ``iota`` exists for this purpose::
   [0i32, 1i32, 2i32, 3i32, 4i32]
 
 The term ``iota`` is inherited from APL, where the corresponding
-operation is written with an actual ⍳.
+operation is written with an actual ⍳ (greek letter).
 
 .. _sequential-loops:
 

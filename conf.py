@@ -144,7 +144,7 @@ latex_elements = {
     # The font size ('10pt', '11pt' or '12pt').
     #
     'pointsize': '12pt',
-
+    'fncychap': '\\usepackage[Lenny]{fncychap}', # Bjarne, Lenny, Glenn, Sonny, Conny, Rejne
     # Additional stuff for the LaTeX preamble.
     #
     'preamble': '\\input{../../_templates/layout.tex}',
@@ -152,13 +152,19 @@ latex_elements = {
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
+    'sphinxsetup': 'TitleColor={rgb}{0,0,0},noteborder=2px,noteBorderColor={rgb}{0,0,0}',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'root.tex', 'Parallel Programming in Futhark', 'Martin Elsman \\and Troels Henriksen \\and Cosmin E. Oancea', 'report', False)
+  (master_doc,
+   'root.tex',
+   'Parallel Programming in Futhark',
+   '\\large Martin Elsman \\and \\large Troels Henriksen \\and \\large Cosmin E. Oancea',
+   'manual',
+   False)
 ]
 
 
