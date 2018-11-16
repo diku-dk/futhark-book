@@ -7,10 +7,10 @@ The previous chapter introduced the Futhark language, the notion of
 parallel programming, and the most fundamental builtin functions.
 However, more knowledge is needed to write real high-quality Futhark
 programs.  This chapter discusses various practicalities around
-Futhark programming: how to test and debug your code (:ref:`testing`),
-how to benchmark it once it works (:ref:`benchmarking`), how to use
+Futhark programming: how to test and debug your code (:numref:`testing`),
+how to benchmark it once it works (:numref:`benchmarking`), how to use
 the Futhark package manager to access library code
-(:ref:`package-management`), and finally how to work around
+(:numref:`package-management`), and finally how to work around
 compiler limitations.
 
 .. _testing:
@@ -95,7 +95,7 @@ example, we can test for empty arrays as such:
 
 Note also that since plain integer literals are assumed to be of type
 ``i32``, and plain decimal literals to be of type ``f64``, you will
-need to use type suffixes (:ref:`baselang`) to write values of other
+need to use type suffixes (:numref:`baselang`) to write values of other
 types.
 
 As a convenience, ``futhark-test`` considers functions returning
@@ -136,7 +136,7 @@ we define a corresponding ``foo_tests.fut`` that imports ``foo.fut``
 and defines a number of entry points.
 
 For example, suppose we have ``sum.fut`` that contains the ``sum``
-module from :ref:`parametric-modules`:
+module from :numref:`parametric-modules`:
 
 .. literalinclude:: src/sum.fut
 
@@ -397,7 +397,7 @@ However, we can do better still.  Futhark comes with a tool for
 performing automated benchmark runs of programs, called
 ``futhark-bench``.  This tool relies on a specially formatted header
 comment that contains input/output pairs, just like ``futhark-test``
-(see :ref:`testing`).  The `Futhark User's Guide`_ contains a full
+(see :numref:`testing`).  The `Futhark User's Guide`_ contains a full
 description, but here is a simple example. First, we introduce a new
 program, ``sumsquares.fut``, with smaller data sets for convenience:
 
@@ -548,7 +548,7 @@ Importing Files from Dependencies
 ``futhark-pkg sync`` will populate the ``lib/`` directory, but does
 not interact with the compiler in any way.  The downloaded files can
 be imported using the ``import`` mechanism (see
-:ref:`other-files`). For example, assuming the package contains a file
+:numref:`other-files`). For example, assuming the package contains a file
 ``foo.fut``, the following top-level declaration brings all names
 declared in the file into scope::
 
