@@ -116,7 +116,7 @@ grammar-slightly simplified:
 
 We shall refer to the types ``i32``, ``f32``, and ``bool``
 as *basic types*. Futhark supports more basic types than those
-presented here; consult :numref:`baselang` for a complete list.
+presented here; consult :ref:`baselang` for a complete list.
 
 In practice, Futhark requires a programmer to provide explicit
 parameter types and an explicit result type for top-level function
@@ -503,7 +503,7 @@ iterated at-most :math:`\log(2\,\kw{n})` times, we have (where
 
 It is an exercise for the reader to compare the performance of the
 reduction code to the performance of Futhark’s built-in ``reduce``
-SOAC (see :numref:`benchmarking`).
+SOAC (see :ref:`benchmarking`).
 
 Radix-Sort by Contraction
 =========================
