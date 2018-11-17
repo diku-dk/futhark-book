@@ -197,20 +197,19 @@ implementation also works in case some segments are of size zero.
 Moderate Flattening
 -------------------
 
-The flattening rules that we shall introduce here allows the Futhark
+The flattening rules that we shall introduce here allow the Futhark
 compiler to generate parallel kernels for various code block
 patterns. In contrast to the general concept of flattening as
 introduced by Blelloch :cite:`blelloch1994implementation`, Futhark
 applies a technique called *moderate flattening*
 :cite:`Henriksen:2017:FPF:3062341.3062354`, which does not cover
-arbitrary nested parallelism, but which covers well many regular
+arbitrary nested parallelism, but does cover well many regular
 nested parallel patterns. We shall come back to the issue of
 flattening irregular nested parallelism in
 :numref:`irregular-flattening`.
 
 In essence, moderate flattening works by matching compositions of
-fused constructs against a number of flattening rules, which we shall
-describe in the following subsections. The aim is to merge (i.e.,
+fused constructs against a number of flattening rules. The aim is to merge (i.e.,
 flatten) nested parallel operations into sequences of parallel
 operations. Although, such flattening is often possible, in particular
 due to an integrated transformation called vectorisation, there are
@@ -308,7 +307,7 @@ reduction operation of type::
     val regular_segmented_reduce 't [n] : (t->t->t) -> t -> [n][]t -> [n]t
 
 Internally, this function can be implemented based on the function
-``regular_segmented_scan`` defined above. Here is a simple definition:::
+``regular_segmented_scan`` discussed above. Here is a simple definition:::
 
     let regular_segmented_reduce = map last <-< regular_segmented_scan
 
@@ -320,14 +319,14 @@ A ``map`` over an ``iota`` expression can be transformed to the
 composition of the ``segmented_iota`` function defined in
 :numref:`segmented-iota` and a function ``ìdxs_to_flags``, which converts
 an array of indices to an array ``fs`` of boolean flags of size equal
-to the sum of the values in the ``xs`` and with ``true``-values in
+to the sum of the values in ``xs`` and with ``true``-values in
 indexes specified by the prefix sums of the index values.
 
 As an example, the expression ``idxs_to_flags [2,1,3]`` evaluates to
 the flag array ``[false,false,true,true,false,false]``. Notice that
 the expression ``idxs_to_flags [2,0,4]`` evaluates to the same boolean
 vector as ``idxs_to_flags [2,4]``. We shall not here give a definition
-of the ``idxs_to_flags`` Futhark function, but refer the reader to
+of the ``idxs_to_flags`` function, but refer the reader to
 :numref:`idxs_to_flags`.
 
 All in all, an expression of the form::

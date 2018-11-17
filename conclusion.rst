@@ -9,7 +9,7 @@ language even though its semantics is pure. It does however have
 limitations. In particular, Futhark does not currently support
 recursion and it has no built-in support for algebraic
 datatypes. Support for some of these concepts are currently being
-investigated
+investigated.
 
 On the performance side, there are, of course, always room for
 improvements. In particular, a number of low-level optimisations, such
