@@ -5,7 +5,7 @@ Irregular Flattening
 
 In this chapter, we investigate a number of challenging irregular
 algorithms, which cannot be dealt with directly using Futhark's
-moderate flattening technique discussed in :numref:`moderate-flattening`.
+moderate flattening technique discussed in :ref:`moderate-flattening`.
 
 Flattening by Expansion
 -----------------------
@@ -45,7 +45,7 @@ elements, which can then be processed in parallel.
 
 For implementing the ``expand`` function using only parallel
 operations, we shall make use of the segmented helper functions
-defined in :numref:`regular-flattening`. In particular, we shall make use of
+defined in :ref:`regular-flattening`. In particular, we shall make use of
 the functions ``replicated_iota``, ``segmented_replicate``, and
 ``segmented_iota``.
 

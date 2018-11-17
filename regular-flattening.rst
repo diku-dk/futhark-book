@@ -19,8 +19,8 @@ in its own right, is essential to many parallel algorithms. Based on
 the segmented scan operation and the other Futhark SOAC operations, we
 present a set of utility functions as well as their parallel
 implementations.  The functions are used by the moderate flattening
-transformation presented in :numref:`moderate-flattening`, but are also
-useful, as we shall see in :numref:`irregular-flattening`, for the
+transformation presented in :ref:`moderate-flattening`, but are also
+useful, as we shall see in :ref:`irregular-flattening`, for the
 programmer to manage irregular parallelism through flattening
 transformations, performed manually by the programmer.
 
@@ -58,7 +58,7 @@ Finding the Longest Streak Using Segmented Scan
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In this section we revisit the problem of
-:numref:`finding-the-longest-streak` for finding the longest streak of
+:ref:`finding-the-longest-streak` for finding the longest streak of
 increasing numbers. We show how we can make direct use of a segmented
 scan operation for solving the problem:
 
@@ -206,7 +206,7 @@ applies a technique called *moderate flattening*
 arbitrary nested parallelism, but does cover well many regular
 nested parallel patterns. We shall come back to the issue of
 flattening irregular nested parallelism in
-:numref:`irregular-flattening`.
+:ref:`irregular-flattening`.
 
 In essence, moderate flattening works by matching compositions of
 fused constructs against a number of flattening rules. The aim is to merge (i.e.,
@@ -285,7 +285,7 @@ multi-dimensional argument array (i.e., ``m``) to construct an
 appropriate flag vector suitable for the segmented scan. Again, for an
 in-depth discussion of how to implement a segmented scan operation on
 top of an ordinary scan operation, please consult
-:numref:`sgmscan`.
+:ref:`sgmscan`.
 
 Map-Reduce Nesting
 ~~~~~~~~~~~~~~~~~~
@@ -317,7 +317,7 @@ Map-Iota Nesting
 
 A ``map`` over an ``iota`` expression can be transformed to the
 composition of the ``segmented_iota`` function defined in
-:numref:`segmented-iota` and a function ``ìdxs_to_flags``, which converts
+:ref:`segmented-iota` and a function ``ìdxs_to_flags``, which converts
 an array of indices to an array ``fs`` of boolean flags of size equal
 to the sum of the values in ``xs`` and with ``true``-values in
 indexes specified by the prefix sums of the index values.
@@ -327,7 +327,7 @@ the flag array ``[false,false,true,true,false,false]``. Notice that
 the expression ``idxs_to_flags [2,0,4]`` evaluates to the same boolean
 vector as ``idxs_to_flags [2,4]``. We shall not here give a definition
 of the ``idxs_to_flags`` function, but refer the reader to
-:numref:`idxs_to_flags`.
+:ref:`idxs_to_flags`.
 
 All in all, an expression of the form::
 
