@@ -336,6 +336,22 @@ integers used to specify the bounds, which must all have the same type
 (but need not be constants). We will be making frequent use of this
 notation throughout this book.
 
+.. admonition:: Note: structural equality
+
+   The Futhark equality and inequality operators ``==`` and ``!=`` are
+   overloaded operators, just like ``+``. They work for types built
+   from basic types (e.g., ``i32``), array types, tuple types, and
+   record types. The operators are not allowed on values containing
+   sub-values of abstract types or function types.
+
+   Notice that Futhark does not support a notion of type classes
+   :cite:`Peterson:1993:ITC:155090.155112` or equality types
+   :cite:`Els98`. Allowing the equality and inequality operators to
+   work on values of abstract types could potentially violate
+   abstraction properties, which is the reason for the special
+   treatment of equality types and equality type variables in the
+   Standard ML programming language.
+
 .. _function-declarations:
 
 Top-Level Definitions
