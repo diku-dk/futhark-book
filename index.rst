@@ -15,6 +15,7 @@
 
 .. toctree::
    :maxdepth: 2
+   :numbered:
 
    introduction.rst
    language.rst
