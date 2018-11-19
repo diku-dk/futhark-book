@@ -29,7 +29,7 @@ semantically equivalent expression.
 
 The rules make use of the auxiliary higher-order functions for, for
 instance, function composition, presented in
-:ref:`higher-order-functions`.
+:numref:`higher-order-functions`.
 
 The *first fusion rule*, :math:`F1`, which says that the result of
 mapping an arbitrary function ``f`` over the result of mapping another
@@ -119,7 +119,7 @@ Radix Sort Revisited
 --------------------
 
 A simple radix sort algorithm was presented already in
-:ref:`radixsort`. In this section, we present two generalized versions
+:numref:`radixsort`. In this section, we present two generalized versions
 of radix sort, one for ascending sorting and one for descending
 sorting. As a bonus, the sorting routines return both the sorted
 array and an index array that can be used to sort an
@@ -175,6 +175,6 @@ value 3:
 | ``res``  | = | 3 |   |   |   |   |   |   |   |
 +----------+---+---+---+---+---+---+---+---+---+
 
-In :ref:`finding-the-longest-streak-segmented-scan` we present a
+In :numref:`finding-the-longest-streak-segmented-scan` we present a
 simpler algorithm, which builds directly on the concept of a so-called
 segmented scan.

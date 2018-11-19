@@ -94,7 +94,7 @@ In this case, the workload is small enough that there is little
 benefit in parallelising the execution. In fact, it is likely that for
 this tiny dataset, the OpenCL startup overhead results in several
 orders of magnitude slowdown over sequential execution. See
-:ref:`benchmarking` for information on how to measure execution times.
+:numref:`benchmarking` for information on how to measure execution times.
 
 The ability to compile Futhark programs to executables is useful for
 testing, but it should be noted that it is not how Futhark is intended
@@ -104,7 +104,7 @@ such cannot be used as a general-purpose language. Futhark is intended
 to be used for small, performance-sensitive parts of larger
 applications, typically by compiling a Futhark program to a *library*
 that can be imported and used by applications written in conventional
-languages. See :ref:`interoperability` for more information.
+languages. See :numref:`interoperability` for more information.
 
 As compiled Futhark executables are intended for testing, they take a
 range of command line options to manipulate their behaviour and print
@@ -138,7 +138,7 @@ which we write as ``$``).
 
 ``futharki`` supports a variety of commands for inspecting and
 debugging Futhark code.  These will be introduced as necessary, in
-particular in :ref:`testing`.
+particular in :numref:`testing`.
 
 .. _baselang:
 
@@ -178,7 +178,7 @@ decimal literals are given ``f64``.  Boolean literals are written as
 
    Technically, ``i32.f64`` is not the name of the function.  Rather,
    this is a reference to the function ``f64`` in the module ``i32``.
-   We will not discuss modules further until :ref:`modules`, so for
+   We will not discuss modules further until :numref:`modules`, so for
    now it suffices to think of ``i32.f64`` as a function name.  The
    only wrinkle is that if a variable with the name ``i32`` is in
    scope, the entire ``i32`` module becomes inaccessible by shadowing.
@@ -199,7 +199,7 @@ element can also be another tuple, as in ``((1,2),(3,4))``, which is of
 type ``((i32,i32),(i32,i32))``. A tuple cannot have just one element,
 but empty tuples are permitted, although they are not very useful — these
 are written ``()`` and are of type ``()``. *Records* exist as syntactic
-sugar on top of tuples, and will be discussed in :ref:`records`.
+sugar on top of tuples, and will be discussed in :numref:`records`.
 
 An array value is written as a sequence of comma-separated values
 enclosed in square brackets: ``[1,2,3]``. An array type is written as
@@ -241,7 +241,7 @@ function ``f`` to a constant argument, we write:
 
     f 1.0
 
-See :ref:`function-declarations` for how to declare your own
+See :numref:`function-declarations` for how to declare your own
 functions.
 
 A let-expression can be used to give a name to the result of an expression:
@@ -414,7 +414,7 @@ Top-level definitions are declared in order, and a definition may
 refer *only* to those names that have been defined before it
 occurs. This means that circular and recursive definitions are not
 permitted. We will return to function definitions in
-:ref:`size-annotations` and :ref:`polymorphism`, where we will look at
+:numref:`size-annotations` and :numref:`polymorphism`, where we will look at
 more advanced features, such as parametric polymorphism and implicit
 size parameters.
 
@@ -498,7 +498,7 @@ Type abbreviations are purely a syntactic convenience — the type
   (1.0f64, 2.0f64)
 
 For abstract types, that hide their definition, we have to use the
-module system discussed in :ref:`modules`.
+module system discussed in :numref:`modules`.
 
 Array Operations
 ----------------
@@ -668,7 +668,7 @@ its neutral element to compute the sum of an array of integers:
 
 It turns out that combining ``map`` and ``reduce`` is both powerful
 and has remarkable optimisation properties, as we will discuss in
-:ref:`fusion`. Many Futhark programs are primarily
+:numref:`fusion`. Many Futhark programs are primarily
 ``map``-``reduce`` compositions. For example, we can define a function
 to compute the dot product of two vectors of integers:
 
@@ -1109,7 +1109,7 @@ vs`` morally computes
 and returns the modified ``as`` array. The old ``as`` array is marked
 as consumed and may not be used anymore. Parallel ``scatter`` can be
 used, for instance, to implement efficiently the radix sort algorithm, as
-demonstrated in :ref:`radixsort`.
+demonstrated in :numref:`radixsort`.
 
 .. _size-annotations:
 
@@ -1182,7 +1182,7 @@ times:
     let replicate_i32 (n: i32) (x: i32): [n]i32 =
       map (\_ -> x) (0..<n)
 
-In :ref:`polymorphism` we will see how to write a polymorphic
+In :numref:`polymorphism` we will see how to write a polymorphic
 ``replicate`` function that works for any type.
 
 As a more complicated example of using size parameters, consider
@@ -1252,7 +1252,7 @@ the definition; perhaps to define an abbreviation for square matrices:
 The brackets surrounding ``[n]`` and ``[3]`` are part of the notation,
 not the parameter itself, and are used for disambiguating size
 parameters from the *type parameters* we shall discuss in
-:ref:`polymorphism`.
+:numref:`polymorphism`.
 
 Parametric types must always be fully applied. Using ``intvec`` by
 itself (without a type argument) is an error.
@@ -1511,7 +1511,7 @@ e.g. ``'t``), and lifted (bound with an apostrophe and a hat,
 e.g. ``'^t``). Only lifted type parameters may be instantiated with a
 functional type. Within a function, a lifted type parameter is treated
 as a functional type. All abstract types declared in modules (see
-:ref:`modules`) are considered non-lifted, and may not be functional.
+:numref:`modules`) are considered non-lifted, and may not be functional.
 
 Uniqueness typing generally interacts poorly with higher-order
 functions. The issue is that there is no way to express, in the type

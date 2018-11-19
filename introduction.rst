@@ -160,7 +160,7 @@ well-performing GPU code :cite:`finpar,apltofuthark2016`.
 Structure of the Book
 ---------------------
 
-The book is organised in chapters. In :ref:`futlang`, we introduce the
+The book is organised in chapters. In :numref:`futlang`, we introduce the
 Futhark language, including its basic syntax, the semantics of the
 core language, and the built-in array second-order array combinators
 and their parallel semantics. We also describe how to compile and
@@ -174,7 +174,7 @@ Futhark's support for parametric polymorphism and restricted form of
 higher-order functions, which provide programmers with excellent
 tooling for writing abstract reusable code.
 
-In :ref:`practicals` we discuss various practical matters related to
+In :numref:`practicals` we discuss various practical matters related to
 Futhark programming.  We discuss techniques for checking the
 correctness of Futhark programs using unit tests, demonstrate how to
 debug Futhark programs using the Futhark debugger, show how to
@@ -183,18 +183,18 @@ suggestions of how to resolve issues that may occur when writing
 programs in Futhark.  We also show how to use the Futhark package
 manager to download libraries of Futhark code.
 
-In :ref:`interoperability`, we describe how Futhark can be used in
+In :numref:`interoperability`, we describe how Futhark can be used in
 concert with Python, to develop, for instance, interactive, real time
 games. We also outline the possibilities for using Futhark in the
 context of C and .NET programming.
 
-In :ref:`costmodel`, we introduce an “ideal” cost model for the
+In :numref:`costmodel`, we introduce an “ideal” cost model for the
 Futhark language based on the notions of work and span. We present
 both a type system for an idealized version of Futhark and present a
 dynamic semantics for the language. The dynamic semantics is used for
 deriving the notions of work and span.
 
-In :ref:`fusion`, we present to the reader the underlying algebraic
+In :numref:`fusion`, we present to the reader the underlying algebraic
 reasoning principles that lie behind the Futhark internal fusion
 technology. We also present to the reader a series of parallel utility
 functions and demonstrate the usefulness of applying the
@@ -203,7 +203,7 @@ map-reduce reasoning and which, in many cases, turns out to play an
 important role for implementing efficient data-parallel algorithms in
 Futhark.
 
-In :ref:`regular-flattening`, we present Futhark's way of dealing
+In :numref:`regular-flattening`, we present Futhark's way of dealing
 with nested regular parallelism. In this chapter, we also introduce a
 number of segmented operations, including the essential segmented scan
 operation, which turns out to be central to both Futhark's moderate
@@ -215,7 +215,7 @@ and applications in Futhark packages, which may be organised, managed,
 and documented using Futhark's package manager and Futhark's
 documentation tool. These tools are described in the Futhark User's
 Guide available at https://futhark.readthedocs.io/en/latest/.  In
-:ref:`random-sampling`, we show how to program with pseudo-random
+:numref:`random-sampling`, we show how to program with pseudo-random
 numbers in Futhark using the Futhark package ``cpprandom``. This
 package allows for generating pseudo-random numbers in parallel and
 further allows the programmer to generate random samples for a number
@@ -225,9 +225,9 @@ for generating Sobol numbers efficiently in parallel. This library is
 useful for stochastic modeling and for Monte Carlo Simulation in
 high-dimensional spaces.
 
-In :ref:`irregular-flattening`, we describe the necessary
+In :numref:`irregular-flattening`, we describe the necessary
 tooling and building blocks for implementing irregular data-parallel
 algorithms in Futhark.
 
-In :ref:`conclusion`, we conclude and give directions for further
+In :numref:`conclusion`, we conclude and give directions for further
 reading.
