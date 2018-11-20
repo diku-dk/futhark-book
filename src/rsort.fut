@@ -8,7 +8,8 @@
 --   [0u32, 1u32, 4u32, 5u32, 6u32, 33u32, 83u32, 99u32]
 -- }
 --
---
+-- input { [1u32] } output { [1u32] }
+-- input { empty(u32) } output { empty(u32) }
 --
 
 

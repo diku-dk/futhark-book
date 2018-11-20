@@ -529,7 +529,7 @@ A radix-sort algorithm that sorts the argument vector in ascending order
 is shown below:
 
 .. literalinclude:: src/rsort.fut
-   :lines: 19-32
+   :lines: 20-33
 
 The function ``rsort_step`` implements the contraction step that takes
 care of moving all elements with the ``bitn`` set to the end of the
@@ -566,6 +566,8 @@ constant number of times (i.e., 32 times). Similarly, we can argue that
 :math:`S(\kw{rsort}~\kw{v}) = O(\log\,\kw{n})`, dominated by the SOAC
 calls in ``rsort_step``.
 
+.. _counting-primes:
+
 Counting Primes
 ===============
 
@@ -587,11 +589,17 @@ below:
 .. literalinclude:: src/primes.fut
    :lines: 18-
 
-Notice that the algorithm applies a parallel sieve for each step, using
-a combination of maps and reductions. The work done by the algorithm is
-:math:`O(n\,\log\,\log\,n)` and the span is :math:`O(\log\,\log\,n)`.
-The :math:`\log\,\log\,n` factor appears because the size of the problem
-is squared at each step, which is identical to doubling the exponent
-size at each step (i.e., the sequence
-:math:`2^2, 2^4, 2^8, 2^{16}, \ldots, n`, where :math:`n=2^{2^m}`, for
-some positive :math:`m`, has :math:`m = \log\,\log\,n` elements.)
+Notice that the algorithm applies a parallel sieve for each step,
+using a combination of maps and reductions. The best known sequential
+algorithm for finding the number of primes below some :math:`n` takes
+time :math:`O(n\,\log\,\log\,n)`. Although the present algorithm is
+quite efficient in practice, it is not work effcient, since the work
+inside the loop is super-linear. The loop itself introduces a span
+with a :math:`\log\,\log\,n` factor because the size of the problem is
+squared at each step, which is identical to doubling the exponent size
+at each step (i.e., the sequence :math:`2^2, 2^4, 2^8, 2^{16}, \ldots,
+n`, where :math:`n=2^{2^m}`, for some positive :math:`m`, has :math:`m
+= \log\,\log\,n` elements.)
+
+In :numref:`primes-by-expansion` we shall see how we can implement a
+work-efficient parallel Sieve-of-Erastothenes algorithm by flattening.
