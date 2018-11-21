@@ -219,32 +219,39 @@ Primes by Expansion
 We saw earlier in :numref:`counting-primes` how we could implement a
 parallel algorithm for finding the number of primes below a given
 number. We also found, however, that the algorithm presented was not
-work-efficient. We now present a work-efficient algorithm using the
-concept of flattening-by-expansion. Here is the algorithm:
+work-efficient. It is possible to implement a work-efficient algorithm
+using the ``expand`` function. We will leave the task as an exercise
+for the reader.
 
-.. literalinclude:: src/primes_expand.fut
-   :lines: 6-21
-
-There are a number of points to note about the code:
-
-1. When computing ``c2``, we are careful not to introduce overflow by
-   not calculating ``c*c`` unless ``c`` is less than the quare root of
-   ``n+1``.
-
-2. We use the ``expand`` function to calculate and flatten the
-   sieves. For each prime ``p`` and upper limit ``c2`` we can compute
-   the number of contributions in the sieve (the function ``sz``).
-
-3. For each prime ``p`` and sieve index ``i``, we can compute the
-   sieve contribution (the function ``get``).
-
-4. Using a ``scatter``, a ``map``, and a ``filter``, we can now
-   compute the new primes in the interval ``c`` to ``c2``.
-
-We shall not here prove that the algorithm is work efficient but just
-postulate that the algorithm has work complexity
-:math:`O(n\,\log\,\log\,n)` and span complexity
-:math:`O(\log\,\log\,n)`.
+.. Cosmin is using "flattening of primes" as an exercise for PMPH - we
+.. can include the example sometime in the future...
+..
+.. We now present a work-efficient algorithm using the
+.. concept of flattening-by-expansion. Here is the algorithm:
+..
+.. .. literalinclude:: src/primes_expand.fut
+..    :lines: 6-21
+..
+.. There are a number of points to note about the code:
+..
+.. 1. When computing ``c2``, we are careful not to introduce overflow by
+..    not calculating ``c*c`` unless ``c`` is less than the quare root of
+..    ``n+1``.
+..
+.. 2. We use the ``expand`` function to calculate and flatten the
+..    sieves. For each prime ``p`` and upper limit ``c2`` we can compute
+..    the number of contributions in the sieve (the function ``sz``).
+..
+.. 3. For each prime ``p`` and sieve index ``i``, we can compute the
+..    sieve contribution (the function ``get``).
+..
+.. 4. Using a ``scatter``, a ``map``, and a ``filter``, we can now
+..    compute the new primes in the interval ``c`` to ``c2``.
+..
+.. We shall not here prove that the algorithm is work efficient but just
+.. postulate that the algorithm has work complexity
+.. :math:`O(n\,\log\,\log\,n)` and span complexity
+.. :math:`O(\log\,\log\,n)`.
 
 
 Complex Flattening

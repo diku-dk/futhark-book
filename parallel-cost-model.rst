@@ -601,5 +601,6 @@ at each step (i.e., the sequence :math:`2^2, 2^4, 2^8, 2^{16}, \ldots,
 n`, where :math:`n=2^{2^m}`, for some positive :math:`m`, has :math:`m
 = \log\,\log\,n` elements.)
 
-In :numref:`primes-by-expansion` we shall see how we can implement a
-work-efficient parallel Sieve-of-Erastothenes algorithm by flattening.
+In :numref:`primes-by-expansion` we discuss the possibility of using a
+flattening approach to implement a work-efficient parallel
+Sieve-of-Erastothenes algorithm.
