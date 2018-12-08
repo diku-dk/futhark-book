@@ -671,5 +671,5 @@ workaround. We could rewrite the program as:
 
 This exploits the fact that the compiler does not generate allocations
 for array slices or in-place updates. The only allocation is of the
-initial ``res``, the size of which can be computed before entering the
-``map``.
+initial ``scratch``, the size of which can be computed before entering
+the ``map``.
