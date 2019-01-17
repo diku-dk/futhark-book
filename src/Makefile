@@ -1,5 +1,5 @@
-FUTHARKC ?= futhark-c
-FUTHARKOPENCL ?= futhark-opencl
+FUTHARKC ?= c
+FUTHARKOPENCL ?= opencl
 
 OPENCL_DEVICE ?= GeForce
 
@@ -9,21 +9,21 @@ all:
 
 .PHONY: test
 test: lib
-	futhark-test . --compiler=$(FUTHARKC)
+	futhark test . --backend=$(FUTHARKC)
 
 .PHONY: testopencl
 testopencl:
-	futhark-test . --compiler=$(FUTHARKOPENCL) --pass-option=-d$(OPENCL_DEVICE)
+	futhark test . --backend=$(FUTHARKOPENCL) --pass-option=-d$(OPENCL_DEVICE)
 
 lib: futhark.pkg
 	futhark-pkg sync
 
 # Generate executables
 %.exe: %.fut
-	$(FUTHARKC) -o $@ $<
+	futhark $(FUTHARKC) -o $@ $<
 
 %.exeopencl: %.fut
-	$(FUTHARKOPENCL) -o $@ $<
+	futhark $(FUTHARKOPENCL) -o $@ $<
 
 .PHONY: clean
 clean:
