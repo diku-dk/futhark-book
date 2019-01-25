@@ -326,7 +326,7 @@ faster than sequential execution. This program is entirely
 memory-bound; on a compute-bound program we can expect much larger
 speedups.
 
-You may have notice that these programs take *significantly* longer to
+You may have noticed that these programs take *significantly* longer to
 run than indicated by these performance measurements.  While GPU
 initialisation does take some time, most of the actual run-time in the
 example above is spent reading the data file from disk.  By default,
