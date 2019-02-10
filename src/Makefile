@@ -16,7 +16,7 @@ testopencl:
 	futhark test . --backend=$(FUTHARKOPENCL) --pass-option=-d$(OPENCL_DEVICE)
 
 lib: futhark.pkg
-	futhark-pkg sync
+	futhark pkg sync
 
 # Generate executables
 %.exe: %.fut
