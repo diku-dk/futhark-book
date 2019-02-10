@@ -108,7 +108,7 @@ terms of other parallel operations, including ``scan``, ``map``,
 
 An example evaluation of a call to the function ``replicated_iota`` is
 provided below.  Notice that in order to use this Futhark code with
-``futhark-opencl``, we need to prefix the array indexing in line 3 and
+``futhark opencl``, we need to prefix the array indexing in line 3 and
 line 4 with the ``unsafe`` keyword.
 
 +--------------------+---+---+---+---+---+---+---+---+

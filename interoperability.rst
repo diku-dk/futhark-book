@@ -56,7 +56,7 @@ Consider our usual dot product program:
 
 We can compile this to a Python module::
 
-  $ futhark-pyopencl --library dotprod.fut
+  $ futhark pyopencl --library dotprod.fut
 
 The result is a file ``dotprod.py`` that we can import from within
 Python::
@@ -109,9 +109,9 @@ Let us once again consider ``dotprod.fut``:
 .. literalinclude:: src/dotprod.fut
    :lines: 5-
 
-We can compile it with the ``futhark-opencl`` compiler::
+We can compile it with the ``futhark opencl`` compiler::
 
-  $ futhark-opencl --library dotprod.fut
+  $ futhark opencl --library dotprod.fut
 
 This produces two files in the current directory: ``dotprod.c`` and
 ``dotprod.h``.  We can compile ``dotprod.c`` to a shared library like
@@ -274,8 +274,8 @@ You may need to set ``LD_LIBRARY_PATH=.`` before the dynamic linker
 can find ``libdotprod.so``.  Also, this program will only work if the
 default OpenCL device is usable on your system, since we did not
 request any specific device.  For testing on a system that does not
-support OpenCL, simply use ``futhark-c`` instead of
-``futhark-opencl``.  The generated API will be the same.
+support OpenCL, simply use ``futhark c`` instead of
+``futhark opencl``.  The generated API will be the same.
 
 Handling Awkward Futhark Types
 ------------------------------

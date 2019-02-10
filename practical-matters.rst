@@ -24,21 +24,21 @@ provided by ``futharki``.
 
 The testing experience for Futhark is still rather raw.  There are no
 advanced unit testing frameworks, no test generators or doc-testing,
-and certainly no property-based testing.  Instead, we have
-``futhark-test``, which tests entry point functions against
-input/output example pairs.  However, it is better than nothing, and
-quite simple to use.  ``futhark-test`` will test the program with both
-a compiler (``futhark-c`` by default, but this can be changed with
-``--compiler``) and ``futharki``.
+and certainly no property-based testing.  Instead, we have ``futhark
+test``, which tests entry point functions against input/output example
+pairs.  However, it is better than nothing, and quite simple to use.
+``futhark test`` will test the program with both the interpreter and a
+compiler backend (``futhark c`` by default, but this can be changed
+with ``--backend``).
 
-Testing with ``futhark-test``
+Testing with ``futhark test``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A Futhark program may contain a *test block*, which is a sequence of
 line comments in which one of the lines contains the divider ``--
 ==``.  The lines preceding the divider are ignored, while the lines
 after are taken as a description of a test to perform.  When
-``futhark-test`` is passed one or more ``.fut`` files, it will look
+``futhark test`` is passed one or more ``.fut`` files, it will look
 for test blocks and perform the tests they describe.
 
 As an example, let us consider how to test a function for matrix
@@ -98,7 +98,7 @@ Note also that since plain integer literals are assumed to be of type
 need to use type suffixes (:numref:`baselang`) to write values of other
 types.
 
-As a convenience, ``futhark-test`` considers functions returning
+As a convenience, ``futhark test`` considers functions returning
 *n*-tuples to really be functions returning *n* values.  This means we
 can put multiple values in an ``output`` stanza, just as we do with
 ``input``.
@@ -112,11 +112,11 @@ This is done with the notation ``@ file``:
 .. literalinclude:: src/matmul.fut
    :lines: 12-13
 
-This also shows another feature of ``futhark-test``: if we precede
+This also shows another feature of ``futhark test``: if we precede
 ``input`` with the word ``compiled``, that test is not run with
 ``futharki``.  This is useful for large tests that would take too long
 to run interpreted.  There are more ways to filter which tests and
-programs should be skipped for a given invocation of ``futhark-test``;
+programs should be skipped for a given invocation of ``futhark test``;
 see the `manual
 <https://futhark.readthedocs.io/en/latest/man/futhark-test.html>`_ for
 more information.
@@ -126,10 +126,10 @@ Testing a Futhark Library
 
 A Futhark library typically comprises a number of ``.fut`` files means
 to be ``include``-ed by Futhark programs.  Libraries typically do not
-define entry points of the form required by ``futhark-test``.  Indeed,
+define entry points of the form required by ``futhark test``.  Indeed,
 it is not unusual for Futhark libraries to consist entirely of
 parametric modules and higher-order functions!  These are not directly
-accessible to ``futhark-test``.
+accessible to ``futhark test``.
 
 The recommended solution is that, for every library file ``foo.fut``,
 we define a corresponding ``foo_tests.fut`` that imports ``foo.fut``
@@ -140,7 +140,7 @@ module from :numref:`parametric-modules`:
 
 .. literalinclude:: src/sum.fut
 
-This cannot be tested directly with ``futhark-test``, but we can
+This cannot be tested directly with ``futhark test``, but we can
 define a ``sum_tests.fut`` that can:
 
 .. literalinclude:: src/sum_tests.fut
@@ -260,8 +260,8 @@ for each compiler:
 
 .. code-block:: none
 
-    $ futhark-c dotprod.fut -o dotprod-c
-    $ futhark-opencl dotprod.fut -o dotprod-opencl
+    $ futhark c dotprod.fut -o dotprod-c
+    $ futhark opencl dotprod.fut -o dotprod-opencl
 
 One way to time execution is to use the standard ``time(1)`` tool:
 
@@ -303,13 +303,13 @@ Vega 64 GPU:
     103
 
 Over 100 microseconds!  Most GPUs have fairly high launch invocation
-latencies, and so are not suited for small problems. We can use the
-``futhark-dataset(1)`` tool to generate random test data of a desired
+latencies, and so are not suited for small problems. We can use
+``futhark dataset`` tool to generate random test data of a desired
 size:
 
 .. code-block:: none
 
-    $ futhark-dataset -g [10000000]i32 -g [10000000]i32 > input
+    $ futhark dataset -g [10000000]i32 -g [10000000]i32 > input
 
 Two ten million element vectors should be enough work to amortise the
 GPU startup cost:
@@ -330,18 +330,18 @@ You may have noticed that these programs take *significantly* longer to
 run than indicated by these performance measurements.  While GPU
 initialisation does take some time, most of the actual run-time in the
 example above is spent reading the data file from disk.  By default,
-``futhark-dataset`` produces output in a data format that is
+``futhark dataset`` produces output in a data format that is
 human-readable, but very slow for programs to process.  We can use the
-``-b`` option to make ``futhark-dataset`` generate data in an
+``-b`` option to make ``futhark dataset`` generate data in an
 efficient binary format (which takes up less space on disk as well):
 
 .. code-block:: none
 
-    $ futhark-dataset -b -g [10000000]i32 -g [10000000]i32 > input
+    $ futhark dataset -b -g [10000000]i32 -g [10000000]i32 > input
 
 Reading binary data files is often orders of magnitude faster than
 reading textual input files.  Compiled Futhark programs also support
-binary output via a ``-b`` option.  The ``futhark-dataset`` tool can
+binary output via a ``-b`` option.  The ``futhark dataset`` tool can
 perform conversion between the binary and human-readable formats; see
 the manual page for more information.
 
@@ -395,8 +395,8 @@ figure out how predictable the performance is.
 
 However, we can do better still.  Futhark comes with a tool for
 performing automated benchmark runs of programs, called
-``futhark-bench``.  This tool relies on a specially formatted header
-comment that contains input/output pairs, just like ``futhark-test``
+``futhark bench``.  This tool relies on a specially formatted header
+comment that contains input/output pairs, just like ``futhark test``
 (see :numref:`testing`).  The `Futhark User's Guide`_ contains a full
 description, but here is a simple example. First, we introduce a new
 program, ``sumsquares.fut``, with smaller data sets for convenience:
@@ -411,12 +411,12 @@ keep the data set is located in an external file (see the `manual page
 <http://futhark.readthedocs.io/en/latest/man/futhark-bench.html>`_ for
 more information.).
 
- We can use ``futhark-bench`` to measure the performance of
+ We can use ``futhark bench`` to measure the performance of
  ``sumsquares.fut`` as follows:
 
 .. code-block:: none
 
-    $ futhark-bench sumsquares.fut
+    $ futhark bench sumsquares.fut
     Compiling src/sumsquares.fut...
     Results for src/sumsquares.fut:
     dataset #0 ("1000i32"):             0.20us (avg. of 10 runs; RSD: 2.00)
@@ -424,12 +424,12 @@ more information.).
     dataset #2 ("1000000000i32"):  270154.20us (avg. of 10 runs; RSD: 0.01)
 
 These are measurements using the default compiler, which is
-``futhark-c``. If we want to see how our program performs when compiled
-with ``futhark-opencl``, we can invoke ``futhark-bench``:
+``futhark c``. If we want to see how our program performs when compiled
+with ``futhark opencl``, we can invoke ``futhark bench``:
 
 .. code-block:: none
 
-    $ futhark-bench --compiler=futhark-opencl sumsquares.fut
+    $ futhark bench --backend=opencl sumsquares.fut
     Compiling src/sumsquares.fut...
     Results for src/sumsquares.fut:
     dataset #0 ("1000i32"):            49.70us (avg. of 10 runs; RSD: 0.18)
@@ -440,10 +440,10 @@ We can now compare the performance of CPU execution with GPU
 execution.  The tool takes care of the mechanics of run-time
 measurements, and even computes the relative standard deviation
 ("RSD") of the measurements for us. The correctness of the output is
-also automatically checked. By default, ``futhark-bench`` performs ten
+also automatically checked. By default, ``futhark bench`` performs ten
 runs for every data set, but this number can be changed with the
 ``--runs`` command line option.  Unless you can articulate a good
-reason not to, always use ``futhark-bench`` for benchmarking.
+reason not to, always use ``futhark bench`` for benchmarking.
 
 .. _package-management:
 
@@ -470,10 +470,10 @@ Packages are versioned with `semantic version numbers
 indicated, all three digits must always be given (that is, ``1.0`` is
 not a valid shorthand for ``1.0.0``).
 
-Most ``futhark-pkg`` operations involve reading and writing a *package
+Most ``futhark pkg`` operations involve reading and writing a *package
 manifest*, which is always stored in a file called ``futhark.pkg``.
 The ``futhark.pkg`` file is human-editable, but is in day-to-day use
-mainly modified by ``futhark-pkg`` automatically.  You will normally
+mainly modified by ``futhark pkg`` automatically.  You will normally
 have one ``futhark.pkg`` file for each of your Futhark projects.
 Packages are installed in a location relative to the location of
 ``futhark.pkg``.
@@ -481,9 +481,9 @@ Packages are installed in a location relative to the location of
 Installing Packages
 ~~~~~~~~~~~~~~~~~~~
 
-Required packages can be added by using ``futhark-pkg add``, for example::
+Required packages can be added by using ``futhark pkg add``, for example::
 
-  $ futhark-pkg add github.com/athas/fut-foo 0.1.0
+  $ futhark pkg add github.com/athas/fut-foo 0.1.0
 
 This will create a new file ``futhark.pkg`` with the following contents:
 
@@ -498,24 +498,24 @@ version, and the expected commit hash.  The latter is used for
 verification, to ensure that the contents of a package version cannot
 silently change.
 
-``futhark-pkg`` will perform network requests to determine whether a
+``futhark pkg`` will perform network requests to determine whether a
 package of the given name and with the given version exists and fail
 otherwise (but it will not check whether the package is otherwise
 well-formed).  The version number can be elided, in which case
-``futhark-pkg`` will use the newest available version.  If the package
+``futhark pkg`` will use the newest available version.  If the package
 is already present in ``futhark.pkg``, it will simply have its version
 requirement changed to the one specified in the command.  Any
 dependencies of the package will *not* be added to ``futhark.pkg``,
-but will still be downloaded by ``futhark-pkg sync`` (see below).
+but will still be downloaded by ``futhark pkg sync`` (see below).
 
-Adding a package with ``futhark-pkg add`` modifies ``futhark.pkg``,
+Adding a package with ``futhark pkg add`` modifies ``futhark.pkg``,
 but does not download the package files.  This is done with
-``futhark-pkg sync`` (without further options).  The contents of each
+``futhark pkg sync`` (without further options).  The contents of each
 required dependency and any transitive dependencies will be stored in
 a subdirectory of ``lib/`` corresponding to their package path.
 Following the earlier example::
 
-  $ futhark-pkg sync
+  $ futhark pkg sync
   $ tree lib
   lib
   └── github.com
@@ -525,16 +525,16 @@ Following the earlier example::
 
   3 directories, 1 file
 
-**Warning:** ``futhark-sync`` will remove any unrecognized files or
+**Warning:** ``futhark sync`` will remove any unrecognized files or
 local modifications to files in ``lib/``.  Unless you are creating
 your own package, you should not add anything to the ``lib/``
-directory - it is fully controlled by ``futhark-pkg``.
+directory - it is fully controlled by ``futhark pkg``.
 
 Packages can be removed from ``futhark.pkg`` with::
 
-  $ futhark-pkg remove pkgpath
+  $ futhark pkg remove pkgpath
 
-You will need to run ``futhark-sync`` to actually remove the files in
+You will need to run ``futhark sync`` to actually remove the files in
 ``lib/``.
 
 The intended usage is that ``futhark.pkg`` is added to version
@@ -545,7 +545,7 @@ just fine as well.
 Importing Files from Dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``futhark-pkg sync`` will populate the ``lib/`` directory, but does
+``futhark pkg sync`` will populate the ``lib/`` directory, but does
 not interact with the compiler in any way.  The downloaded files can
 be imported using the ``import`` mechanism (see
 :numref:`other-files`). For example, assuming the package contains a file
@@ -561,9 +561,9 @@ the upside of predictability.
 Upgrading Dependencies
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The ``futhark-pkg upgrade`` command will update every version
+The ``futhark pkg upgrade`` command will update every version
 requirement in ``futhark.pkg`` to be the most recent available
-version.  You still need to run ``futhark-pkg sync`` to actually
+version.  You still need to run ``futhark pkg sync`` to actually
 retrieve the new versions.  Be careful - while upgrades are safe if
 semantic versioning is followed correctly, this is not yet properly
 machine-checked, so human mistakes may occur.
@@ -576,13 +576,13 @@ As an example:
    require {
      github.com/athas/fut-foo 0.1.0 #d285563c25c5152b1ae80fc64de64ff2775fa733
    }
-   $ futhark-pkg upgrade
+   $ futhark pkg upgrade
    Upgraded github.com/athas/fut-foo 0.1.0 => 0.2.1.
    $ cat futhark.pkg
    require {
      github.com/athas/fut-foo 0.2.1 #3ddc9fc93c1d8ce560a3961e55547e5c78bd0f3e
    }
-   $ futhark-pkg sync
+   $ futhark pkg sync
    $ tree lib
    lib
    └── github.com
@@ -595,14 +595,14 @@ As an example:
    4 directories, 2 files
 
 Note that ``fut-foo 0.2.1`` depends on ``github.com/athas/fut-bar``,
-so it was fetched by ``futhark-pkg sync``.
+so it was fetched by ``futhark pkg sync``.
 
-``futhark-pkg upgrade`` will *never* upgrade across a major version
+``futhark pkg upgrade`` will *never* upgrade across a major version
 number.  Due to the principle of `Semantic Import Versioning
 <https://research.swtch.com/vgo-import>`_, a new major version is a
 completely different package from the point of view of the package
 manager.  Thus, to upgrade to a new major version, you will need to
-use ``futhark-pkg add`` to add the new version and ``futhark-pkg
+use ``futhark pkg add`` to add the new version and ``futhark pkg
 remove`` to remove the old version.  Or you can keep it around - it is
 perfectly acceptable to depend on multiple major versions of the same
 package, because they are really different packages.
@@ -646,15 +646,15 @@ For example, consider this program:
              in concat a b)
           (0..<n)
 
-At the time of this writing, the ``futhark-opencl`` compiler will fail
-with the not particularly illuminating error message ``Cannot allocate
-memory in kernel``. The reason is that the compiler is trying to
-compile the ``map`` to parallel code, which involves pre-allocating
-memory for the ``a`` and ``b`` array. It is unable to do this, as the
-sizes of these two arrays depend on values that are only known
-*inside* the map, which is too late. There are various techniques the
-Futhark compiler could use to estimate how much memory would be
-needed, but these have not yet been implemented.
+At the time of this writing, ``futhark opencl`` will fail with the not
+particularly illuminating error message ``Cannot allocate memory in
+kernel``. The reason is that the compiler is trying to compile the
+``map`` to parallel code, which involves pre-allocating memory for the
+``a`` and ``b`` array. It is unable to do this, as the sizes of these
+two arrays depend on values that are only known *inside* the map,
+which is too late. There are various techniques the Futhark compiler
+could use to estimate how much memory would be needed, but these have
+not yet been implemented.
 
 It is usually possible, sometimes with some pain, to come up with a
 workaround. We could rewrite the program as:

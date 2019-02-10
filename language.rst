@@ -51,7 +51,7 @@ it to a binary ``dotprod`` (or ``dotprod.exe`` on Windows) by running:
 
 .. code-block:: none
 
-    $ futhark-c dotprod.fut
+    $ futhark c dotprod.fut
 
 A Futhark program compiled to an executable will read the arguments to
 its ``main`` function from standard input, and will print the result to
@@ -68,20 +68,20 @@ with a specific type. This is why ``dotprod`` prints ``36i32``, rather
 than just ``36`` - this makes it clear that the result is a 32-bit
 integer. Later we will see examples of when these suffixes are useful.
 
-The ``futhark-c`` compiler we used above translates a Futhark program
+The ``futhark c`` compiler we used above translates a Futhark program
 into sequential code running on the CPU. This can be useful for testing,
 and will work on most systems, even those without GPUs. However, it
 wastes the main potential of Futhark: fast parallel execution. We can
-instead use the ``futhark-opencl`` compiler to generate an executable
+instead use the ``futhark opencl`` compiler to generate an executable
 that offloads execution via the OpenCL framework. In principle, this
-allows offloading to any kind of device, but the ``futhark-opencl``
+allows offloading to any kind of device, but the ``futhark opencl``
 compilation pipelines makes optimisation assumptions that are oriented
-towards contemporary GPUs. Use of ``futhark-opencl`` is simple, assuming
+towards contemporary GPUs. Use of ``futhark opencl`` is simple, assuming
 your system has a working OpenCL setup:
 
 .. code-block:: none
 
-    $ futhark-opencl dotprod.fut
+    $ futhark opencl dotprod.fut
 
 Execution is just as before:
 
@@ -451,8 +451,8 @@ size parameters.
    Futhark program on your system.  Write a program that contains a
    function ``main`` that accepts as input a parameter ``x : i32``,
    and returns ``x`` if ``x`` is positive, and otherwise the negation
-   of ``x``.  Compile your program with ``futhark-c`` and verify that
-   it works, then try with ``futhark-opencl``.
+   of ``x``.  Compile your program with ``futhark c`` and verify that
+   it works, then try with ``futhark opencl``.
 
 .. only:: html
 
