@@ -20,7 +20,7 @@ Testing and Debugging
 
 This section discusses techniques for checking the correctness of
 Futhark programs via unit tests, as well as the debugging facilities
-provided by ``futharki``.
+provided by ``futhark repl``.
 
 The testing experience for Futhark is still rather raw.  There are no
 advanced unit testing frameworks, no test generators or doc-testing,
@@ -113,8 +113,8 @@ This is done with the notation ``@ file``:
    :lines: 12-13
 
 This also shows another feature of ``futhark test``: if we precede
-``input`` with the word ``compiled``, that test is not run with
-``futharki``.  This is useful for large tests that would take too long
+``input`` with the word ``compiled``, that test is not run with the
+interpreter.  This is useful for large tests that would take too long
 to run interpreted.  There are more ways to filter which tests and
 programs should be skipped for a given invocation of ``futhark test``;
 see the `manual
@@ -158,10 +158,11 @@ in isolation, it is sometimes necessary to inspect internal state and
 behaviour.
 
 Compiled Futhark code does not possess much in the way of debugging
-facilities, but ``futharki`` has a couple of useful tools.  Since
-``futharki`` is very slow when compared to compiled code, this does
-mean that we can only debug on cut-down smaller testing sets, not on
-realistic workloads.
+facilities, but the interpreter (accessed via ``futhark repl`` and
+``futhark run``) has a couple of useful tools.  Since interpretation
+is very slow compared to compiled code, this does mean that we can
+only debug with cut-down smaller testing sets, not with realistic
+workloads.
 
 Specifically, we use the two functions ``trace`` and ``break``.  The
 ``trace`` function has the following type::
@@ -170,18 +171,18 @@ Specifically, we use the two functions ``trace`` and ``break``.  The
 
 Semantically, ``trace`` just returns its argument unchanged, and when
 compiling your Futhark code, this is indeed all that will happen.
-However, ``futharki`` treats ``trace`` specially, and will print the
-argument to the screen.  This is useful for seeing the value of
-internal variables.  For example, suppose we have the program
-``trace.fut``:
+However, ``futhark repl`` and ``futhark run`` treat ``trace``
+specially, and will print the argument to the screen.  This is useful
+for seeing the value of internal variables.  For example, suppose we
+have the program ``trace.fut``:
 
 .. literalinclude:: src/trace.fut
 
-We can then run it with ``futharki`` to get the following output:
+We can then run it with ``futhark run`` to get the following output:
 
 .. code-block:: none
 
-   $ echo [1,2,3] | futharki trace.fut
+   $ echo [1,2,3] | futhark run trace.fut
    Trace at trace.fut:1:24-1:49: 1i32
    Trace at trace.fut:1:24-1:49: 2i32
    Trace at trace.fut:1:24-1:49: 3i32
@@ -191,14 +192,14 @@ Similarly, the ``break`` function is semantically also the identity function::
 
   break 't : t -> t
 
-When ``futharki`` encounters ``break``, it suspends execution and lets
-us inspect the variables in scope.  At the moment, this works *only*
-when running an expression within the ``futharki`` REPL, *not* when
-running directly from the command line.  Suppose ``break.fut`` is:
+When the interpreter encounters ``break``, it suspends execution and
+lets us inspect the variables in scope.  At the moment, this works
+*only* when running an expression within ``futhark repl``, *not* when
+using ``futhark run``.  Suppose ``break.fut`` is:
 
 .. literalinclude:: src/break.fut
 
-Then we can load and run it from ``futharki``:
+Then we can load and run it from ``futhark repl``:
 
 .. code-block:: none
 

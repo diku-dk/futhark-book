@@ -111,18 +111,17 @@ range of command line options to manipulate their behaviour and print
 debugging information. These will be introduced as needed.
 
 For most of this book, we will be making use of the interactive
-Futhark *interpreter*: ``futharki``.  When launched with no options,
-it provides a Futhark REPL into which you can enter arbitrary
-expressions and declarations:
+Futhark *interpreter*, ``futhark repl``, which provides a Futhark REPL
+into which you can enter arbitrary expressions and declarations:
 
 .. code-block:: none
 
-    $ futharki
+    $ futhark repl
     |// |\    |   |\  |\   /
     |/  | \   |\  |\  |/  /
     |   |  \  |/  |   |\  \
     |   |   \ |   |   | \  \
-    Version 0.7.0.
+    Version 0.10.1.
     Copyright (C) DIKU, University of Copenhagen, released under the ISC license.
 
     Run :help for a list of commands.
@@ -136,9 +135,11 @@ inputs.  We will generally elide the numbers in this book, and just
 write the prompt as ``>`` (do not confuse this with the Unix prompt,
 which we write as ``$``).
 
-``futharki`` supports a variety of commands for inspecting and
+``futhark repl`` supports a variety of commands for inspecting and
 debugging Futhark code.  These will be introduced as necessary, in
-particular in :numref:`testing`.
+particular in :numref:`testing`.  There is also a batch-mode
+counterpart to ``futhark repl``, called ``futhark run``, which
+non-interactively executes the given program in the interpreter.
 
 .. _baselang:
 
@@ -418,10 +419,10 @@ permitted. We will return to function definitions in
 more advanced features, such as parametric polymorphism and implicit
 size parameters.
 
-.. admonition:: Note: Loading files into ``futharki``
+.. admonition:: Note: Loading files into ``futhark repl``
 
    At this point you may want to start writing and applying functions.
-   It is possible to do this directly in ``futharki``, but it quickly
+   It is possible to do this directly in ``futhark repl``, but it quickly
    becomes awkward for multi-line functions.  You can use the
    ``:load`` command to read declarations from a file:
 
@@ -441,7 +442,7 @@ size parameters.
 
    Emacs users may want to consider `futhark-mode
    <https://github.com/diku-dk/futhark-mode>`_, which is able to load
-   the file being edited into ``futharki`` with ``C-c C-l``, and
+   the file being edited into ``futhark repl`` with ``C-c C-l``, and
    provides other useful features as well.
 
 .. admonition:: Exercise: Simple Futhark programming
@@ -885,7 +886,7 @@ can also be written:
 
 This style of code can sometimes make imperative code look more natural.
 
-.. admonition:: Note: Type-checking with ``futharki``
+.. admonition:: Note: Type-checking with ``futhark repl``
 
    If you are uncertain about the type of some Futhark expression, the
    ``:type`` command (or ``:t`` for short) can help.  For example::
