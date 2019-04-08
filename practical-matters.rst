@@ -31,6 +31,8 @@ pairs.  However, it is better than nothing, and quite simple to use.
 compiler backend (``futhark c`` by default, but this can be changed
 with ``--backend``).
 
+.. _futhark-test:
+
 Testing with ``futhark test``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -45,7 +47,7 @@ As an example, let us consider how to test a function for matrix
 multiplication.  The function itself is defined as thus:
 
 .. literalinclude:: src/matmul.fut
-   :lines: 15-18
+   :lines: 17-20
 
 Note that we use ``entry`` instead of ``let`` in order for the
 function to be callable from the outside.
@@ -103,11 +105,15 @@ As a convenience, ``futhark test`` considers functions returning
 can put multiple values in an ``output`` stanza, just as we do with
 ``input``.
 
-Finally, it is also possible to specify test data stored in a separate
-file.  This is useful when testing with very large datasets, in
-particular when they use the `binary data format
-<https://futhark.readthedocs.io/en/latest/binary-data-format.html>`_.
-This is done with the notation ``@ file``:
+External Data Files
+...................
+
+It is also possible to specify input- and output-data stored in a
+separate file.  This is useful when testing with very large datasets,
+in particular when they use the `binary data format
+<https://futhark.readthedocs.io/en/latest/binary-data-format.html>`_,
+which can be generated with the ``futhark dataset`` tool.  This is
+done with the notation ``@ file``:
 
 .. literalinclude:: src/matmul.fut
    :lines: 12-13
@@ -115,11 +121,49 @@ This is done with the notation ``@ file``:
 This also shows another feature of ``futhark test``: if we precede
 ``input`` with the word ``compiled``, that test is not run with the
 interpreter.  This is useful for large tests that would take too long
-to run interpreted.  There are more ways to filter which tests and
-programs should be skipped for a given invocation of ``futhark test``;
-see the `manual
+to run interpreted.  Alternatively, we could run the test with
+``futhark test -c``, which disables interpretation entirely.  There
+are more ways to filter which tests and programs should be skipped for
+a given invocation of ``futhark test``; see the `manual
 <https://futhark.readthedocs.io/en/latest/man/futhark-test.html>`_ for
 more information.
+
+
+Automatically Generated Input
+.............................
+
+In many cases we are not particularly interested in the specific
+values of the workload we are benchmarking, merely its size.  Consider
+again the dot product: what matters is the size of the vectors, not
+their contents.  This is done with the stanza ``random input``:
+
+.. literalinclude:: src/matmul.fut
+   :lines: 14
+
+We again use ``compiled`` to indicate that this data set should not be
+used when testing with the interpreter.  However, instead of
+containing literal values, as with plain ``input``, the braces enclose
+types.  When ``futhark test`` is given this program, it will first
+automatically generate data files containing values of the indicated
+types and shapes.  This is only done once, after which the generated
+files are kept in a ``data/`` directory relative to the ``.fut`` file.
+This directory can be freely deleted and will be repopulated as
+needed.
+
+As the data file is randomly generated, we cannot in advance know what
+its expected output might be.  We can use the ``auto output`` stanza
+to ask ``futhark test`` to automatically construct an expected output
+file before running the program:
+
+.. literalinclude:: src/matmul.fut
+   :lines: 14-15
+
+The expected output is constructed by running the program compiled
+with ``futhark c``, and so is mainly useful for detecting differences
+between ``futhark c`` and one of the parallel backends, like for
+example ``futhark opencl``.  Such differences can be due to compiler
+bugs, programmer mistakes (like passing a non-associative function to
+``reduce``), or merely floating-point jitter.
 
 Testing a Futhark Library
 .........................
@@ -394,11 +438,14 @@ Our runtimes are now much better. And importantly, there are more of
 them, so we can perform analyses like, such as determining the variance, to
 figure out how predictable the performance is.
 
+Using `futhark bench`
+~~~~~~~~~~~~~~~~~~~~~
+
 However, we can do better still.  Futhark comes with a tool for
-performing automated benchmark runs of programs, called
-``futhark bench``.  This tool relies on a specially formatted header
-comment that contains input/output pairs, just like ``futhark test``
-(see :numref:`testing`).  The `Futhark User's Guide`_ contains a full
+performing automated benchmark runs of programs, called ``futhark
+bench``.  This tool relies on a specially formatted header comment
+that contains input/output pairs, exactly like ``futhark test`` (see
+:numref:`futhark-test`).  The `Futhark User's Guide`_ contains a full
 description, but here is a simple example. First, we introduce a new
 program, ``sumsquares.fut``, with smaller data sets for convenience:
 
@@ -408,7 +455,8 @@ program, ``sumsquares.fut``, with smaller data sets for convenience:
 
 The line containing ``==`` is used to separate the human-readable
 benchmark description from input-output pairs.  It is also possible to
-keep the data set is located in an external file (see the `manual page
+keep the data set in an external file, or to generate it automatically
+(see the `manual page
 <http://futhark.readthedocs.io/en/latest/man/futhark-bench.html>`_ for
 more information.).
 
