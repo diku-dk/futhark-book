@@ -92,13 +92,13 @@ particular starting point.
 The simple line drawing routine is given as follows:
 
 .. literalinclude:: src/lines_seq.fut
-   :lines: 6-28
+   :lines: 4-26
 
 Futhark code that uses the ``linepoints`` function for drawing
 concrete lines is shown below:
 
 .. literalinclude:: src/lines_seq.fut
-   :lines: 30-50
+   :lines: 28-48
 
 The function ``main`` sets up a grid and calls the function
 ``drawlines``, which takes care of sequentially updating the grid with
@@ -130,7 +130,7 @@ function that determines the ``n``'th point of a particular line, given
 the index ``n``. The code for such an approach looks as follows:
 
 .. literalinclude:: src/lines_flat2.fut
-   :lines: 29-50
+   :lines: 28-49
 
 Notice that the function ``get_point_in_line`` distinguishes between
 whether the number of points in the line is counted by the x-axis or
@@ -168,21 +168,21 @@ The first function we need to pass to the ``expand`` function is a
 function that determines the number of horizontal lines in the triangle:
 
 .. literalinclude:: src/triangles.fut
-   :lines: 63-64
+   :lines: 62-63
 
 The second function we need to pass to the ``expand`` function is
 somewhat more involved. We first define a function ``dxdy``, which
 computes the inverse slope of a line between two points:
 
 .. literalinclude:: src/triangles.fut
-   :lines: 66-70
+   :lines: 65-69
 
 We can now define the function that, given a triangle and the
 horizontal line number in the triangle (counted from the top), returns
 the corresponding line:
 
 .. literalinclude:: src/triangles.fut
-   :lines: 72-86
+   :lines: 71-85
 
 The function distinguishes between whether the line to compute resides
 in the upper or the lower subtriangle. Finally, we can define a
@@ -190,13 +190,13 @@ parallel, work-efficient function that converts a number of triangles
 into lines:
 
 .. literalinclude:: src/triangles.fut
-   :lines: 88-90
+   :lines: 87-91
 
 To see the code in action, here is a function that draws three
 triangles on a grid of height 30 and width 62:
 
 .. literalinclude:: src/triangles.fut
-   :lines: 92-98
+   :lines: 91-97
 
 The function makes use of both the ``lines_of_triangles`` function
 that we have defined here and the work efficient ``drawlines``
@@ -308,14 +308,14 @@ We first define a type ``sgm`` that specifies a segment of an
 underlying one-dimensional array of values:
 
 .. literalinclude:: src/quick_sort.fut
-   :lines: 25-25
+   :lines: 24-24
 
 At top-level, the function ``qsort`` is defined as follows, assuming a
 function ``step`` of type ``(t -> t -> bool) -> *[n]t -> []sgm ->
 (*[n]t,[]sgm)``:
 
 .. literalinclude:: src/quick_sort.fut
-   :lines: 89-93
+   :lines: 88-92
 
 The ``step`` function is called initially with the array to be sorted
 as argument together with a singleton array containing a segment
@@ -336,7 +336,7 @@ helper functions.  Using the functions ``segmented_iota`` and
 finding all the indexes represented by an array of segments:
 
 .. literalinclude:: src/quick_sort.fut
-   :lines: 28-33
+   :lines: 27-32
 
 We also define a function ``info`` that, given an ordering function
 and two elements, returns ``-1`` if the first element is less than the
@@ -344,13 +344,13 @@ second element, ``0`` if the elements are identical, and ``1`` if the
 first element is greater than the second element:
 
 .. literalinclude:: src/quick_sort.fut
-   :lines: 15-17
+   :lines: 14-16
 
 The following two functions ``tripit`` and ``tripadd`` are used for
 converting the classification of elements into subsegments:
 
 .. literalinclude:: src/quick_sort.fut
-   :lines: 19-23
+   :lines: 18-22
 
 We can now define the function ``step`` that, besides from an ordering
 function, takes as arguments (1) the array containing values and (2) an
@@ -359,7 +359,7 @@ reordered array of values and a new array of segments to be
 sorted:
 
 .. literalinclude:: src/quick_sort.fut
-   :lines: 35-79
+   :lines: 34-78
 
 The algorithm has best case work complexity :math:`O(n)` (when all
 elements are identical), worst case work complexity :math:`O(n^2)`,

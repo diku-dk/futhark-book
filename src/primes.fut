@@ -15,8 +15,6 @@
 --        let new = filter (\i -> 0 == unsafe fs[i-sqrtn]) is
 --   in concat first new
 
-import "/futlib/math"
-
 -- Find the first n primes
 let primes (n:i32) : []i32 =
   let (acc, _) = loop (acc,c) = ([],2) while c < n+1 do

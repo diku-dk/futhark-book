@@ -1,4 +1,3 @@
-import "/futlib/math"
 import "segmented"
 
 -- Drawing lines

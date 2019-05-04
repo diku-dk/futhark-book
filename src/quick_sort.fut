@@ -6,7 +6,6 @@
 -- input { [2] } output { [2] }
 
 import "segmented"
-import "/futlib/math"
 
 let segmented_replicate [n] (reps:[n]i32) (vs:[n]i32) : []i32 =
   let idxs = replicated_iota reps

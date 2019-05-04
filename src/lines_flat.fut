@@ -1,8 +1,6 @@
 -- ==
 -- input {} output @ lines_flat.ok
 
-import "/futlib/math"
-
 -- [sgm_scan_add xs fs] returns the sum-scan of the argument xs but
 -- reset at points i where xs[i] is true.
 

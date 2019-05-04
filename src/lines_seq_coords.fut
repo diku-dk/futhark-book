@@ -1,5 +1,3 @@
-import "/futlib/math"
-
 -- Finding points on a line
 type point = (i32,i32)
 type line = (point,point)

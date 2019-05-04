@@ -1,7 +1,6 @@
 -- ==
 -- input {} output @ lines_flat2.ok
 
-import "/futlib/math"
 import "segmented"
 
 -- Drawing lines
