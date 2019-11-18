@@ -7,8 +7,8 @@
 -- output { [[19, 22], [43, 50]] }
 -- input { [[1, 2]] [[3]] }
 -- error: matmul.fut:17
--- input { empty([]i32) empty([]i32) }
--- output { empty([]i32) }
+-- input { empty([0]i32) empty([0]i32) }
+-- output { empty([0]i32) }
 -- compiled input @ big_matrices.in
 -- output @ big_matrices.out
 -- compiled random input { [100][1000]i32 [1000][100]i32 }
