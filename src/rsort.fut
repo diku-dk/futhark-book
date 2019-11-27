@@ -9,7 +9,7 @@
 -- }
 --
 -- input { [1u32] } output { [1u32] }
--- input { empty(u32) } output { empty(u32) }
+-- input { empty([0]u32) } output { empty([0]u32) }
 --
 
 

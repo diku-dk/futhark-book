@@ -89,8 +89,8 @@ case, we just assert that the correct line number is provided.
 Type inference on the input/output values is not performed, so the
 types must be unambiguous.  This means that the usual ``[]`` notation
 for an empty array will not work.  Instead, a special ``empty(t)``
-notation is used to represent an array of *row type* ``t``.  For
-example, we can test for empty arrays as such:
+notation is used to represent an array of type ``t``.  For example, we
+can test for empty arrays as such:
 
 .. literalinclude:: src/matmul.fut
    :lines: 10-11
