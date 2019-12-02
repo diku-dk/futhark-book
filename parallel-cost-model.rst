@@ -302,7 +302,7 @@ The semantics of types yields their natural set interpretations:
 .. math::
 
    \Eval{\kw{i32}} & =~~ \Z \\
-   \Eval{\kw{i32}} & =~~ \R \\
+   \Eval{\kw{f32}} & =~~ \R \\
    \Eval{\kw{bool}} & =~~ \{\fop{true},\fop{false}\} \\
    \Eval{\kw{(}\tau_1,\cdots,\tau_n\kw{)}} & =~~ \Eval{\tau_1} \times \cdots \times \Eval{\tau_n} \\
    \Eval{\kw{[]}\tau} & =~~ \N \rightarrow \Eval{\tau} \\
