@@ -546,7 +546,7 @@ their 0-bit set whereas the first five values have not.
 .. csv-table::
    :header: "Variable"
 
-   ``xs``, :math:`2^\dagger`, 0, :math:`2^\dagger`, 4, :math:`2^\dagger`, 1, 5, 9
+   ``xs``, 2, 0, 2, 4, 2, 1, 5, 9
    ``bits1``, 1, 0, 1, 0, 1, 0, 0, 0
    ``bits0``, 0, 1, 0, 1, 0, 1, 1, 1
    ``scan (+) 0 bits0``, 0, 1, 1, 2, 2, 3, 4, 5
