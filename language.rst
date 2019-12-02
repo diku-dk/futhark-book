@@ -43,7 +43,7 @@ In Futhark, the notation for an array of element type ``t`` is
 ``[]t``. The program defines a function called ``main`` that takes two
 arguments, both integer arrays, and returns an integer. The ``main``
 function first computes the element-wise product of its two arguments,
-resulting in an array of integers, then computes the product of the
+resulting in an array of integers, then computes the sum of the
 elements in this new array.
 
 If we save the program in a file ``dotprod.fut``, then we can compile
