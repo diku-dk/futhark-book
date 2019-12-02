@@ -538,7 +538,7 @@ contraction step until the array is sorted (i.e., when the contraction
 step has been executed for all bits.) To appreciate the purpose of
 each data-parallel operation in the function, the table below
 illustrates how ``rsort_step`` takes care of moving elements with a
-particular bit set (bit 2) to the end of the array. The example
+particular bit set (bit 1) to the end of the array. The example
 assumes the current array (``xs``) contains the array
 ``[2,0,6,4,2,1,5,9]``.  Notice that the last three values all have
 their 0-bit set whereas the first five values have not.
