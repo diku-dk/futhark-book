@@ -541,7 +541,8 @@ illustrates how ``rsort_step`` takes care of moving elements with a
 particular bit set (bit 1) to the end of the array. The example
 assumes the current array (``xs``) contains the array
 ``[2,0,6,4,2,1,5,9]``.  Notice that the last three values all have
-their 0-bit set whereas the first five values have not.
+their 0-bit set whereas the first five values have not. The values
+of ``xs`` marked with :math:`\dagger` are the ones with bit 1 set.
 
 .. csv-table::
    :header: "Variable"
