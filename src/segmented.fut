@@ -5,12 +5,12 @@
 -- segments of ``as`` specified by the ``flags`` array, where `true`
 -- starts a segment and `false` continues a segment.
 let segmented_scan 't [n] (g:t->t->t) (ne: t) (flags: [n]bool) (vals: [n]t): [n]t =
-  let pairs = scan ( \ (v1,f1) (v2,f2) ->
-                       let f = f1 || f2
+  let pairs = scan ( \ (v1,_) (v2,f2) ->
                        let v = if f2 then v2 else g v1 v2
-                       in (v,f) ) (ne,false) (zip vals flags)
+                       in (v,false) ) (ne,false) (zip vals flags)
   let (res,_) = unzip pairs
   in res
+
 
 -- | Segmented reduction. Given a binary associative operator ``op``
 -- with neutral element ``ne``, computes the reduction of the segments

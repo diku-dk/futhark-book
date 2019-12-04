@@ -1,11 +1,11 @@
 -- Segmented scan with integer addition
 let segmented_scan_add [n] (flags:[n]bool) (vals:[n]i32) : [n]i32 =
-  let pairs = scan ( \(v1,f1) (v2,f2) ->
-                       let f = f1 || f2
+  let pairs = scan ( \(v1,_) (v2,f2) ->
                        let v = if f2 then v2 else v1+v2
-                       in (v,f) ) (0,false) (zip vals flags)
+                       in (v,false) ) (0,false) (zip vals flags)
   let (res,_) = unzip pairs
   in res
+
 
 -- ==
 -- entry: segmented_scan_add_tester

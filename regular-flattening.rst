@@ -41,6 +41,9 @@ addition:
 .. literalinclude:: src/sgm_streak.fut
    :lines: 1-8
 
+Note that we have to include the extra boolean in the accumulator to satisfy the
+type signature of ``scan``.
+
 We can make use of Futhark's support for higher-order functions and
 polymorphism to define a generic version of segmented scan that will
 work for other monoidal structures than addition on ``i32`` values:
