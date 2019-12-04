@@ -4,13 +4,13 @@
 -- neutral element ``ne``, computes the inclusive prefix scan of the
 -- segments of ``as`` specified by the ``flags`` array, where `true`
 -- starts a segment and `false` continues a segment.
-let segmented_scan [n] 't (op: t -> t -> t) (ne: t)
-                          (flags: [n]bool) (as: [n]t): [n]t =
-  (unzip (scan (\(x_flag,x) (y_flag,y) ->
-                (x_flag || y_flag,
-                 if y_flag then y else x `op` y))
-          (false, ne)
-          (zip flags as))).2
+let segmented_scan 't [n] (g:t->t->t) (ne: t) (flags: [n]bool) (vals: [n]t): [n]t =
+  let pairs = scan ( \ (v1,f1) (v2,f2) ->
+                       let f = f1 || f2
+                       let v = if f2 then v2 else g v1 v2
+                       in (v,f) ) (ne,false) (zip vals flags)
+  let (res,_) = unzip pairs
+  in res
 
 -- | Segmented reduction. Given a binary associative operator ``op``
 -- with neutral element ``ne``, computes the reduction of the segments

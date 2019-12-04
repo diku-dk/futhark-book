@@ -38,15 +38,15 @@ that operates on pairs of values
 the definition of the segmented scan operation, hardcoded to work with
 addition:
 
-.. literalinclude:: src/sgm_scan.fut
-   :lines: 4-11
+.. literalinclude:: src/sgm_streak.fut
+   :lines: 1-8
 
 We can make use of Futhark's support for higher-order functions and
 polymorphism to define a generic version of segmented scan that will
 work for other monoidal structures than addition on ``i32`` values:
 
-.. literalinclude:: src/sgm_scan.fut
-   :lines: 13-20
+.. literalinclude:: src/segmented.fut
+   :lines: 7-13
 
 We leave it up to the reader to prove that, given an associative
 function ``g``, (1) the operator passed to ``scan`` is associative
@@ -63,7 +63,7 @@ increasing numbers. We show how we can make direct use of a segmented
 scan operation for solving the problem:
 
 .. literalinclude:: src/sgm_streak.fut
-   :lines: 31-38
+   :lines: 27-34
 
 The algorithm first constructs the ``is`` array, as in the previous
 algorithm, and then uses a segmented scan over a negation of this array
