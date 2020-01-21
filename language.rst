@@ -796,6 +796,8 @@ has the following semantics:
 
 #. Bind ``pat`` to the initial values given in ``initial``.
 
+#. Bind ``i`` to 0.
+
 #. While ``i < bound``, evaluate ``loopbody``, rebinding ``pat`` to be
    the value returned by the body. At the end of each iteration,
    increment ``i`` by one.
