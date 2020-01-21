@@ -52,7 +52,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Parallel Programming in Futhark'
-copyright = '2018 Martin Elsman, Troels Henriksen, and Cosmin E. Oancea'
+copyright = 'Martin Elsman, Troels Henriksen, and Cosmin E. Oancea'
 author = 'Martin Elsman, Troels Henriksen, and Cosmin E. Oancea'
 
 # The version info for the project you're documenting, acts as replacement for
