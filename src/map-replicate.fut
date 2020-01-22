@@ -5,7 +5,7 @@ let segmented_scan [n] 't (op: t -> t -> t) (ne: t)
                 (x_flag || y_flag,
                  if y_flag then y else x `op` y))
           (false, ne)
-          (zip flags as))).2
+          (zip flags as))).1
 
 let replicated_iota [n] (reps:[n]i32) : []i32 =
   let s1 = scan (+) 0 reps

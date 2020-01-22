@@ -60,7 +60,7 @@ let step [n] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[]sgm) : (*[n]t,[]sgm) =
 let qsort [n] 't ((<=): t -> t -> bool) (xs:*[n]t) : [n]t =
   if n < 2 then xs
   else (loop (xs,mms) = (xs,[{start=0,sz=n}]) while length mms > 0 do
-          step (<=) xs mms).1
+          step (<=) xs mms).0
 
 let main [n] (xs:*[n]i32) = qsort (i32.<=) xs
 

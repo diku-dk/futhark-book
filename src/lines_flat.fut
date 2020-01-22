@@ -60,18 +60,18 @@ let drawlines [h][w][n] (grid:*[h][w]i32)
   let idxs = repl_idx lens
   let lns = map (\ i -> unsafe lines[i]) idxs
   let dirs = map (\ (p1,p2) ->
-                   if xmax p1 p2 then compare (p1.1) (p2.1)
-                   else compare (p1.2) (p2.2)) lns
+                   if xmax p1 p2 then compare (p1.0) (p2.0)
+                   else compare (p1.0) (p2.1)) lns
   let sls = map (\ (p1,p2) ->
                   if xmax p1 p2 then slope p1 p2
                   else slope (swap p1) (swap p2)) lns
   let is = sgm_iota (map2 (!=) idxs (rotate 1 idxs))
   let xs = map4 (\ (p1,p2) dirx sl i ->
-                 if xmax p1 p2 then p1.1+dirx*i
-                 else p1.1+t32(sl*r32(i))) lns dirs sls is
+                 if xmax p1 p2 then p1.0+dirx*i
+                 else p1.0+t32(sl*r32(i))) lns dirs sls is
   let ys = map4 (\ (p1,p2) dirx sl i ->
-                 if xmax p1 p2 then p1.2+t32(sl*r32(i))
-                 else p1.2+i*dirx) lns dirs sls is
+                 if xmax p1 p2 then p1.1+t32(sl*r32(i))
+                 else p1.1+i*dirx) lns dirs sls is
   in update grid xs ys
 
 let main : [][]i32 =

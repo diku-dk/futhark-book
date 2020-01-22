@@ -5,7 +5,7 @@ import "segmented"
 
 -- Flattened version of Erastothenes' sieve using expansion
 let primes (n:i32) =
-  (.1) <|
+  (.0) <|
   loop (acc:[]i32,c) = ([],2) while c < n+1 do
     let c2 = if c < i32.f32(f32.sqrt(f32.i32(n+1))) then c*c
              else n+1

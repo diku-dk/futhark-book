@@ -32,15 +32,15 @@ let points_in_line ((x1,y1),(x2,y2)) =
   i32.(1 + max (abs(x2-x1)) (abs(y2-y1)))
 
 let get_point_in_line ((p1,p2):line) (i:i32) =
-  if i32.abs(p1.1-p2.1) > i32.abs(p1.2-p2.2)
-  then let dir = compare (p1.1) (p2.1)
+  if i32.abs(p1.0-p2.0) > i32.abs(p1.1-p2.1)
+  then let dir = compare (p1.0) (p2.0)
        let sl = slope p1 p2
-       in (p1.1+dir*i,
-           p1.2+i32.f32(f32.round(sl*r32 i)))
-    else let dir = compare (p1.2) (p2.2)
-         let sl = slope (p1.2,p1.1) (p2.2,p2.1)
-         in (p1.1+i32.f32(f32.round(sl*r32 i)),
-             p1.2+i*dir)
+       in (p1.0+dir*i,
+           p1.1+i32.f32(f32.round(sl*r32 i)))
+    else let dir = compare (p1.1) (p2.1)
+         let sl = slope (p1.1,p1.0) (p2.1,p2.0)
+         in (p1.0+i32.f32(f32.round(sl*r32 i)),
+             p1.1+i*dir)
 
 let drawlines [h][w][n] (grid:*[h][w]i32)
                         (lines:[n]line) :[h][w]i32 =

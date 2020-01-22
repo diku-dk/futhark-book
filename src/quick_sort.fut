@@ -89,7 +89,7 @@ let qsort [n] 't ((<=): t -> t -> bool) (xs:[n]t) : [n]t =
   if n < 2 then xs
   else (loop (xs,mms) = (copy xs,[{start=0,sz=n}])
         while length mms > 0 do
-          step (<=) xs mms).1
+          step (<=) xs mms).0
 
 -- | Like `qsort`@term, but sort based on key function.
 let qsort_by_key [n] 't 'k (key: t -> k) ((<=): k -> k -> bool) (xs: [n]t): [n]t =
