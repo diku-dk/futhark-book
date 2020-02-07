@@ -6,7 +6,7 @@
 -- input { [[1, 2], [3, 4]] [[5, 6], [7, 8]] }
 -- output { [[19, 22], [43, 50]] }
 -- input { [[1, 2]] [[3]] }
--- error: matmul.fut:17
+-- error: matmul.fut:19
 -- input { empty([0][0]i32) empty([0][0]i32) }
 -- output { empty([0][0]i32) }
 -- compiled input @ big_matrices.in

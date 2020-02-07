@@ -37,13 +37,13 @@ let step [n] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[]sgm)
   let pivots : []t = map (\sgm -> unsafe xs[sgm.start + sgm.sz/2]) sgms
 
   -- find index into the segment that a value belongs to
-  let idxs : []i32 = replicated_iota (map (\sgm -> sgm.sz) sgms)
+  let idxs = replicated_iota (map (\sgm -> sgm.sz) sgms)
 
   let is = idxs_values sgms
 
   -- for each value, how does it compare to the pivot associated
   -- with the segment?
-  let infos : []i32 =
+  let infos =
     map2 (\idx i -> unsafe info (<=) xs[i] pivots[idx]) idxs is
   let orders : [](i32,i32,i32) = map tripit infos
 

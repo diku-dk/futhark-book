@@ -1,3 +1,3 @@
 require {
-  github.com/diku-dk/sobol 0.1.6 #ba6c64720f0fa2b13b39342aa1998449a0d86f79
+  github.com/diku-dk/sobol 0.1.8 #61794813389e35e0bbb18af1848db4a2131c9ea2
 }

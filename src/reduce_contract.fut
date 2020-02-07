@@ -13,7 +13,7 @@ let padpow2 [n] (ne: i32) (v:[n]i32) : []i32 =
 let red (xs : []i32) : i32 =
   let xs = loop xs=padpow2 0 xs while length xs > 1 do
     let n = length xs / 2
-    in map2 (+) xs[0:n] xs[n:2*n]
+    in map2 (+) (take n xs) (take n (drop n xs))
   in xs[0]
 
 let main : bool =
