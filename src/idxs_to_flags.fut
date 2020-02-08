@@ -24,7 +24,8 @@ let segmented_replicate [n] (reps:[n]i32) (vs:[n]i32) : []i32 =
 
 let idxs_to_flags [n] (is : [n]i32) : []bool =
   let vs = segmented_replicate is (iota n)
-  in map2 (!=) vs ([0] ++ vs[:length vs-1])
+  let m = length vs
+  in map2 (!=) (vs :> [m]i32) ([0] ++ vs[:m-1] :> [m]i32)
 
 let main (xs: []i32): []bool =
   idxs_to_flags xs

@@ -22,7 +22,7 @@ let repl_idx [n] (reps:[n]i32) : []i32 =
 -- Drawing lines
 type point = (i32,i32)
 type line = (point,point)
-type points = []point
+type points [n] = [n]point
 
 -- Write to grid
 let update [h][w][n] (grid:*[h][w]i32) (xs:[n]i32)

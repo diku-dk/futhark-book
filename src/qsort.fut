@@ -20,14 +20,14 @@ let tripadd (a1:i32,e1:i32,b1:i32) (a2,e2,b2) =
 
 type sgm = {start:i32,sz:i32}  -- segment
 
-let step [n] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[]sgm) : (*[n]t,[]sgm) =
-  --let _ = trace {NEW_STEP=()}
+let step [n] [m] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[m]sgm) : (*[n]t,[]sgm) =
   let pivots : []t = map (\sgm -> xs[sgm.start + sgm.sz/2]) sgms
   let sgms_szs : []i32 = map (\sgm -> sgm.sz) sgms
-  let idxs : []i32 = replicated_iota sgms_szs
+  let k = i32.sum (map (.sz) sgms)
+  let idxs = replicated_iota sgms_szs :> [k]i32
 
   let is =
-    let is1 = segmented_replicate sgms_szs (map (\x -> x.start) sgms)
+    let is1 = segmented_replicate sgms_szs (map (\x -> x.start) sgms) :> [k]i32
     let fs = map2 (!=) is1 (rotate (i32.negate 1) is1)
     let is2 = segmented_iota fs
     in map2 (+) is1 is2
@@ -35,8 +35,9 @@ let step [n] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[]sgm) : (*[n]t,[]sgm) =
   let infos : []i32 = map2 (\idx i -> info (<=) xs[i] pivots[idx]) idxs is
   let orders : [](i32,i32,i32) = map tripit infos
   let flags : []bool = map2 (!=) idxs (rotate (i32.negate 1) idxs)
-  let flags = [true] ++ flags[1:]
+  let flags = [true] ++ flags[1:] :> [k]bool
   let bszs : [](i32,i32,i32) = segmented_reduce tripadd (0,0,0) flags orders
+                               :> [m](i32,i32,i32)
 
   let sgms' =
     map2 (\(sgm:sgm) (a,e,b) -> [{start=sgm.start,sz=a},

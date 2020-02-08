@@ -18,5 +18,5 @@ let segmented_replicate [n] (reps:[n]i32) (vs:[n]i32) : []i32 =
   let idxs = replicated_iota reps
   in map (\i -> unsafe vs[i]) idxs
 
-let main (n:i32) (xs:[]i32) : []i32 =
-  segmented_replicate (replicate (length xs) n) xs
+let main [m] (n:i32) (xs:[m]i32) : []i32 =
+  segmented_replicate (replicate m n) xs

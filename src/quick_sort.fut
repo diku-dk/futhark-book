@@ -31,15 +31,15 @@ let idxs_values (sgms:[]sgm) : []i32 =
   let is2 = segmented_iota fs
   in map2 (+) is1 is2
 
-let step [n] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[]sgm)
+let step [n][m] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[m]sgm)
   : (*[n]t,[]sgm) =
   -- find a pivot for each segment
   let pivots : []t = map (\sgm -> unsafe xs[sgm.start + sgm.sz/2]) sgms
 
   -- find index into the segment that a value belongs to
-  let idxs = replicated_iota (map (\sgm -> sgm.sz) sgms)
-
-  let is = idxs_values sgms
+  let k = i32.sum (map (.sz) sgms)
+  let idxs = replicated_iota (map (\sgm -> sgm.sz) sgms) :> [k]i32
+  let is = idxs_values sgms :> [k]i32
 
   -- for each value, how does it compare to the pivot associated
   -- with the segment?
@@ -49,11 +49,11 @@ let step [n] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[]sgm)
 
   -- compute segment descriptor
   let flags =
-    [true] ++ (map2 (!=) idxs (rotate (i32.negate 1) idxs))[1:]
+    [true] ++ (map2 (!=) idxs (rotate (i32.negate 1) idxs))[1:] :> [k]bool
 
   -- compute partition sizes for each segment
-  let pszs : [](i32,i32,i32) =
-    segmented_reduce tripadd (0,0,0) flags orders
+  let pszs =
+    segmented_reduce tripadd (0,0,0) flags orders :> [m](i32,i32,i32)
 
   -- compute the new segments
   let sgms' =

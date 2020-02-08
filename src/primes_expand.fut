@@ -11,10 +11,11 @@ let primes (n:i32) =
              else n+1
     let sz (p:i32) = (c2 - p) / p
     let get p i = (2+i)*p
-    let sieves:[]i32 = map (\p -> p-c) (expand sz get acc)
-    let vs = replicate (c2-c) 1
-    let vs = scatter vs sieves (replicate (length sieves) 0)
-    let new = filter (>0) <| map2 (*) vs (c..<c2)
+    let m = c2 - c
+    let sieves = map (\p -> p-c) (expand sz get acc)
+    let vs = replicate m 1
+    let vs = scatter vs sieves (map (const 0) sieves)
+    let new = filter (>0) <| map2 (*) vs ((c..<c2) :> [m]i32)
     in (acc ++ new, c2)
 
 -- Return the number of primes less than n

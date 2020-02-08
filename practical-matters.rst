@@ -84,7 +84,7 @@ shape of the matrices don't match up:
    :lines: 8-9
 
 We provide a regular expression matching the expected error.  In this
-case, we just assert that the correct line number is provided.
+case, we just assert that the error mentions the file name.
 
 Type inference on the input/output values is not performed, so the
 types must be unambiguous.  This means that the usual ``[]`` notation
