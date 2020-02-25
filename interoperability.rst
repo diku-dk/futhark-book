@@ -210,10 +210,10 @@ type used in the entry points of the Futhark program.
 
 The single entry point is declared like this::
 
-  int futhark_entry_dotprod(struct futhark_context *ctx,
-                            int32_t *out0,
-                            const struct futhark_i32_1d *in0,
-                            const struct futhark_i32_1d *in1);
+  int futhark_entry_main(struct futhark_context *ctx,
+                         int32_t *out0,
+                         const struct futhark_i32_1d *in0,
+                         const struct futhark_i32_1d *in1);
 
 As the original Futhark program accepted two parameters and returned
 one value, the corresponding C function takes one *out* parameter and
@@ -237,7 +237,7 @@ handling) that calls our generated library::
     struct futhark_i32_1d *y_arr = futhark_new_i32_1d(ctx, y, 4);
 
     int res;
-    futhark_entry_dotprod(ctx, &res, x_arr, y_arr);
+    futhark_entry_main(ctx, &res, x_arr, y_arr);
     futhark_context_sync(ctx);
 
     printf("Result: %d\n", res);
