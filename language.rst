@@ -28,11 +28,11 @@ deal. The fact that Futhark is purely functional is intended to give an
 optimising compiler more leeway in rearranging the code and performing
 high-level optimisations.
 
-Programming in Futhark feels similar to programming in other functional
-languages. If you know Haskell or Standard ML, you will likely be able
-to read and modify most Futhark code. For example, this program computes
-the dot product :math:`\Sigma_{i} x_{i}\cdot{}y_{i}` of two vectors of
-integers:
+Programming in Futhark feels similar to programming in other
+functional languages. If you know languages such as Haskell, OCaml,
+Scala, or Standard ML, you will likely be able to read and modify most
+Futhark code. For example, this program computes the dot product
+:math:`\Sigma_{i} x_{i}\cdot{}y_{i}` of two vectors of integers:
 
 ::
 
@@ -121,7 +121,7 @@ into which you can enter arbitrary expressions and declarations:
     |/  | \   |\  |\  |/  /
     |   |  \  |/  |   |\  \
     |   |   \ |   |   | \  \
-    Version 0.10.1.
+    Version 0.15.0.
     Copyright (C) DIKU, University of Copenhagen, released under the ISC license.
 
     Run :help for a list of commands.
@@ -242,8 +242,8 @@ function ``f`` to a constant argument, we write:
 
     f 1.0
 
-See :numref:`function-declarations` for how to declare your own
-functions.
+We will discuss defining our own functions in
+:numref:`function-declarations`.
 
 A let-expression can be used to give a name to the result of an expression:
 
@@ -283,13 +283,15 @@ supported in let-bindings, which permits tuple components to be extracted:
 This feature also demonstrates the Futhark line comment syntax — two
 dashes followed by a space. Block comments are not supported.
 
-A two-way if-then-else is the only branching construct in Futhark:
+Two-way if-then-else is the main branching construct in Futhark:
 
 ::
 
     if x < 0 then -x else x
 
-Arrays are indexed using the common row-major notation, as in the
+Pattern matching with the ``match`` keyword will be discussed later.
+
+Arrays are indexed using conventional row-major notation, as in the
 expression ``a[i1, i2, i3, ...]``.  All array accesses are checked at
 runtime, and the program will terminate abnormally if an invalid
 access is attempted.
@@ -329,7 +331,7 @@ because they bind very loosely.  A stride can be provided by writing
 
     > 1..3...7
     [1i32, 3i32, 5i32, 7i32]
-    > (1..3..<7)
+    > 1..3..<7
     [1i32, 3i32, 5i32]
 
 The element type of the produced array is the same as the type of the
@@ -415,7 +417,7 @@ Top-level definitions are declared in order, and a definition may
 refer *only* to those names that have been defined before it
 occurs. This means that circular and recursive definitions are not
 permitted. We will return to function definitions in
-:numref:`size-annotations` and :numref:`polymorphism`, where we will look at
+:numref:`size-types` and :numref:`polymorphism`, where we will look at
 more advanced features, such as parametric polymorphism and implicit
 size parameters.
 
@@ -455,7 +457,7 @@ size parameters.
    of ``x``.  Compile your program with ``futhark c`` and verify that
    it works, then try with ``futhark opencl``.
 
-.. only:: html
+   .. only:: html
 
    .. admonition:: Solution (click to show)
       :class: solution
@@ -531,16 +533,18 @@ Notice that the input arrays may have different types. We can use
     > unzip [(1,true),(2,false),(3,true)]
     ([1i32, 2i32, 3i32], [true, false, true])
 
-Be aware that ``zip`` requires all input arrays to have the same
-length.  This is checked at runtime.  Transforming between arrays of
-tuples and tuples of arrays is common in Futhark programs, as many
-array operations accept only one array as input.  Due to a clever
-implementation technique, ``zip`` and ``unzip`` usually have no
-runtime cost (they are fused into other operations), so you should not
-shy away from using them out of efficiency concerns.  For operating on
-arrays of tuples with more than two elements, there are
-``zip``/``unzip`` variants called ``zip3``, ``zip4``, etc, up to
-``zip8``/``unzip8``.
+The ``zip`` function requires the two input arrays to have the same
+length.  This is verified statically, by the type checker, using rules
+we will discuss in :numref:`size-types`.
+
+Transforming between arrays of tuples and tuples of arrays is common
+in Futhark programs, as many array operations accept only one array as
+input.  Due to a clever implementation technique, ``zip`` and
+``unzip`` usually have no runtime cost (they are fused into other
+operations), so you should not shy away from using them out of
+efficiency concerns.  For operating on arrays of tuples with more than
+two elements, there are ``zip``/``unzip`` variants called ``zip3``,
+``zip4``, etc, up to ``zip5``/``unzip5``.
 
 Now let’s take a look at some SOACs.
 
@@ -732,13 +736,12 @@ Finding the values is simple enough:
     [5i32, 2i32, 1i32]
 
 But what are the corresponding indices? We can solve this using a
-combination of ``zip``, ``filter``, and ``unzip``:
+combination of ``indices``, ``zip``, ``filter``, and ``unzip``:
 
 ::
 
     > let indices_of_nonzero (xs: []i32): []i32 =
-        let n = length xs
-        let xs_and_is = zip xs (0..<n)
+        let xs_and_is = zip xs (indices xs)
         let xs_and_is' = filter (\(x,_) -> x != 0) xs_and_is
         let (_, is') = unzip xs_and_is'
         in is'
@@ -748,20 +751,515 @@ combination of ``zip``, ``filter``, and ``unzip``:
 Be aware that ``filter`` is a somewhat expensive SOAC, corresponding
 roughly to a ``scan`` plus a ``map``.
 
-The idiom ``0..<n`` for constructing an array of the valid indices
-into an array of size ``n`` is so common that a predefined library
-function ``iota`` exists for this purpose::
+The expression ``indices xs`` gives us an array of the same size as
+``xs``, whose elements are the indices of ``xs`` starting at 0::
 
-  > iota 5
-  [0i32, 1i32, 2i32, 3i32, 4i32]
+  > indices [5,3,1]
+  [0i32, 1i32, 2i32]
 
-The term ``iota`` is inherited from APL, where the corresponding
-operation is written with an actual ⍳ (greek letter).
+
+.. _size-types:
+
+Size Types
+----------
+
+Functions on arrays typically impose constraints on the shape of their
+parameters, and often the shape of the result depends on the shape of
+the parameters.  Futhark has direct support for expressing simple
+instances of such constraints in the type system.  Size types have an
+impact on almost all other language features, so even though this
+section will introduce the most important concepts, features, and
+restrictions, the interactions with other features, such as parametric
+polymorphism, will be discussed when those features are introduced.
+
+As a simple example, consider a function that packs a single ``i32``
+value in an array::
+
+    let singleton (x: i32): [1]i32 = [x]
+
+We explicitly annotate the return type to state that this function
+returns a single-element array.  Even if we did not add this
+annotation, the compiler would infer it for us.
+
+For expressing constraints among the sizes of the parameters, Futhark
+provides *size parameters*. Consider the definition of dot product we
+have used so far::
+
+    let dotprod (xs: []i32) (ys: []i32): i32 =
+      reduce (+) 0 (map2 (*) xs ys)
+
+The ``dotprod`` function assumes that the two input arrays have the
+same size, or else the ``map2`` will fail. However, this constraint is
+not visible in the type of the function. Size parameters allow us to
+make this explicit::
+
+    let dotprod [n] (xs: [n]i32) (ys: [n]i32): i32 =
+      reduce (+) 0 (map2 (*) xs ys)
+
+The ``[n]`` preceding the *value parameters* (``xs`` and ``ys``) is
+called a *size parameter*, which lets us assign a name to the dimensions
+of the value parameters. A size parameter must be used at least once in
+the type of a value parameter, so that a concrete value for the size
+parameter can be determined at runtime. Size parameters are *implicit*,
+and need not an explicit argument when the function is called. For
+example, the ``dotprod`` function can be used as follows::
+
+    > dotprod [1,2] [3,4]
+    11i32
+
+As with ``singleton``, even if we did not explicitly add a size
+parameter, the compiler would still automatically infer its existence
+(*any* array must have a size), and furthermore infer that ``xs`` and
+``ys`` must have the *same* size, as they are passed to ``map2``.
+
+A size parameter is in scope in both the body of a function and its
+return type, which we can use, for instance, for defining a function
+for computing averages::
+
+    let average [n] (xs: [n]f64): f64 =
+      reduce (+) 0 xs / f64 n
+
+Size parameters are always of type ``i32``, and in fact, *any*
+``i32``-typed variable in scope can be used as a size annotation. This feature
+lets us define a function that replicates an integer some number of
+times::
+
+    let replicate_i32 (n: i32) (x: i32): [n]i32 =
+      map (\_ -> x) (0..<n)
+
+In :numref:`polymorphism` we will see how to write a polymorphic
+``replicate`` function that works for any type.
+
+As a more complicated example of using size parameters, consider
+multiplying two matrices ``x`` and ``y``.  This is only permitted if
+the number of columns in ``x`` equals the number of rows in ``y``.  In
+Futhark, we can encode this as follows::
+
+    let matmult [n][m][p] (x: [n][m]i32, y: [m][p]i32): [n][p]i32 =
+      map (\xr -> map (dotprod xr) (transpose y)) x
+
+Three sizes are involved, ``n``, ``m``, and ``p``.  We indicate that
+the number of columns in ``x`` must match the number of columns in
+``y``, and that the size of the returned matrix has the same number of
+rows as ``x``, and the same number of columns as ``y``.
+
+Presently, only variables and constants are legal as size annotations.
+This restriction means that the following function definition is not
+valid::
+
+    let dup [n] (xs: [n]i32): [2*n]i32 =
+      map (\i -> xs[i/2]) (0..<n*2)
+
+Instead, we will have to write it as::
+
+    let dup [n] (xs: [n]i32): []i32 =
+      map (\i -> xs[i/2]) (0..<n*2)
+
+``dup`` is an instance of a function whose return size is *not*
+equal to the size of one of its inputs.  You have seen such functions
+before - the most interesting being ``filter``.  When we apply a
+function that returns an array with such an *anonymous* size, the type
+checker will invent a new name (called a *size variable*) to stand in
+for the statically unknown size.  This size variable will be different
+from any other size in the program.  For example, the following
+expression would not type check::
+
+  [1]> zip (dup [1,2,3]) (dup [3,2,1])
+  Error at [1]> :1:24-41:
+  Dimensions "ret₇" and "ret₁₂" do not match.
+
+  Note: "ret₇" is unknown size returned by "doubleup" at 1:6-21.
+
+  Note: "ret₁₂" is unknown size returned by "doubleup" at 1:25-40.
+
+Even though *we* know that the two applications of ``dup`` will
+have the same size at run-time, the type checker assumes that each
+application will produce a distinct size.  However, the following
+works::
+
+  let xs = dup [1,2,3] in zip xs xs
+
+Size types have an escape hatch in the form of *size coercions*, which
+allow us to change the size of an array to an arbitrary new size, with
+a run-time check that the two sizes are actually equivalent.  This
+allows us to force the previous example to type check::
+
+  > zip (dup [1,2,3] :> [6]i32) (dup [3,2,1] :> [6]i32)
+  [(1i32, 3i32), (1i32, 3i32), (2i32, 2i32),
+   (2i32, 2i32), (3i32, 1i32), (3i32, 1i32)]
+
+The expression ``e :> t`` can be seen as a kind of "dynamic cast" to
+the desired array type.  The element type and dimensionality must be
+unchanged - only the size is allowed to differ.
+
+.. admonition:: Exercise: Why two coercions?
+   :class: exercise
+
+   Do we need *two* size coercions?  Would ``zip (dup [1,2,3]) (dup
+   [3,2,1] :> [6]i32)`` be sufficient?
+
+   .. only:: html
+
+   .. admonition:: Solution (click to show)
+      :class: solution
+
+      *No*.  Each call to ``dup`` produces a *distinct* size that is
+      different from *all* other sizes (in type theory jargon, it is
+      "rigid"), which implies it is not equal to the specific size
+      ``6``.
+
+.. admonition:: Exercise: implement ``i32_indices``
+   :class: exercise
+
+   Using size parameters, and the knowledge that ``0..<x`` produces an
+   array of size ``x``, implement a function ``i32_indices`` that
+   works as ``indices``, except that the input array must have
+   elements of type ``i32``?  (If you have read ahead to
+   :ref:`polymorphism`, feel free to make it polymorphic as well.)
+
+
+   .. only:: html
+
+   .. admonition:: Solution (click to show)
+      :class: solution
+
+      ::
+
+         let i32_indices [n] (xs: [n]i32) : [n]i32 =
+           0..<n
+
+Sizes and type abbreviations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Size parameters are also permitted in type abbreviations. As an example,
+consider a type abbreviation for a vector of integers::
+
+    type intvec [n] = [n]i32
+
+We can now use ``intvec [n]`` to refer to integer vectors of size ``n``::
+
+    let x: intvec [3] = [1,2,3]
+
+A type parameter can be used multiple times on the right-hand side of
+the definition; perhaps to define an abbreviation for square matrices::
+
+    type sqmat [n] = [n][n]i32
+
+The brackets surrounding ``[n]`` and ``[3]`` are part of the notation,
+not the parameter itself, and are used for disambiguating size
+parameters from the *type parameters* we shall discuss in
+:numref:`polymorphism`.
+
+Parametric types must always be fully applied. Using ``intvec`` by
+itself (without a size argument) is an error.
+
+The definition of a type abbreviation must not contain any anonymous
+sizes.  This is illegal::
+
+  type vec = []i32
+
+If this was allowed, then we could write a type such as ``[2]vec``,
+which would hide the fact that there is an inner size, and thus
+subvert the restriction to regular arrays.  If for some reason we *do*
+wish to hide inner types, we can define a *size-lifted* type with the
+``type~`` keyword::
+
+  type~ vec = []i32
+
+This is convenient when we want it to be an implementation detail that
+the type may contain an array (and is most useful after we introduce
+abstract types in :numref:`modules`).  Size-lifted types come with a
+serious restriction: they may not be array elements.  If we write down
+the type ``[2]vec``, the compiler will complain.  Ordinary type
+abbreviations, defined with ``type``, will sometimes be called
+*non-lifted types*.  This distinction is not very important for type
+abbreviations, but becomes more important when we discuss polymorphism
+in :numref:`polymorphism`.
+
+.. _records:
+
+Records
+-------
+
+Semantically, a record is a finite map from labels to values. These are
+supported by Futhark as a convenient syntactic extension on top of
+tuples. A label-value pairing is often called a *field*. As an example,
+let us return to our previous definition of complex numbers:
+
+::
+
+    type complex = (f64, f64)
+
+We can make the role of the two floats clear by using a record instead.
+
+::
+
+    type complex = {re: f64, im: f64}
+
+We can construct values of a record type with a *record expression*, which
+consists of field assignments enclosed in curly braces:
+
+::
+
+    let sqrt_minus_one = {re = 0.0, im = -1.0}
+
+The order of the fields in a record type or value does not matter, so
+the following definition is equivalent to the one above:
+
+::
+
+    let sqrt_minus_one = {im = -1.0, re = 0.0}
+
+In contrast to most other programming languages, record types in Futhark
+are *structural*, not *nominal*. This means that the name (if any) of a
+record type does not matter. For example, we can define a type
+abbreviation that is equivalent to the previous definition of
+``complex``:
+
+::
+
+    type another_complex = {re: f64, im: f64}
+
+The types ``complex`` and ``another_complex`` are entirely
+interchangeable. In fact, we do not need to name record types at all;
+they can be used anonymously:
+
+::
+
+    let sqrt_minus_one: {re: f64, im: f64} = {re = 0.0, im = -1.0}
+
+However, for readability purposes it is usually a good idea to use type
+abbreviations when working with records.
+
+There are two ways to access the fields of records. The first is by
+*field projection*, which is done by dot notation known from most other
+programming languages. To access the ``re`` field of the
+``sqrt_minus_one`` value defined above, we write ``sqrt_minus_one.re``.
+
+The second way of accessing field values is by pattern matching, just
+like we do with tuples. A record pattern is similar to a record
+expression, and consists of field patterns enclosed in curly braces. For
+example, a function for adding complex numbers could be defined as::
+
+    let complex_add ({re = x_re, im = x_im}: complex)
+                    ({re = y_re, im = y_im}: complex)
+                  : complex =
+      {re = x_re + y_re, im = x_im + y_im}
+
+As with tuple patterns, we can use record patterns in both function
+parameters, ``let``-bindings, and ``loop`` parameters.
+
+As a special syntactic convenience, we can elide the ``= pat`` part of a
+record pattern, which will bind the value of the field to a variable of
+the same name as the field. For example::
+
+    let conj ({re, im}: complex): complex =
+      {re = re, im = -im}
+
+This convenience is also present in tuple expressions. If we elide the
+definition of a field, the value will be taken from the variable in
+scope with the same name::
+
+    let conj ({re, im}: complex): complex =
+      {re, im = -im}
+
+Tuples as a Special Case of Records
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In Futhark, tuples are merely records with numeric labels starting from
+0. For example, the types ``(i32,f64)`` and ``{0:i32,1:f64}`` are
+indistinguishable. The main utility of this equivalence is that we can
+use field projection to access the components of tuples, rather than
+using a pattern in a ``let``-binding. For example, we can say ``foo.0``
+to extract the first component of a tuple.
+
+Notice that the fields of a record must constitute a prefix of the
+positive numbers for it to be considered a tuple. The record type
+``{0:i32,2:f64}`` does not correspond to a tuple, and neither does
+``{1:i32,2:f64}`` (but ``{1:f64,0:i32}`` is equivalent to the tuple
+``(i32,f64)``, because field order does not matter).
+
+.. _polymorphism:
+
+Parametric Polymorphism
+-----------------------
+
+Consider the replication function we wrote earlier::
+
+    let replicate_i32 (n: i32) (x: i32): [n]i32 =
+      map (\_ -> x) (0..<n)
+
+This function works only for replicating values of type ``i32``.  If
+we wanted to replicate, say, a boolean value, we would have to write another
+function::
+
+    let replicate_bool (n: i32) (x: bool): [n]bool =
+      map (\_ -> x) (0..<n)
+
+This duplication is not particularly nice.  Since the only difference
+between the two functions is the type of the ``x`` parameter, and we
+don't actually use any ``i32``-specific operations in
+``replicate_i32``, or ``bool``-specific operations in
+``replicate_bool``, we ought to be able to write a single function
+that is *parameterised* over the element type.  In some languages,
+this is done with *generics*, or *template functions*.  In ML-derived
+languages, including Futhark, we use *parametric polymorphism*.  Just
+like the size parameters we saw earlier, a Futhark function may have
+*type parameters*.  These are written as a name preceded by an
+apostrophe.  As an example, this is a polymorphic version of
+``replicate``::
+
+    let replicate 't (n: i32) (x: t): [n]t =
+      map (\_ -> x) (0..<n)
+
+Notice how the type parameter binding is written as ``'t``; we use just
+``t`` to refer to the parametric type in the ``x`` parameter and the
+function return type.  Type parameters may be freely intermixed with
+size parameters, but must precede all ordinary parameters.  Just as
+with size parameters, we do not need to explicitly pass the types when
+we call a polymorphic function; they are automatically deduced from
+the concrete parameters.
+
+We can also use type parameters when defining type abbreviations::
+
+    type triple 't = [3]t
+
+And of course, these can be intermixed with size parameters::
+
+    type vector 't [n] = [n]t
+
+In contrast to function definitions, the order of parameters in a type
+*does* matter.  Hence, ``vector i32 [3]`` is correct, and ``vector [3]
+i32`` would produce an error.
+
+We might try to use parametric types to further refine our previous
+definition of complex numbers, by making it polymorphic in the
+representation of scalar numbers::
+
+    type complex 't = {re: t, im: t}
+
+This type abbreviation is fine, but we will find it difficult to write
+useful functions with it.  Consider an attempt to define complex
+addition::
+
+    let complex_add 't ({re = x_re, im = x_im}: complex t)
+                       ({re = y_re, im = y_im}: complex t)
+                  : complex t =
+      {re = ?, im = ?}
+
+How do we perform an addition ``x_re`` and ``y_re``?  These are both
+of type ``t``, of which we know nothing.  For all we know, they might
+be instantiated to something that is not numeric at all.  Hence, the
+Futhark compiler will prevent us from using the ``+`` operator.  In
+some languages, such as Haskell, facilities such as *type classes* may be used to
+support a notion of restricted polymorphism, where we can require that an
+instantiation of a type variable supports certain operations (like
+``+``).  Futhark does not have type classes, but it does support
+programming with certain kinds of higher-order functions and it does
+have a powerful module system. The support for higher-order functions
+in Futhark and the module system are the subjects of the following
+sections.
+
+.. _higher-order-functions:
+
+Higher-Order Functions
+----------------------
+
+Futhark supports certain kinds of higher-order functions. For
+performance reasons, certain restrictions apply, which means that
+Futhark can eliminate higher-order functions at compile time through a
+technique called *defunctionalisation* :cite:`hovgaard18thesis,tfp18hovgaard`. From
+a programmer's point-of-view, the main restrictions are the following:
+
+1. Functions may not be stored inside arrays.
+2. Functions may not be returned from branches in conditional
+   expressions.
+3. Functions are not allowed in loop parameters.
+
+Whereas these restrictions seem daunting, functions may still be
+grouped in records and tuples and such structures may be passed to
+functions and even returned by functions. In effect, quite a few
+functional design patterns may be applied, ranging from defining
+polymorphic higher-order functions, for the purpose of obtaining a
+high degree of abstraction and code reuse (e.g., for defining program
+libraries), to specific uses of higher-order functions for
+representing various concepts as functions. Examples of such uses
+include a library for type-indexed compact serialisation (and
+deserialisation) of Futhark values
+:cite:`tfp05elsman,functional-pearl-pickler-combinators` and encoding
+of Conal Elliott's functional images :cite:`Elliott03:FOP`.
+
+We have seen earlier how anonymous functions may be constructed and
+passed as arguments to SOACs. Here is an example anonymous function
+that takes parameters ``x``, ``y``, and ``z``, returns a value of type ``t``, and
+has body `e`:
+
+::
+
+    \x y z: t -> e
+
+Futhark allows for the programmer to specify so-called *sections*,
+which provide a way to form implicit eta-expansions of partially
+applied operations. Sections are encapsulated in parentheses. Assuming
+``binop`` is a binary operator, such as ``+``, the section ``(binop)``
+is equivalent to the expression ``\x y -> x binop y``. Similarly, the
+section ``(x binop)`` is equivalent to the expression ``\y -> x binop
+y`` and the section ``(binop y)`` is equivalent to the expression ``\x
+-> x binop y``.
+
+For making it easy to select fields from records (and tuples), a
+select-section may be used. An example is the section ``(.a.b.c)``,
+which is equivalent to the expression ``\y -> y.a.b.c``. Similarly,
+the example section ``(.[i])``, for indexing into an array, is
+equivalent to the expression ``\y -> y[i]``.
+
+At a high level, Futhark functions are values, which can be used as
+any other values. However, to ensure that the Futhark compiler is able
+to compile the higher-order functions efficiently via
+defunctionalisation, certain type-driven restrictions exist on how
+functions can be used, as described earlier. Moreover, for Futhark to
+support higher-order polymorphic functions, type variables, when
+bound, are divided into non-lifted (bound with an apostrophe,
+e.g. ``'t``), and lifted (bound with an apostrophe and a hat,
+e.g. ``'^t``). Only lifted type parameters may be instantiated with a
+functional type. Within a function, a lifted type parameter is treated
+as a functional type. All abstract types declared in modules (see
+:numref:`modules`) are considered non-lifted, and may not be functional.
+
+Uniqueness typing generally interacts poorly with higher-order
+functions. The issue is that there is no way to express, in the type
+of a function, how many times a function argument is applied, or to
+what, which means that it will not be safe to pass a function that consumes
+its argument. The following two conservative rules govern the
+interaction between uniqueness types and higher-order functions:
+
+1. In the expression ``let p = e in ...``, if any in-place update
+   takes place in the expression ``e``, the value bound by ``p`` must
+   not be or contain a function.
+2. A function that consumes one of its arguments may not be passed as
+   a higher-order argument to another function.
+
+A number of higher-order utility functions are available at
+top-level. Amongst these are the following quite useful functions:
+
+::
+
+    val const '^a '^b  : a -> b -> a          -- constant function
+    val id    '^a      : a -> a               -- identity function
+    val |>    '^a '^b  : a -> (a -> b) -> b   -- pipe right
+    val <|    '^a '^b  : (a -> b) -> a -> b   -- pipe left
+
+    val >->     '^a '^b '^c : (a -> b) (b -> c) -> a -> c
+    val <-<     '^a '^b '^c : (b -> c) (a -> b) -> a -> c
+
+    val curry   '^a '^b '^c : ((a,b) -> c) -> a -> b -> c
+    val uncurry '^a '^b '^c : (a -> b -> c) -> (a,b) -> c
+
 
 .. _sequential-loops:
 
 Sequential Loops
-~~~~~~~~~~~~~~~~
+----------------
 
 Futhark does not directly support recursive functions, but instead
 provides syntactical sugar for expressing the equivalent of certain
@@ -1113,437 +1611,6 @@ and returns the modified ``as`` array. The old ``as`` array is marked
 as consumed and may not be used anymore. Parallel ``scatter`` can be
 used, for instance, to implement efficiently the radix sort algorithm, as
 demonstrated in :numref:`radixsort`.
-
-.. _size-annotations:
-
-Size Annotations
-----------------
-
-Functions on arrays typically impose constraints on the shape of their
-parameters, and often the shape of the result depends on the shape of
-the parameters. Futhark provides a language construct called *size
-annotations*, that give the programmer the option of encoding these
-properties directly into the type of a function. Consider first the
-trivial case of a function that packs a single ``i32`` value in an
-array:
-
-::
-
-    let singleton (x: i32): [1]i32 = [x]
-
-We explicitly annotate the return type to state that this function
-returns a single-element array.
-
-For expressing constraints among the sizes of the parameters, Futhark
-provides *size parameters*. Consider the definition of dot product we
-have used so far:
-
-::
-
-    let dotprod (xs: []i32) (ys: []i32): i32 =
-      reduce (+) 0 (map2 (*) xs ys)
-
-The ``dotprod`` function assumes that the two input arrays have the
-same size, or else the ``map2`` will fail. However, this constraint is
-not visible in the type of the function. Size parameters allow us to
-make this explicit:
-
-::
-
-    let dotprod [n] (xs: [n]i32) (ys: [n]i32): i32 =
-      reduce (+) 0 (map2 (*) xs ys)
-
-The ``[n]`` preceding the *value parameters* (``xs`` and ``ys``) is
-called a *size parameter*, which lets us assign a name to the dimensions
-of the value parameters. A size parameter must be used at least once in
-the type of a value parameter, so that a concrete value for the size
-parameter can be determined at runtime. Size parameters are *implicit*,
-and need not an explicit argument when the function is called. For
-example, the ``dotprod`` function can be used as follows:
-
-::
-
-    > dotprod [1,2] [3,4]
-    11i32
-
-A size parameter is in scope in both the body of a function and its
-return type, which we can use, for instance, for defining a function for computing
-averages:
-
-::
-
-    let average [n] (xs: [n]f64): f64 =
-      reduce (+) 0 xs / f64 n
-
-Size parameters are always of type ``i32``, and in fact, *any*
-``i32``-typed variable in scope can be used as a size annotation. This feature
-lets us define a function that replicates an integer some number of
-times:
-
-::
-
-    let replicate_i32 (n: i32) (x: i32): [n]i32 =
-      map (\_ -> x) (0..<n)
-
-In :numref:`polymorphism` we will see how to write a polymorphic
-``replicate`` function that works for any type.
-
-As a more complicated example of using size parameters, consider
-multiplying two matrices ``x`` and ``y``.  This is only defined if
-the number of columns in ``x`` equals the number of rows in ``y``.  In
-Futhark, we can encode this as follows:
-
-::
-
-    let matmult [n][m][p] (x: [n][m]i32, y: [m][p]i32): [n][p]i32 =
-      map (\xr -> map (dotprod xr) (transpose y)) x
-
-Three sizes are involved, ``n``, ``m``, and ``p``.  We indicate that
-the number of columns in ``x`` must match the number of columns in
-``y``, and that the size of the returned matrix has the same number of
-rows as ``x``, and the same number of columns as ``y``.
-
-Be aware that size annotations are checked dynamically, not
-statically.  Whenever we call a function or return a value, an error
-is raised if its size does not match the annotations. However, nothing
-prevents th following expression from passing the type checker:
-
-::
-
-    > :t dotprod [1,2] [1,2,3]
-    dotprod [1, 2] [1, 2, 3] : i32
-
-Although it will fail if actually executed::
-
-  [1]> dotprod [1,2] [1,2,3]
-  Error at [1]> :1:1-1:21 -> [35]> :1:35-1:44: Size annotation 2 does not match observed size 3.
-
-Presently, only variables and constants are legal as size annotations.
-This restriction means that the following function definition is not valid:
-
-::
-
-    let doubleup [n] (xs: [n]i32): [2*n]i32 =
-      map (\i -> xs[i/2]) (0..<n*2)
-
-While size annotations are a simple and limited mechanism, they can help
-make hidden invariants visible to users of your code. In some cases,
-size annotations also help the compiler generate better code, as it
-becomes clear which arrays are supposed to have the same size, and lets
-the compiler hoist out checking as far as possible.
-
-Size parameters are also permitted in type abbreviations. As an example,
-consider a type abbreviation for a vector of integers:
-
-::
-
-    type intvec [n] = [n]i32
-
-We can now use ``intvec [n]`` to refer to integer vectors of size ``n``:
-
-::
-
-    let x: intvec [3] = [1,2,3]
-
-A type parameter can be used multiple times on the right-hand side of
-the definition; perhaps to define an abbreviation for square matrices:
-
-::
-
-    type sqmat [n] = [n][n]i32
-
-The brackets surrounding ``[n]`` and ``[3]`` are part of the notation,
-not the parameter itself, and are used for disambiguating size
-parameters from the *type parameters* we shall discuss in
-:numref:`polymorphism`.
-
-Parametric types must always be fully applied. Using ``intvec`` by
-itself (without a type argument) is an error.
-
-.. _records:
-
-Records
--------
-
-Semantically, a record is a finite map from labels to values. These are
-supported by Futhark as a convenient syntactic extension on top of
-tuples. A label-value pairing is often called a *field*. As an example,
-let us return to our previous definition of complex numbers:
-
-::
-
-    type complex = (f64, f64)
-
-We can make the role of the two floats clear by using a record instead.
-
-::
-
-    type complex = {re: f64, im: f64}
-
-We can construct values of a record type with a *record expression*, which
-consists of field assignments enclosed in curly braces:
-
-::
-
-    let sqrt_minus_one = {re = 0.0, im = -1.0}
-
-The order of the fields in a record type or value does not matter, so
-the following definition is equivalent to the one above:
-
-::
-
-    let sqrt_minus_one = {im = -1.0, re = 0.0}
-
-In contrast to most other programming languages, record types in Futhark
-are *structural*, not *nominal*. This means that the name (if any) of a
-record type does not matter. For example, we can define a type
-abbreviation that is equivalent to the previous definition of
-``complex``:
-
-::
-
-    type another_complex = {re: f64, im: f64}
-
-The types ``complex`` and ``another_complex`` are entirely
-interchangeable. In fact, we do not need to name record types at all;
-they can be used anonymously:
-
-::
-
-    let sqrt_minus_one: {re: f64, im: f64} = {re = 0.0, im = -1.0}
-
-However, for readability purposes it is usually a good idea to use type
-abbreviations when working with records.
-
-There are two ways to access the fields of records. The first is by
-*field projection*, which is done by dot notation known from most other
-programming languages. To access the ``re`` field of the
-``sqrt_minus_one`` value defined above, we write ``sqrt_minus_one.re``.
-
-The second way of accessing field values is by pattern matching, just
-like we do with tuples. A record pattern is similar to a record
-expression, and consists of field patterns enclosed in curly braces. For
-example, a function for adding complex numbers could be defined as:
-
-::
-
-    let complex_add ({re = x_re, im = x_im}: complex)
-                    ({re = y_re, im = y_im}: complex)
-                  : complex =
-      {re = x_re + y_re, im = x_im + y_im}
-
-As with tuple patterns, we can use record patterns in both function
-parameters, ``let``-bindings, and ``loop`` parameters.
-
-As a special syntactic convenience, we can elide the ``= pat`` part of a
-record pattern, which will bind the value of the field to a variable of
-the same name as the field. For example:
-
-::
-
-    let conj ({re, im}: complex): complex =
-      {re = re, im = -im}
-
-This convenience is also present in tuple expressions. If we elide the
-definition of a field, the value will be taken from the variable in
-scope with the same name:
-
-::
-
-    let conj ({re, im}: complex): complex =
-      {re, im = -im}
-
-Tuples as a Special Case of Records
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In Futhark, tuples are merely records with numeric labels starting from
-1. For example, the types ``(i32,f64)`` and ``{1:i32,2:f64}`` are
-indistinguishable. The main utility of this equivalence is that we can
-use field projection to access the components of tuples, rather than
-using a pattern in a ``let``-binding. For example, we can say ``foo.1``
-to extract the first component of a tuple.
-
-Notice that the fields of a record must constitute a prefix of the
-positive numbers for it to be considered a tuple. The record type
-``{1:i32,3:f64}`` does not correspond to a tuple, and neither does
-``{2:i32,3:f64}`` (but ``{2:f64,1:i32}`` is equivalent to the tuple
-``(i32,f64)``, because field order does not matter).
-
-.. _polymorphism:
-
-Parametric Polymorphism
------------------------
-
-Consider the replication function we wrote earlier::
-
-    let replicate_i32 (n: i32) (x: i32): [n]i32 =
-      map (\_ -> x) (0..<n)
-
-This function works only for replicating values of type ``i32``.  If
-we wanted to replicate, say, a boolean value, we would have to write another
-function::
-
-    let replicate_bool (n: i32) (x: bool): [n]bool =
-      map (\_ -> x) (0..<n)
-
-This duplication is not particularly nice.  Since the only difference
-between the two functions is the type of the ``x`` parameter, and we
-don't actually use any ``i32``-specific operations in
-``replicate_i32``, or ``bool``-specific operations in
-``replicate_bool``, we ought to be able to write a single function
-that is *parameterised* over the element type.  In some languages,
-this is done with *generics*, or *template functions*.  In ML-derived
-languages, including Futhark, we use *parametric polymorphism*.  Just
-like the size parameters we saw earlier, a Futhark function may have
-*type parameters*.  These are written as a name preceded by an
-apostrophe.  As an example, this is a polymorphic version of
-``replicate``::
-
-    let replicate 't (n: i32) (x: t): [n]t =
-      map (\_ -> x) (0..<n)
-
-Notice how the type parameter binding is written as ``'t``; we use just
-``t`` to refer to the parametric type in the ``x`` parameter and the
-function return type.  Type parameters may be freely intermixed with
-size parameters, but must precede all ordinary parameters.  Just as
-with size parameters, we do not need to explicitly pass the types when
-we call a polymorphic function; they are automatically deduced from
-the concrete parameters.
-
-We can also use type parameters when defining type abbreviations::
-
-    type triple 't = [3]t
-
-And of course, these can be intermixed with size parameters::
-
-    type vector 't [n] = [n]t
-
-In contrast to function definitions, the order of parameters in a type
-*does* matter.  Hence, ``vector i32 [3]`` is correct, and ``vector [3]
-i32`` would produce an error.
-
-We might try to use parametric types to further refine our previous
-definition of complex numbers, by making it polymorphic in the
-representation of scalar numbers::
-
-    type complex 't = {re: t, im: t}
-
-This type abbreviation is fine, but we will find it difficult to write
-useful functions with it.  Consider an attempt to define complex
-addition::
-
-    let complex_add 't ({re = x_re, im = x_im}: complex t)
-                       ({re = y_re, im = y_im}: complex t)
-                  : complex t =
-      {re = ?, im = ?}
-
-How do we perform an addition ``x_re`` and ``y_re``?  These are both
-of type ``t``, of which we know nothing.  For all we know, they might
-be instantiated to something that is not numeric at all.  Hence, the
-Futhark compiler will prevent us from using the ``+`` operator.  In
-some languages, such as Haskell, facilities such as *type classes* may be used to
-support a notion of restricted polymorphism, where we can require that an
-instantiation of a type variable supports certain operations (like
-``+``).  Futhark does not have type classes, but it does support
-programming with certain kinds of higher-order functions and it does
-have a powerful module system. The support for higher-order functions
-in Futhark and the module system are the subjects of the following
-sections.
-
-.. _higher-order-functions:
-
-Higher-Order Functions
-----------------------
-
-Futhark supports certain kinds of higher-order functions. For
-performance reasons, certain restrictions apply, which means that
-Futhark can eliminate higher-order functions at compile time through a
-technique called *defunctionalisation* :cite:`hovgaard18thesis,tfp18hovgaard`. From
-a programmer's point-of-view, the main restrictions are the following:
-
-1. Functions may not be stored inside arrays.
-2. Functions may not be returned from branches in conditional
-   expressions.
-3. Functions are not allowed in loop parameters.
-
-Whereas these restrictions seem daunting, functions may still be
-grouped in records and tuples and such structures may be passed to
-functions and even returned by functions. In effect, quite a few
-functional design patterns may be applied, ranging from defining
-polymorphic higher-order functions, for the purpose of obtaining a
-high degree of abstraction and code reuse (e.g., for defining program
-libraries), to specific uses of higher-order functions for
-representing various concepts as functions. Examples of such uses
-include a library for type-indexed compact serialisation (and
-deserialisation) of Futhark values
-:cite:`tfp05elsman,functional-pearl-pickler-combinators` and encoding
-of Conal Elliott's functional images :cite:`Elliott03:FOP`.
-
-We have seen earlier how anonymous functions may be constructed and
-passed as arguments to SOACs. Here is an example anonymous function
-that takes parameters ``x``, ``y``, and ``z``, returns a value of type ``t``, and
-has body `e`:
-
-::
-
-    \x y z: t -> e
-
-Futhark allows for the programmer to specify so-called *sections*,
-which provide a way to form implicit eta-expansions of partially
-applied operations. Sections are encapsulated in parentheses. Assuming
-``binop`` is a binary operator, such as ``+``, the section ``(binop)``
-is equivalent to the expression ``\x y -> x binop y``. Similarly, the
-section ``(x binop)`` is equivalent to the expression ``\y -> x binop
-y`` and the section ``(binop y)`` is equivalent to the expression ``\x
--> x binop y``.
-
-For making it easy to select fields from records (and tuples), a
-select-section may be used. An example is the section ``(.a.b.c)``,
-which is equivalent to the expression ``\y -> y.a.b.c``. Similarly,
-the example section ``(.[i])``, for indexing into an array, is
-equivalent to the expression ``\y -> y[i]``.
-
-At a high level, Futhark functions are values, which can be used as
-any other values. However, to ensure that the Futhark compiler is able
-to compile the higher-order functions efficiently via
-defunctionalisation, certain type-driven restrictions exist on how
-functions can be used, as described earlier. Moreover, for Futhark to
-support higher-order polymorphic functions, type variables, when
-bound, are divided into non-lifted (bound with an apostrophe,
-e.g. ``'t``), and lifted (bound with an apostrophe and a hat,
-e.g. ``'^t``). Only lifted type parameters may be instantiated with a
-functional type. Within a function, a lifted type parameter is treated
-as a functional type. All abstract types declared in modules (see
-:numref:`modules`) are considered non-lifted, and may not be functional.
-
-Uniqueness typing generally interacts poorly with higher-order
-functions. The issue is that there is no way to express, in the type
-of a function, how many times a function argument is applied, or to
-what, which means that it will not be safe to pass a function that consumes
-its argument. The following two conservative rules govern the
-interaction between uniqueness types and higher-order functions:
-
-1. In the expression ``let p = e in ...``, if any in-place update
-   takes place in the expression ``e``, the value bound by ``p`` must
-   not be or contain a function.
-2. A function that consumes one of its arguments may not be passed as
-   a higher-order argument to another function.
-
-A number of higher-order utility functions are available at
-top-level. Amongst these are the following quite useful functions:
-
-::
-
-    val const '^a '^b  : a -> b -> a          -- constant function
-    val id    '^a      : a -> a               -- identity function
-    val |>    '^a '^b  : a -> (a -> b) -> b   -- pipe right
-    val <|    '^a '^b  : (a -> b) -> a -> b   -- pipe left
-
-    val >->     '^a '^b '^c : (a -> b) (b -> c) -> a -> c
-    val <-<     '^a '^b '^c : (b -> c) (a -> b) -> a -> c
-
-    val curry   '^a '^b '^c : ((a,b) -> c) -> a -> b -> c
-    val uncurry '^a '^b '^c : (a -> b -> c) -> (a,b) -> c
 
 .. _modules:
 
