@@ -455,10 +455,10 @@ program, ``sumsquares.fut``, with smaller data sets for convenience:
 
 The line containing ``==`` is used to separate the human-readable
 benchmark description from input-output pairs.  It is also possible to
-keep the data set in an external file, or to generate it automatically
-(see the `manual page
+keep the data set in an external file, or to generate it
+automatically.  See the `manual page
 <http://futhark.readthedocs.io/en/latest/man/futhark-bench.html>`_ for
-more information.).
+more information.
 
  We can use ``futhark bench`` to measure the performance of
  ``sumsquares.fut`` as follows:
