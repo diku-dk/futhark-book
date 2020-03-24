@@ -435,8 +435,8 @@ use it like this:
     282
 
 Our runtimes are now much better. And importantly, there are more of
-them, so we can perform analyses like, such as determining the variance, to
-figure out how predictable the performance is.
+them, so we can perform analyses such as determining the variance, to
+figure out how predictable the runtime is.
 
 Using `futhark bench`
 ~~~~~~~~~~~~~~~~~~~~~
