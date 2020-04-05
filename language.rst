@@ -817,7 +817,7 @@ return type, which we can use, for instance, for defining a function
 for computing averages::
 
     let average [n] (xs: [n]f64): f64 =
-      reduce (+) 0 xs / f64 n
+      reduce (+) 0 xs / r64 n
 
 Size parameters are always of type ``i32``, and in fact, *any*
 ``i32``-typed variable in scope can be used as a size annotation. This feature
