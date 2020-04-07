@@ -1226,12 +1226,13 @@ functional type. Within a function, a lifted type parameter is treated
 as a functional type. All abstract types declared in modules (see
 :numref:`modules`) are considered non-lifted, and may not be functional.
 
-Uniqueness typing generally interacts poorly with higher-order
-functions. The issue is that there is no way to express, in the type
-of a function, how many times a function argument is applied, or to
-what, which means that it will not be safe to pass a function that consumes
-its argument. The following two conservative rules govern the
-interaction between uniqueness types and higher-order functions:
+Uniqueness typing (see :numref:`in-place-updates`) generally interacts
+poorly with higher-order functions. The issue is that there is no way
+to express, in the type of a function, how many times a function
+argument is applied, or to what, which means that it will not be safe
+to pass a function that consumes its argument. The following two
+conservative rules govern the interaction between uniqueness types and
+higher-order functions:
 
 1. In the expression ``let p = e in ...``, if any in-place update
    takes place in the expression ``e``, the value bound by ``p`` must
