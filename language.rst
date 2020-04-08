@@ -1731,7 +1731,7 @@ module type:
 
 ::
 
-    module bar = add_i32 : { type t = int
+    module bar = add_i32 : { type t = i32
                              val zero : t }
 
 An attempt to access ``bar.add`` will result in a compilation error,
