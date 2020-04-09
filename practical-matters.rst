@@ -44,7 +44,8 @@ after are taken as a description of a test to perform.  When
 for test blocks and perform the tests they describe.
 
 As an example, let us consider how to test a function for matrix
-multiplication.  The function itself is defined as thus:
+multiplication.  Suppose that we have the following defined in a file
+``matmul.fut``:
 
 .. literalinclude:: src/matmul.fut
    :lines: 17-20
