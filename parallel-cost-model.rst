@@ -74,7 +74,7 @@ are given as follows:
        &~~|~~ \fop{rotate} ~~|~~ \fop{shape} ~~|~~ \fop{scatter} \\
        &~~|~~ \fop{split} ~~|~~ \fop{transpose} ~~|~~ \fop{unzip} ~~|~~ \fop{zip} \\
    \\
-   \id{soac} &::=~~ \fop{map} ~~|~~ \fop{reduce} ~~|~~ \fop{reduce\_comm} \\
+   \id{soac} &::=~~ \fop{map} ~~|~~ \fop{reduce} \\
              &~~|~~ \fop{scan} ~~|~~ \fop{filter} ~~|~~ \fop{partition}
 
 In the grammar for the Futhark language below, we have eluded both the
