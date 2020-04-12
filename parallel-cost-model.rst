@@ -24,16 +24,16 @@ single flat kernel. We shall return to the concept of flattening in a
 later chapter.
 
 When we shall understand how efficient an algorithm is, we shall build
-our analysis around the two concepts of work and span. These concepts
-are defined inductively over the various Futhark language constructs
-and we may therefore argue about work and span in a compositional
-way. For instance, if we want to know about the work required to
-execute the ``multable`` function, we need to know about how to
-compute the work for a call to the ``map`` SOAC, how to compute the
-work for the ``iota`` operation, how to compute the work for the
+our analysis around the two concepts of `work and span`_. These
+concepts are defined inductively over the various Futhark language
+constructs and we may therefore argue about work and span in a
+compositional way. For instance, if we want to know about the work
+required to execute the ``multable`` function, we need to know about
+how to compute the work for a call to the ``map`` SOAC, how to compute
+the work for the ``iota`` operation, how to compute the work for the
 multiply operation, and, finally, how to combine the work. The way to
-determine the work for a ``map`` SOAC instance is to multiply the
-size of the argument array with the work of the body of the argument
+determine the work for a ``map`` SOAC instance is to multiply the size
+of the argument array with the work of the body of the argument
 function. Thus, we have
 
 .. math::
@@ -52,6 +52,8 @@ the algorithm we are analyzing, in which case we will simply write
 
 In a similar way we can derive that the span of a call ``multable n``,
 written :math:`S(\kw{multable n})`, is :math:`O(1)`.
+
+.. _work and span: https://en.wikipedia.org/wiki/Analysis_of_parallel_algorithms
 
 Futhark - the Language
 ======================
