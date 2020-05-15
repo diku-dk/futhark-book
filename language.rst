@@ -1422,7 +1422,7 @@ first Fibonacci numbers:
 
     let fib (n: i32): []i32 =
       -- Create "empty" array.
-      let arr = replicate n 0
+      let arr = replicate n 1
       -- Fill array with Fibonacci numbers.
       in loop (arr) for i < n-2 do
            arr with [i+2] = arr[i] + arr[i+1]
