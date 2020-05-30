@@ -9,7 +9,7 @@ import "segmented"
 
 let segmented_replicate [n] (reps:[n]i32) (vs:[n]i32) : []i32 =
   let idxs = replicated_iota reps
-  in map (\i -> unsafe vs[i]) idxs
+  in map (\i -> vs[i]) idxs
 
 let info 't ((<=): t -> t -> bool) (x:t) (y:t) : i32 =
   if x <= y then if y <= x then 0 else -1
@@ -34,7 +34,7 @@ let idxs_values (sgms:[]sgm) : []i32 =
 let step [n][m] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[m]sgm)
   : (*[n]t,[]sgm) =
   -- find a pivot for each segment
-  let pivots : []t = map (\sgm -> unsafe xs[sgm.start + sgm.sz/2]) sgms
+  let pivots : []t = map (\sgm -> xs[sgm.start + sgm.sz/2]) sgms
 
   -- find index into the segment that a value belongs to
   let k = i32.sum (map (.sz) sgms)
@@ -44,7 +44,7 @@ let step [n][m] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[m]sgm)
   -- for each value, how does it compare to the pivot associated
   -- with the segment?
   let infos =
-    map2 (\idx i -> unsafe info (<=) xs[i] pivots[idx]) idxs is
+    map2 (\idx i -> info (<=) xs[i] pivots[idx]) idxs is
   let orders : [](i32,i32,i32) = map tripit infos
 
   -- compute segment descriptor
@@ -67,13 +67,13 @@ let step [n][m] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[m]sgm)
     let where : [](i32,i32,i32) =
       segmented_scan tripadd (0,0,0) flags orders
     in map3 (\i (a,e,b) info ->
-             let (x,y,_) = unsafe pszs[i]
-             let s = unsafe sgms[i].start
+             let (x,y,_) = pszs[i]
+             let s = sgms[i].start
              in if info < 0 then s+a-1
                 else if info > 0 then s+b-1+x+y
                 else s+e-1+x) idxs where infos
 
-  let vs = map (\i -> unsafe xs[i]) is
+  let vs = map (\i -> xs[i]) is
   let xs' = scatter xs newpos vs
   in (xs',sgms')
 
@@ -95,7 +95,7 @@ let qsort [n] 't ((<=): t -> t -> bool) (xs:[n]t) : [n]t =
 let qsort_by_key [n] 't 'k (key: t -> k) ((<=): k -> k -> bool) (xs: [n]t): [n]t =
   zip (map key xs) (iota n)
   |> qsort (\(x, _) (y, _) -> x <= y)
-  |> map (\(_, i) -> unsafe xs[i])
+  |> map (\(_, i) -> xs[i])
 
 let main [n] (xs : [n]i32) : [n]i32 =
   qsort (i32.<=) xs

@@ -4,7 +4,7 @@ import "segmented"
 
 let segmented_replicate [n] (reps:[n]i32) (vs:[n]i32) : []i32 =
   let idxs = replicated_iota reps
-  in map (\i -> unsafe vs[i]) idxs
+  in map (\i -> vs[i]) idxs
 
 let info 't ((<=): t -> t -> bool) (x:t) (y:t) : i32 =
   if x <= y then

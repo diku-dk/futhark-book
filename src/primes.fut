@@ -25,7 +25,7 @@ let primes (n:i32) : []i32 =
 					  else 0) acc
 		      in reduce (+) 0 xs) is
 	-- apply the sieve
-	let new = filter (\i -> 0 == unsafe fs[i-c]) is
+	let new = filter (\i -> 0 == fs[i-c]) is
 	in (concat acc new, c2)
   in acc
 

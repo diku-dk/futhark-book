@@ -107,9 +107,7 @@ terms of other parallel operations, including ``scan``, ``map``,
    :lines: 44-49
 
 An example evaluation of a call to the function ``replicated_iota`` is
-provided below.  Notice that in order to use this Futhark code with
-``futhark opencl``, we need to prefix the array indexing in line 3 and
-line 4 with the ``unsafe`` keyword.
+provided below.
 
 +--------------------+---+---+---+---+---+---+---+---+
 | Args/Result        |   |   |   |   |   |   |   |   |
@@ -148,10 +146,7 @@ function ``segmented_replicate``:
    :lines: 20-22
 
 The ``segmented_replicate`` function makes use of the previously
-defined function ``replicated_iota``.  Notice the use of the
-``unsafe`` keyword in the last line; it is necessary because Futhark
-cannot prove that the index ``i`` will always be within bounds of the
-array ``vs``.
+defined function ``replicated_iota``.
 
 .. _segmented-iota:
 

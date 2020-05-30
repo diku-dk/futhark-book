@@ -14,8 +14,8 @@ let sgm_scan_add [n] (vals:[n]i32) (flags:[n]bool) : [n]i32 =
 
 let repl_idx [n] (reps:[n]i32) : []i32 =
   let s1 = scan (+) 0 reps
-  let s2 = map (\i -> if i==0 then 0 else unsafe s1[i-1]) (iota n)
-  let tmp = scatter (replicate (unsafe s1[n-1]) 0) s2 (iota n)
+  let s2 = map (\i -> if i==0 then 0 else s1[i-1]) (iota n)
+  let tmp = scatter (replicate s1[n-1] 0) s2 (iota n)
   let flags = map (>0) tmp
   in sgm_scan_add tmp flags
 
@@ -58,7 +58,7 @@ let drawlines [h][w][n] (grid:*[h][w]i32)
   let lens = map (\ ((x1,y1),(x2,y2)) ->
                    1 + max (abs(x2-x1)) (abs(y2-y1))) lines
   let idxs = repl_idx lens
-  let lns = map (\ i -> unsafe lines[i]) idxs
+  let lns = map (\ i -> lines[i]) idxs
   let dirs = map (\ (p1,p2) ->
                    if xmax p1 p2 then compare (p1.0) (p2.0)
                    else compare (p1.0) (p2.1)) lns
