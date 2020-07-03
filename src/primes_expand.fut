@@ -19,4 +19,4 @@ let primes (n:i32) =
     in (acc ++ new, c2)
 
 -- Return the number of primes less than n
-let main (n:i32) : i32 = length <| primes n
+let main (n:i32) : i32 = length (primes n)
