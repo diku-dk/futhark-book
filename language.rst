@@ -976,6 +976,58 @@ abbreviations, defined with ``type``, will sometimes be called
 abbreviations, but becomes more important when we discuss polymorphism
 in :numref:`polymorphism`.
 
+.. _causality:
+
+The causality restriction
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Anonymous sizes have subtle interactions with size inference, which
+leads to some non-obvious restrictions.  This is a relatively advanced
+topic that will not show up in simple programs, so you can skip this
+section for now and come back to it later.
+
+To see the problem, consider the following function definition::
+
+  let f (b: bool) (xs: []i32) =
+    let a = [] : [][]i32
+    let b = [filter (>0) xs]
+    in a[0] == b[0]
+
+The comparison on the last line forces the row size of ``a`` and ``b``
+to be the same, let's say ``n``.  Further, while the empty array
+literal can be given any row size, that ``n`` must be the size of
+whatever array is produced by the ``filter``.  But now we have a
+problem: *constructing* the empty array requires us to know the
+specific value of ``n``, but it is not computed until later!  This is
+called a *causality violation*: we need a value before it is
+available.
+
+This particular case is trivial, and can be fixed by flipping the
+order in which ``a`` and ``b`` are bound, but the ultimate purpose of
+the *causality restriction* is to ensure that the program does not
+contain circular dependencies on sizes.  To make the rules simpler,
+causality checking uses a specified evaluation order to determine that
+a size is always *computed* before it is *used*.  The evaluation order
+is mostly intuitive:
+
+1. Function arguments are evaluated before function values.
+
+2. For ``let``-bindings, the bound expression is evaluated before the body.
+
+3. For binary operators, the left operand is evaluated before the
+   right operand.
+
+Since Futhark is a pure language, this evaluation order does not have
+any effect on the result of programs, and may differ from what
+actually happens at runtime.  It is used merely as a piece of type
+checking fiction to ensure that *some* straightforward evaluation
+order exists, where all anonymous sizes have been computed before
+their value is needed.
+
+We will see a more realistic example of the impact of the causality
+restriction in :numref:`causality-and-piping`, when we get to
+higher-order functions.
+
 .. _records:
 
 Records
@@ -1256,6 +1308,56 @@ top-level. Amongst these are the following quite useful functions:
     val curry   '^a '^b '^c : ((a,b) -> c) -> a -> b -> c
     val uncurry '^a '^b '^c : (a -> b -> c) -> (a,b) -> c
 
+.. _causality-and-piping:
+
+Causality and piping
+~~~~~~~~~~~~~~~~~~~~
+
+The causality restriction discussed in :numref:`causality` has
+significant interaction with higher-order functions, particularly the
+pipe operators.  Programmers familiar with other languages, in
+particular Haskell, may wish to use the ``<|`` operator frequently,
+due to its similarity to Haskell's ``$`` operator.  Unfortunately, it
+has pitfalls due to causality.  Consider this expression::
+
+  length <| filter (>0) [1,-2,3]
+
+This is a causality violation.  The reason is that ``length`` has the
+following type scheme::
+
+  val length [n] 't : [n]t -> i32
+
+This means that whenever we use ``length``, the type checker must
+*instantiate* the size variable ``n`` with some specific size, which
+must be *available* at the place ``length`` itself occurs.  In the
+expression above, this specific size is whatever anonymous size
+variable the ``filter`` application produces.  However, since the rule
+for binary operators is left-to-right evaluation, ``length`` function
+is instantiated (but not applied!) *before* the ``filter`` runs.  The
+distinction between *instantiation*, which is when a polymorphic value
+is given its concrete type, and *application*, which is when a
+function is provided with an argument, is crucial here.  The end
+result is that the compiler will complain::
+
+  > length <| filter (>0) [1,-2,3]
+  Error at [1]> :1:1-6:
+  Causality check: size "ret₁₁" needed for type of "length":
+    [ret₁₁]i32 -> i32
+  But "ret₁₁" is computed at 1:11-30.
+  Hint: Bind the expression producing "ret₁₁" with 'let' beforehand.
+
+The compiler suggests binding the ``filter`` expression with a
+``let``, which forces it to be evaluated first, but there are neater
+solutions in this case.  For example, we can exploit that function
+arguments are evaluated before function is instantiated::
+
+  > length (filter (>0) [1,-2,3])
+  2i32
+
+Or we can use the left-to-right piping operator::
+
+  > filter (>0) [1,-2,3] |> length
+  2i32
 
 .. _sequential-loops:
 
