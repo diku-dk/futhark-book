@@ -1839,11 +1839,11 @@ module type:
 An attempt to access ``bar.add`` will result in a compilation error,
 as the ascription has hidden it. This is known as an *opaque*
 ascription, because it obscures anything not explicitly mentioned in
-the module type. The module systems in Standard ML and OCaml support
-both opaque and *transparent* ascription, but in Futhark we support
-only opaque ascription.  This example also demonstrates the use of an
-anonymous module type.  Module types are structural (just like value
-types), and are named only for convenience.
+the module type. The module system in Standard ML supports both opaque
+and *transparent* ascription, but in Futhark we support only opaque
+ascription.  This example also demonstrates the use of an anonymous
+module type.  Module types are structural (just like value types), and
+are named only for convenience.
 
 We can use type ascription with abstract types to hide the definition of
 a type from the users of a module:
