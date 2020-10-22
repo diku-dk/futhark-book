@@ -790,8 +790,8 @@ have used so far::
 
 The ``dotprod`` function assumes that the two input arrays have the
 same size, or else the ``map2`` will fail. However, this constraint is
-not visible in the type of the function. Size parameters allow us to
-make this explicit::
+not visible in the written type of the function (although it will have
+been inferred). Size parameters allow us to make this explicit::
 
     let dotprod [n] (xs: [n]i32) (ys: [n]i32): i32 =
       reduce (+) 0 (map2 (*) xs ys)
@@ -819,12 +819,12 @@ for computing averages::
     let average [n] (xs: [n]f64): f64 =
       reduce (+) 0 xs / r64 n
 
-Size parameters are always of type ``i32``, and in fact, *any*
-``i32``-typed variable in scope can be used as a size annotation. This feature
+Size parameters are always of type ``i64``, and in fact, *any*
+``i64``-typed variable in scope can be used as a size annotation. This feature
 lets us define a function that replicates an integer some number of
 times::
 
-    let replicate_i32 (n: i32) (x: i32): [n]i32 =
+    let replicate_i32 (n: i64) (x: i32): [n]i64 =
       map (\_ -> x) (0..<n)
 
 In :numref:`polymorphism` we will see how to write a polymorphic
@@ -925,7 +925,7 @@ unchanged - only the size is allowed to differ.
 
       ::
 
-         let i32_indices [n] (xs: [n]i32) : [n]i32 =
+         let i32_indices [n] (xs: [n]i32) : [n]i64 =
            0..<n
 
 Sizes and type abbreviations
@@ -1138,14 +1138,14 @@ Parametric Polymorphism
 
 Consider the replication function we wrote earlier::
 
-    let replicate_i32 (n: i32) (x: i32): [n]i32 =
+    let replicate_i32 (n: i64) (x: i32): [n]i32 =
       map (\_ -> x) (0..<n)
 
 This function works only for replicating values of type ``i32``.  If
 we wanted to replicate, say, a boolean value, we would have to write another
 function::
 
-    let replicate_bool (n: i32) (x: bool): [n]bool =
+    let replicate_bool (n: i64) (x: bool): [n]bool =
       map (\_ -> x) (0..<n)
 
 This duplication is not particularly nice.  Since the only difference
@@ -1161,7 +1161,7 @@ like the size parameters we saw earlier, a Futhark function may have
 apostrophe.  As an example, this is a polymorphic version of
 ``replicate``::
 
-    let replicate 't (n: i32) (x: t): [n]t =
+    let replicate 't (n: i64) (x: t): [n]t =
       map (\_ -> x) (0..<n)
 
 Notice how the type parameter binding is written as ``'t``; we use just
@@ -1325,7 +1325,7 @@ has pitfalls due to causality.  Consider this expression::
 This is a causality violation.  The reason is that ``length`` has the
 following type scheme::
 
-  val length [n] 't : [n]t -> i32
+  val length [n] 't : [n]t -> i64
 
 This means that whenever we use ``length``, the type checker must
 *instantiate* the size variable ``n`` with some specific size, which
@@ -1342,7 +1342,7 @@ result is that the compiler will complain::
   > length <| filter (>0) [1,-2,3]
   Error at [1]> :1:1-6:
   Causality check: size "ret₁₁" needed for type of "length":
-    [ret₁₁]i32 -> i32
+    [ret₁₁]i32 -> i64
   But "ret₁₁" is computed at 1:11-30.
   Hint: Bind the expression producing "ret₁₁" with 'let' beforehand.
 
@@ -1352,12 +1352,12 @@ solutions in this case.  For example, we can exploit that function
 arguments are evaluated before function is instantiated::
 
   > length (filter (>0) [1,-2,3])
-  2i32
+  2i64
 
 Or we can use the left-to-right piping operator::
 
   > filter (>0) [1,-2,3] |> length
-  2i32
+  2i64
 
 .. _sequential-loops:
 
@@ -1522,7 +1522,7 @@ first Fibonacci numbers:
 
 ::
 
-    let fib (n: i32): []i32 =
+    let fib (n: i64): [n]i32 =
       -- Create "empty" array.
       let arr = replicate n 1
       -- Fill array with Fibonacci numbers.
@@ -1573,7 +1573,7 @@ that end, let us consider the following function definition.
 
 ::
 
-    let modify (a: *[]i32) (i: i32) (x: i32): *[]i32 =
+    let modify (a: *[]i32) (i: i64) (x: i32): *[]i32 =
       a with [i] = a[i] + x
 
 The function call ``modify a i x`` returns :math:`a`, but where the
@@ -1664,7 +1664,7 @@ rules:
     function is the only reference to that value. A violation of this
     rule is as follows::
 
-      let broken (a: [][]i32, i: i32): *[]i32 =
+      let broken (a: [][]i32, i: i64): *[]i32 =
         a[i] -- Error: Return value aliased with 'a'.
 
 **Uniqueness Rule 3**
