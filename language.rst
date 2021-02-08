@@ -292,9 +292,10 @@ Two-way if-then-else is the main branching construct in Futhark:
 Pattern matching with the ``match`` keyword will be discussed later.
 
 Arrays are indexed using conventional row-major notation, as in the
-expression ``a[i1, i2, i3, ...]``.  All array accesses are checked at
+expression ``a[i1, i2, i3, ...]``. All array accesses are checked at
 runtime, and the program will terminate abnormally if an invalid
-access is attempted.
+access is attempted. Indices are of type ``i64``, though any signed
+type is permitted in an index expression (it will be casted to an ``i64``).
 
 White space is used to disambiguate indexing from application to array
 literals. For example, the expression ``a b [i]`` means “apply the
@@ -303,12 +304,11 @@ means “apply the function ``a`` to the argument ``b[i]``”.
 
 Futhark also supports array *slices*. The expression ``a[i:j:s]``
 returns a slice of the array ``a`` from index ``i`` (inclusive) to ``j``
-(exclusive) with a stride of ``s``. Slicing of multiple dimensions can
-be done by separating with commas, and may be intermixed freely with
-indexing.
-
-If the stride is positive, then ``i <= j`` must hold, and if the stride
-is negative, then ``j <= i`` must hold.
+(exclusive) with a stride of ``s``. If the stride is positive, then ``i <= j``
+must hold, and if the stride is negative, then ``j <= i`` must hold.
+Slicing of multiple dimensions can be done by separating with commas,
+and may be intermixed freely with indexing. Note that unlike array
+indices, slice indices can only be of type ``i64``.
 
 Some syntactic sugar is provided for concisely specifying arrays of intervals of
 integers. The expression ``x...y`` produces an array of the integers
