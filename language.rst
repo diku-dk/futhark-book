@@ -1748,7 +1748,7 @@ is merely a collection of declarations
       let zero: t = 0
     }
 
-Now, ``add_i32.t`` is an alias for the type ``i32``, and ``Addi32.add``
+Now, ``add_i32.t`` is an alias for the type ``i32``, and ``add_i32.add``
 is a function that adds two values of type ``i32``. The only peculiar
 thing about this notation is the equal sign before the opening brace.
 The declaration above is actually a combination of a *module binding*
