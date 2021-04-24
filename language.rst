@@ -1302,8 +1302,8 @@ top-level. Amongst these are the following quite useful functions:
     val |>    '^a '^b  : a -> (a -> b) -> b   -- pipe right
     val <|    '^a '^b  : (a -> b) -> a -> b   -- pipe left
 
-    val >->     '^a '^b '^c : (a -> b) (b -> c) -> a -> c
-    val <-<     '^a '^b '^c : (b -> c) (a -> b) -> a -> c
+    val >->     '^a '^b '^c : (a -> b) -> (b -> c) -> a -> c
+    val <-<     '^a '^b '^c : (b -> c) -> (a -> b) -> a -> c
 
     val curry   '^a '^b '^c : ((a,b) -> c) -> a -> b -> c
     val uncurry '^a '^b '^c : (a -> b -> c) -> (a,b) -> c
