@@ -331,7 +331,7 @@ by the previous call is the only way to accomplish this.  Fortunately,
 we can assign these opaque types somewhat more readable names by type
 abbreviations::
 
-  type array_of_pairs = [](i32,i32)
+  type~ array_of_pairs = [](i32,i32)
 
   entry pack (xs: []i32) (ys: []i32): array_of_pairs = zip xs ys
 
