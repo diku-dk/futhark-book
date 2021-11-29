@@ -1708,11 +1708,22 @@ vs`` morally computes
       for i in 0..n-1:
         j = is[i]
         v = vs[i]
-        as[j] = v
+        if ( j >= 0 && j < length as )
+	then { as[j] = v }
+	else { }
 
 and returns the modified ``as`` array. The old ``as`` array is marked
-as consumed and may not be used anymore. Parallel ``scatter`` can be
-used, for instance, to implement efficiently the radix sort algorithm, as
+as consumed and may not be used anymore. Notice that writing outside
+the index domain of the target array has no effect.
+
+Moreover, identical indices in ``is`` (that are valid indices into the
+target array) are required to map to identical values; otherwise, the
+result is unspecified.  In particular, it is not guaranteed that one
+of the duplicate writes will complete atomically; they may be
+interleaved. Futhark features a function, called ``reduce_by_index``
+(a generalised histogram operation), which can handle this case
+deterministically.  The parallel ``scatter`` operation can be used,
+for instance, to implement efficiently the radix sort algorithm, as
 demonstrated in :numref:`radixsort`.
 
 .. _modules:
