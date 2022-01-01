@@ -591,7 +591,7 @@ However, note that the following will *not* work::
       t2
 
 This is because the expression ``(-2)`` is taken as negative number
-``-2`` encloses in parentheses.  Instead, we have to write it with an
+``-2`` enclosed in parentheses.  Instead, we have to write it with an
 explicit lambda::
 
   > map (\x -> x-2) [1,2,3]
@@ -607,8 +607,10 @@ an element-wise sum of two arrays:
     > map2 (+) [1,2,3] [4,5,6]
     [5i32, 7i32, 9i32]
 
-A combination of ``map`` and ``zip`` can be used to handle arbitrary
-numbers of simultaneous arrays.
+There is nothing magical about ``map2`` - it is simply a predefined
+higher-order function that combines ``map`` and ``zip``.  If needed,
+you can define your own variants that go even higher, although the
+resulting code is usually not very readable.
 
 Be careful when writing ``map`` expressions where the function returns
 an array.  Futhark requires regular arrays, so this is unlikely to go
@@ -618,8 +620,8 @@ well:
 
     map (\n -> 1...n) ns
 
-Unless the array ``ns`` consists of identical values, this expression
-will fail at runtime.
+In fact, the type checker will complain and refuse to run this program
+at all.
 
 We can use ``map`` to duplicate many other language constructs. For
 example, if we have two arrays ``xs:[n]i32`` and ``ys:[m]i32`` — that
