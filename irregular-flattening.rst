@@ -275,7 +275,7 @@ unfortunately, is not immediately Futhark code:
 
 ::
 
-    let qsort (<=) xs =
+    def qsort (<=) xs =
       if length xs < 2 then xs
       else let (left,middle,right) = partition (<=) xs[length xs / 2] xs
            in qsort (<=) left ++ middle ++ qsort (<=) right

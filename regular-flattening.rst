@@ -304,7 +304,7 @@ reduction operation of type::
 Internally, this function can be implemented based on the function
 ``regular_segmented_scan`` discussed above. Here is a simple definition:::
 
-    let regular_segmented_reduce = map last <-< regular_segmented_scan
+    def regular_segmented_reduce = map last <-< regular_segmented_scan
 
 
 Map-Iota Nesting
