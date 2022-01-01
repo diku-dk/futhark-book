@@ -121,7 +121,7 @@ into which you can enter arbitrary expressions and declarations:
     |/  | \   |\  |\  |/  /
     |   |  \  |/  |   |\  \
     |   |   \ |   |   | \  \
-    Version 0.15.0.
+    Version 0.21.2.
     Copyright (C) DIKU, University of Copenhagen, released under the ISC license.
 
     Run :help for a list of commands.
