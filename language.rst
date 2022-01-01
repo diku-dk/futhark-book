@@ -569,14 +569,6 @@ but you are free to do so in cases where it aids readability:
     > map (\(x:i32): i32 -> x + 2) [1,2,3]
     [3i32, 4i32, 5i32]
 
-The functional argument can also be an operator, which must be enclosed
-in parentheses:
-
-::
-
-    > map (!) [true, false, true]
-    [false, true, false]
-
 Partially applying operators is also supported using so-called
 *operator sections*, with a syntax taken from Haskell:
 
