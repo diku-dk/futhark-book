@@ -689,7 +689,7 @@ For example, consider this program:
 
 ::
 
-    let main (n: i32): [][]i32 =
+    def main (n: i32): [][]i32 =
       map (\i ->
              let a = (0..<i)
              let b = (0..<n-i)
@@ -711,7 +711,7 @@ workaround. We could rewrite the program as:
 
 ::
 
-    let main(n: i32): [][]i32 =
+    def main(n: i32): [][]i32 =
       let scratch = (0..<n)
       in map (\i ->
                 let res = (0..<n)

@@ -6,8 +6,8 @@ import "sum"
 -- output { 10 }
 
 module sum_add_i32 = sum { type t = i32
-                           let add = (i32.+)
-                           let zero = 0i32
+                           def add = (i32.+)
+                           def zero = 0i32
                          }
 
 entry test_sum_add_i32 = sum_add_i32.sum
@@ -18,8 +18,8 @@ entry test_sum_add_i32 = sum_add_i32.sum
 -- output { 24f32 }
 
 module sum_prod_f32 = sum { type t = f32
-                            let add = (f32.*)
-                            let zero = 1f32
+                            def add = (f32.*)
+                            def zero = 1f32
                           }
 
 entry test_sum_prod_f32 = sum_prod_f32.sum

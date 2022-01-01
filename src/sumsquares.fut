@@ -4,5 +4,5 @@
 -- compiled input {    1000000 } output {   584144992 }
 -- compiled input { 1000000000 } output { -2087553280 }
 
-let main (n: i32): i32 =
+def main (n: i32): i32 =
   reduce (+) 0 (map (**2) (iota n))

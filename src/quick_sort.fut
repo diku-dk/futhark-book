@@ -7,31 +7,31 @@
 
 import "segmented"
 
-let segmented_replicate [n] (reps:[n]i32) (vs:[n]i32) : []i32 =
+def segmented_replicate [n] (reps:[n]i32) (vs:[n]i32) : []i32 =
   let idxs = replicated_iota reps
   in map (\i -> vs[i]) idxs
 
-let info 't ((<=): t -> t -> bool) (x:t) (y:t) : i32 =
+def info 't ((<=): t -> t -> bool) (x:t) (y:t) : i32 =
   if x <= y then if y <= x then 0 else -1
   else 1
 
-let tripit x = if x < 0 then (1,0,0)
+def tripit x = if x < 0 then (1,0,0)
                else if x > 0 then (0,0,1) else (0,1,0)
 
-let tripadd (a1:i32,e1:i32,b1:i32) (a2,e2,b2) =
+def tripadd (a1:i32,e1:i32,b1:i32) (a2,e2,b2) =
   (a1+a2,e1+e2,b1+b2)
 
 type sgm = {start:i32,sz:i32}  -- segment descriptor
 
 -- find the indexes into values in segments
-let idxs_values (sgms:[]sgm) : []i32 =
+def idxs_values (sgms:[]sgm) : []i32 =
   let sgms_szs : []i32 = map (\sgm -> sgm.sz) sgms
   let is1 = segmented_replicate sgms_szs (map (\x -> x.start) sgms)
   let fs = map2 (!=) is1 (rotate (i32.negate 1) is1)
   let is2 = segmented_iota fs
   in map2 (+) is1 is2
 
-let step [n][m] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[m]sgm)
+def step [n][m] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[m]sgm)
   : (*[n]t,[]sgm) =
   -- find a pivot for each segment
   let pivots : []t = map (\sgm -> xs[sgm.start + sgm.sz/2]) sgms
@@ -85,17 +85,17 @@ let step [n][m] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[m]sgm)
 -- *O(n log n)*. It has best depth complexity *O(1)*, worst depth
 -- complexity *O(n)* and average depth complexity *O(log n)*.
 
-let qsort [n] 't ((<=): t -> t -> bool) (xs:[n]t) : [n]t =
+def qsort [n] 't ((<=): t -> t -> bool) (xs:[n]t) : [n]t =
   if n < 2 then xs
   else (loop (xs,mms) = (copy xs,[{start=0,sz=n}])
         while length mms > 0 do
           step (<=) xs mms).0
 
 -- | Like `qsort`@term, but sort based on key function.
-let qsort_by_key [n] 't 'k (key: t -> k) ((<=): k -> k -> bool) (xs: [n]t): [n]t =
+def qsort_by_key [n] 't 'k (key: t -> k) ((<=): k -> k -> bool) (xs: [n]t): [n]t =
   zip (map key xs) (iota n)
   |> qsort (\(x, _) (y, _) -> x <= y)
   |> map (\(_, i) -> xs[i])
 
-let main [n] (xs : [n]i32) : [n]i32 =
+def main [n] (xs : [n]i32) : [n]i32 =
   qsort (i32.<=) xs

@@ -5,6 +5,6 @@ module type monoid = {
 }
 
 module sum (M: monoid) = {
-  let sum (a: []M.t): M.t =
+  def sum (a: []M.t): M.t =
     reduce M.add M.zero a
 }

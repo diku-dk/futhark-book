@@ -2,25 +2,25 @@
 
 import "segmented"
 
-let segmented_replicate [n] (reps:[n]i32) (vs:[n]i32) : []i32 =
+def segmented_replicate [n] (reps:[n]i32) (vs:[n]i32) : []i32 =
   let idxs = replicated_iota reps
   in map (\i -> vs[i]) idxs
 
-let info 't ((<=): t -> t -> bool) (x:t) (y:t) : i32 =
+def info 't ((<=): t -> t -> bool) (x:t) (y:t) : i32 =
   if x <= y then
      if y <= x then 0 else -1
   else 1
 
-let tripit x =
+def tripit x =
   if x < 0 then (1,0,0)
   else if x > 0 then (0,0,1) else (0,1,0)
 
-let tripadd (a1:i32,e1:i32,b1:i32) (a2,e2,b2) =
+def tripadd (a1:i32,e1:i32,b1:i32) (a2,e2,b2) =
   (a1+a2,e1+e2,b1+b2)
 
 type sgm = {start:i32,sz:i32}  -- segment
 
-let step [n] [m] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[m]sgm) : (*[n]t,[]sgm) =
+def step [n] [m] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[m]sgm) : (*[n]t,[]sgm) =
   let pivots : []t = map (\sgm -> xs[sgm.start + sgm.sz/2]) sgms
   let sgms_szs : []i32 = map (\sgm -> sgm.sz) sgms
   let k = i32.sum (map (.sz) sgms)
@@ -58,12 +58,12 @@ let step [n] [m] 't ((<=): t -> t -> bool) (xs:*[n]t) (sgms:[m]sgm) : (*[n]t,[]s
   let xs' = scatter xs newpos vs
   in (xs',sgms')
 
-let qsort [n] 't ((<=): t -> t -> bool) (xs:*[n]t) : [n]t =
+def qsort [n] 't ((<=): t -> t -> bool) (xs:*[n]t) : [n]t =
   if n < 2 then xs
   else (loop (xs,mms) = (xs,[{start=0,sz=n}]) while length mms > 0 do
           step (<=) xs mms).0
 
-let main [n] (xs:*[n]i32) = qsort (i32.<=) xs
+def main [n] (xs:*[n]i32) = qsort (i32.<=) xs
 
 entry first [n] (xs:*[n]i32) =
   let rec2arr ({start,sz}:sgm) = [start,sz]

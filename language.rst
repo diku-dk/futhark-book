@@ -36,7 +36,7 @@ Futhark code. For example, this program computes the dot product
 
 ::
 
-    let main (x: []i32) (y: []i32): i32 =
+    def main (x: []i32) (y: []i32): i32 =
       reduce (+) 0 (map2 (*) x y)
 
 In Futhark, the notation for an array of element type ``t`` is
@@ -366,7 +366,7 @@ definition has the following form:
 
 ::
 
-    let name params... : return_type = body
+    def name params... : return_type = body
 
 A function may optionally declare its return type and the types of its
 parameters.  If type annotations are not provided, the types are
@@ -379,7 +379,7 @@ a library for complex numbers.
 
 ::
 
-    let mandelbrot_step ((Zn_r, Zn_i): (f64, f64))
+    def mandelbrot_step ((Zn_r, Zn_i): (f64, f64))
                         ((C_r, C_i): (f64, f64))
                       : (f64, f64) =
       let real_part = Zn_r*Zn_r - Zn_i*Zn_i + C_r
@@ -390,7 +390,7 @@ Or equivalently, without specifying the types:
 
 ::
 
-    let mandelbrot_step (Zn_r, Zn_i)
+    def mandelbrot_step (Zn_r, Zn_i)
                         (C_r, C_i) =
       let real_part = Zn_r*Zn_r - Zn_i*Zn_i + C_r
       let imag_part = 2.0*Zn_r*Zn_i + C_i
@@ -398,20 +398,20 @@ Or equivalently, without specifying the types:
 
 It is generally considered good style to specify the types of the
 parameters and the return value when defining top-level functions.
-Type inference is mostly used for local and anonymous functions, that
+Type inference is mostly used for local and anonymous functions, which
 we will get to later.
 
 We can define a constant with very similar notation:
 
 ::
 
-    let name: value_type = definition
+    def name: value_type = definition
 
 For example:
 
 ::
 
-    let physicists_pi: f64 = 4.0
+    def physicists_pi: f64 = 4.0
 
 Top-level definitions are declared in order, and a definition may
 refer *only* to those names that have been defined before it
@@ -464,7 +464,7 @@ size parameters.
 
       ::
 
-         let main (x: i32): i32 = if x < 0 then -x else x
+         def main (x: i32): i32 = if x < 0 then -x else x
 
 .. _type-abbreviations:
 
@@ -485,7 +485,7 @@ We can now define ``mandelbrot_step`` as follows:
 
 ::
 
-    let mandelbrot_step ((Zn_r, Zn_i): complex)
+    def mandelbrot_step ((Zn_r, Zn_i): complex)
                         ((C_r, C_i): complex)
                       : complex =
         let real_part = Zn_r*Zn_r - Zn_i*Zn_i + C_r
@@ -496,7 +496,7 @@ Type abbreviations are purely a syntactic convenience — the type
 ``complex`` is fully interchangeable with the type ``(f64, f64)``::
 
   > type complex = (f64, f64)
-  > let f (x: (f64, f64)): complex = x
+  > def f (x: (f64, f64)): complex = x
   > f (1,2)
   (1.0f64, 2.0f64)
 
@@ -679,7 +679,7 @@ to compute the dot product of two vectors of integers:
 
 ::
 
-    let dotprod (xs: []i32) (ys: []i32): i32 =
+    def dotprod (xs: []i32) (ys: []i32): i32 =
       reduce (+) 0 (map2 (*) xs ys)
 
 A close cousin of ``reduce`` is ``scan``, often called *generalised
@@ -740,7 +740,7 @@ combination of ``indices``, ``zip``, ``filter``, and ``unzip``:
 
 ::
 
-    > let indices_of_nonzero (xs: []i32): []i32 =
+    > def indices_of_nonzero (xs: []i32): []i32 =
         let xs_and_is = zip xs (indices xs)
         let xs_and_is' = filter (\(x,_) -> x != 0) xs_and_is
         let (_, is') = unzip xs_and_is'
@@ -775,7 +775,7 @@ polymorphism, will be discussed when those features are introduced.
 As a simple example, consider a function that packs a single ``i32``
 value in an array::
 
-    let singleton (x: i32): [1]i32 = [x]
+    def singleton (x: i32): [1]i32 = [x]
 
 We explicitly annotate the return type to state that this function
 returns a single-element array.  Even if we did not add this
@@ -785,7 +785,7 @@ For expressing constraints among the sizes of the parameters, Futhark
 provides *size parameters*. Consider the definition of dot product we
 have used so far::
 
-    let dotprod (xs: []i32) (ys: []i32): i32 =
+    def dotprod (xs: []i32) (ys: []i32): i32 =
       reduce (+) 0 (map2 (*) xs ys)
 
 The ``dotprod`` function assumes that the two input arrays have the
@@ -793,7 +793,7 @@ same size, or else the ``map2`` will fail. However, this constraint is
 not visible in the written type of the function (although it will have
 been inferred). Size parameters allow us to make this explicit::
 
-    let dotprod [n] (xs: [n]i32) (ys: [n]i32): i32 =
+    def dotprod [n] (xs: [n]i32) (ys: [n]i32): i32 =
       reduce (+) 0 (map2 (*) xs ys)
 
 The ``[n]`` preceding the *value parameters* (``xs`` and ``ys``) is
@@ -816,7 +816,7 @@ A size parameter is in scope in both the body of a function and its
 return type, which we can use, for instance, for defining a function
 for computing averages::
 
-    let average [n] (xs: [n]f64): f64 =
+    def average [n] (xs: [n]f64): f64 =
       reduce (+) 0 xs / r64 n
 
 Size parameters are always of type ``i64``, and in fact, *any*
@@ -824,7 +824,7 @@ Size parameters are always of type ``i64``, and in fact, *any*
 lets us define a function that replicates an integer some number of
 times::
 
-    let replicate_i32 (n: i64) (x: i32): [n]i64 =
+    def replicate_i32 (n: i64) (x: i32): [n]i64 =
       map (\_ -> x) (0..<n)
 
 In :numref:`polymorphism` we will see how to write a polymorphic
@@ -835,7 +835,7 @@ multiplying two matrices ``x`` and ``y``.  This is only permitted if
 the number of columns in ``x`` equals the number of rows in ``y``.  In
 Futhark, we can encode this as follows::
 
-    let matmult [n][m][p] (x: [n][m]i32, y: [m][p]i32): [n][p]i32 =
+    def matmult [n][m][p] (x: [n][m]i32, y: [m][p]i32): [n][p]i32 =
       map (\xr -> map (dotprod xr) (transpose y)) x
 
 Three sizes are involved, ``n``, ``m``, and ``p``.  We indicate that
@@ -847,12 +847,12 @@ Presently, only variables and constants are legal as size annotations.
 This restriction means that the following function definition is not
 valid::
 
-    let dup [n] (xs: [n]i32): [2*n]i32 =
+    def dup [n] (xs: [n]i32): [2*n]i32 =
       map (\i -> xs[i/2]) (0..<n*2)
 
 Instead, we will have to write it as::
 
-    let dup [n] (xs: [n]i32): []i32 =
+    def dup [n] (xs: [n]i32): []i32 =
       map (\i -> xs[i/2]) (0..<n*2)
 
 ``dup`` is an instance of a function whose return size is *not*
@@ -925,7 +925,7 @@ unchanged - only the size is allowed to differ.
 
       ::
 
-         let i32_indices [n] (xs: [n]i32) : [n]i64 =
+         def i32_indices [n] (xs: [n]i32) : [n]i64 =
            0..<n
 
 Sizes and type abbreviations
@@ -938,7 +938,7 @@ consider a type abbreviation for a vector of integers::
 
 We can now use ``intvec [n]`` to refer to integer vectors of size ``n``::
 
-    let x: intvec [3] = [1,2,3]
+    def x: intvec [3] = [1,2,3]
 
 A type parameter can be used multiple times on the right-hand side of
 the definition; perhaps to define an abbreviation for square matrices::
@@ -988,7 +988,7 @@ section for now and come back to it later.
 
 To see the problem, consider the following function definition::
 
-  let f (b: bool) (xs: []i32) =
+  def f (b: bool) (xs: []i32) =
     let a = [] : [][]i32
     let b = [filter (>0) xs]
     in a[0] == b[0]
@@ -1053,14 +1053,14 @@ consists of field assignments enclosed in curly braces:
 
 ::
 
-    let sqrt_minus_one = {re = 0.0, im = -1.0}
+    def sqrt_minus_one = {re = 0.0, im = -1.0}
 
 The order of the fields in a record type or value does not matter, so
 the following definition is equivalent to the one above:
 
 ::
 
-    let sqrt_minus_one = {im = -1.0, re = 0.0}
+    def sqrt_minus_one = {im = -1.0, re = 0.0}
 
 In contrast to most other programming languages, record types in Futhark
 are *structural*, not *nominal*. This means that the name (if any) of a
@@ -1078,7 +1078,7 @@ they can be used anonymously:
 
 ::
 
-    let sqrt_minus_one: {re: f64, im: f64} = {re = 0.0, im = -1.0}
+    def sqrt_minus_one: {re: f64, im: f64} = {re = 0.0, im = -1.0}
 
 However, for readability purposes it is usually a good idea to use type
 abbreviations when working with records.
@@ -1093,7 +1093,7 @@ like we do with tuples. A record pattern is similar to a record
 expression, and consists of field patterns enclosed in curly braces. For
 example, a function for adding complex numbers could be defined as::
 
-    let complex_add ({re = x_re, im = x_im}: complex)
+    def complex_add ({re = x_re, im = x_im}: complex)
                     ({re = y_re, im = y_im}: complex)
                   : complex =
       {re = x_re + y_re, im = x_im + y_im}
@@ -1105,14 +1105,14 @@ As a special syntactic convenience, we can elide the ``= pat`` part of a
 record pattern, which will bind the value of the field to a variable of
 the same name as the field. For example::
 
-    let conj ({re, im}: complex): complex =
+    def conj ({re, im}: complex): complex =
       {re = re, im = -im}
 
 This convenience is also present in tuple expressions. If we elide the
 definition of a field, the value will be taken from the variable in
 scope with the same name::
 
-    let conj ({re, im}: complex): complex =
+    def conj ({re, im}: complex): complex =
       {re, im = -im}
 
 Tuples as a Special Case of Records
@@ -1138,14 +1138,14 @@ Parametric Polymorphism
 
 Consider the replication function we wrote earlier::
 
-    let replicate_i32 (n: i64) (x: i32): [n]i32 =
+    def replicate_i32 (n: i64) (x: i32): [n]i32 =
       map (\_ -> x) (0..<n)
 
 This function works only for replicating values of type ``i32``.  If
 we wanted to replicate, say, a boolean value, we would have to write another
 function::
 
-    let replicate_bool (n: i64) (x: bool): [n]bool =
+    def replicate_bool (n: i64) (x: bool): [n]bool =
       map (\_ -> x) (0..<n)
 
 This duplication is not particularly nice.  Since the only difference
@@ -1161,7 +1161,7 @@ like the size parameters we saw earlier, a Futhark function may have
 apostrophe.  As an example, this is a polymorphic version of
 ``replicate``::
 
-    let replicate 't (n: i64) (x: t): [n]t =
+    def replicate 't (n: i64) (x: t): [n]t =
       map (\_ -> x) (0..<n)
 
 Notice how the type parameter binding is written as ``'t``; we use just
@@ -1194,7 +1194,7 @@ This type abbreviation is fine, but we will find it difficult to write
 useful functions with it.  Consider an attempt to define complex
 addition::
 
-    let complex_add 't ({re = x_re, im = x_im}: complex t)
+    def complex_add 't ({re = x_re, im = x_im}: complex t)
                        ({re = y_re, im = y_im}: complex t)
                   : complex t =
       {re = ?, im = ?}
@@ -1372,17 +1372,17 @@ numbers
 
 ::
 
-    let fibhelper(x: i32, y: i32, n: i32): i32 =
+    def fibhelper(x: i32, y: i32, n: i32): i32 =
       if n == 1 then x else fibhelper(y, x+y, n-1)
 
-    let fib(n: i32): i32 = fibhelper(1,1,n)
+    def fib(n: i32): i32 = fibhelper(1,1,n)
 
 We cannot write this directly in Futhark, but we can express the same
 idea using the ``loop`` construct:
 
 ::
 
-    let fib(n: i32): i32 =
+    def fib(n: i32): i32 =
       let (x, _) = loop (x, y) = (1,1) for i < n do (y, x+y)
       in x
 
@@ -1419,7 +1419,7 @@ has the semantics of a call to the following tail-recursive function:
 
 ::
 
-    let f(i: i32, n: i32, x: t): t =
+    def f(i: i32, n: i32, x: t): t =
       if i >= n then x
       else f(i+1, n, g(x))
 
@@ -1459,7 +1459,7 @@ given number until it exceeds a given threshold value:
 
 ::
 
-    let main(x: i32, bound: i32): i32 =
+    def main (x: i32, bound: i32): i32 =
       loop x while x < bound do x * 2
 
 In all respects other than termination criteria, ``while``-loops
@@ -1471,7 +1471,7 @@ easier to understand with an example. The loop
 
 ::
 
-    let fib(n: i32): i32 =
+    def fib (n: i32): i32 =
       let x = 1
       let y = 1
       let (x, _) = loop (x, y) = (x, y) for i < n do (y, x+y)
@@ -1481,7 +1481,7 @@ can also be written:
 
 ::
 
-    let fib(n: i32): i32 =
+    def fib (n: i32): i32 =
       let x = 1
       let y = 1
       let (x, _) = loop (x, y) for i < n do (y, x+y)
@@ -1522,7 +1522,7 @@ first Fibonacci numbers:
 
 ::
 
-    let fib (n: i64): [n]i32 =
+    def fib (n: i64): [n]i32 =
       -- Create "empty" array.
       let arr = replicate n 1
       -- Fill array with Fibonacci numbers.
@@ -1531,7 +1531,7 @@ first Fibonacci numbers:
 
 The notation ``arr with [i+2] = arr[i] + arr[i+1]`` produces an array
 equivalent to ``arr``, but with a new value for the element at
-position ``i+2``.  A shorthand syntax is available for the (common)
+position ``i+2``.  A shorthand syntax is available for the common
 case where we immediately bind the array to a variable of the same
 name::
 
@@ -1573,7 +1573,7 @@ that end, let us consider the following function definition.
 
 ::
 
-    let modify (a: *[]i32) (i: i64) (x: i32): *[]i32 =
+    def modify (a: *[]i32) (i: i64) (x: i32): *[]i32 =
       a with [i] = a[i] + x
 
 The function call ``modify a i x`` returns :math:`a`, but where the
@@ -1626,11 +1626,9 @@ other arrays in the program. In particular, the result of ``map f a``
 does not alias ``a``. One exception is array slicing, where the result
 is aliased to the original array.
 
-Let us consider the definition of a function returning a unique array:
+Let us consider the definition of a function returning a unique array::
 
-.. code-block:: none
-
-    let f(a: []i32): *[]i32 = e
+  def f(a: []i32): *[]i32 = e
 
 Notice that the argument, ``a``, is non-unique, and hence we cannot modify
 it inside the function. There is another restriction as well: ``a`` must
@@ -1652,8 +1650,8 @@ rules:
     it, may be used on any execution path following the function call. A
     violation of this rule is as follows::
 
-      let b = a with [i] = 2 in -- Consumes 'a'
-      f(b,a) -- Error: a used after being consumed
+      let b = a with [i] = 2 -- Consumes 'a'
+      in f(b,a) -- Error: a used after being consumed
 
 
 **Uniqueness Rule 2**
@@ -1664,7 +1662,7 @@ rules:
     function is the only reference to that value. A violation of this
     rule is as follows::
 
-      let broken (a: [][]i32, i: i64): *[]i32 =
+      def broken (a: [][]i32, i: i64): *[]i32 =
         a[i] -- Error: Return value aliased with 'a'.
 
 **Uniqueness Rule 3**
@@ -1755,8 +1753,8 @@ is merely a collection of declarations
 
     module add_i32 = {
       type t = i32
-      let add (x: t) (y: t): t = x + y
-      let zero: t = 0
+      def add (x: t) (y: t): t = x + y
+      def zero: t = 0
     }
 
 Now, ``add_i32.t`` is an alias for the type ``i32``, and ``add_i32.add``
@@ -1774,8 +1772,8 @@ and a *module expression*
 
     {
       type t = i32
-      let add (x: t) (y: t): t = x + y
-      let zero: t = 0
+      def add (x: t) (y: t): t = x + y
+      def zero: t = 0
     }
 
 In this case, the module expression encapsulates a number of
@@ -1868,11 +1866,11 @@ a type from the users of a module:
                      val speed : thing -> i32 } = {
       type thing = i32
 
-      let car: thing = 0
-      let plane: thing = 1
-      let futhark: thing = 2
+      def car: thing = 0
+      def plane: thing = 1
+      def futhark: thing = 2
 
-      let speed (x: thing): i32 =
+      def speed (x: thing): i32 =
         if      x == car     then 120
         else if x == plane   then 800
         else if x == futhark then 10001
@@ -1914,7 +1912,7 @@ collapsing an array
 ::
 
     module sum (M: monoid) = {
-      let sum (a: []M.t): M.t =
+      def sum (a: []M.t): M.t =
         reduce M.add M.zero a
     }
 
@@ -1941,8 +1939,8 @@ this time an anonymous module:
 
     module prod_f64 = sum {
       type t = f64
-      let add (x: f64) (y: f64): f64 = x * y
-      let zero: f64 = 1.0
+      def add (x: f64) (y: f64): f64 = x * y
+      def zero: f64 = 1.0
     }
 
 The function ``prod_f64.sum`` has type ``[]f64 -> f64``, and computes
@@ -1976,11 +1974,11 @@ current scope:
       }) = {
         open M
 
-        let dotprod [n] (xs: [n]scalar) (ys: [n]scalar)
+        def dotprod [n] (xs: [n]scalar) (ys: [n]scalar)
           : scalar =
           reduce add zero (map2 mul xs ys)
 
-        let matmul [n] [p] [m] (xss: [n][p]scalar)
+        def matmul [n] [p] [m] (xss: [n][p]scalar)
                                (yss: [p][m]scalar)
           : [n][m]scalar =
           map (\xs -> map (dotprod xs) (transpose yss)) xss
@@ -2012,7 +2010,7 @@ If we are defining a top-level function (or any other top-level
 construct) that we do not want to be visible outside the current file,
 we can prefix it with ``local``::
 
-  local let i_am_hidden x = x + 2
+  local def i_am_hidden x = x + 2
 
 Qualified imports are possible, where a module is created for the
 file:::

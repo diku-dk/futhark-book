@@ -4,7 +4,7 @@
 import "segmented"
 
 -- Flattened version of Erastothenes' sieve using expansion
-let primes (n:i32) =
+def primes (n:i32) =
   (.0) <|
   loop (acc:[]i32,c) = ([],2) while c < n+1 do
     let c2 = if c < i32.f32(f32.sqrt(f32.i32(n+1))) then c*c
@@ -19,4 +19,4 @@ let primes (n:i32) =
     in (acc ++ new, c2)
 
 -- Return the number of primes less than n
-let main (n:i32) : i32 = length (primes n)
+def main (n:i32) : i32 = length (primes n)

@@ -8,7 +8,7 @@
 -- input { [9, 8, 7, 6, 5, 4] } output { 0 }
 -- input { [1, 5, 3, 4, 2, 6, 7, 8] } output { 3 }
 
-let max (a:i32) (b:i32) : i32 = if a > b then a else b
+def max (a:i32) (b:i32) : i32 = if a > b then a else b
 
 -- xs   : [1, 5, 3, 4, 2, 6, 7, 8]
 -- ys   : [5, 3, 4, 2, 6, 7, 8, 1]
@@ -20,7 +20,7 @@ let max (a:i32) (b:i32) : i32 = if a > b then a else b
 -- res  : 3
 
 -- Longest streak of increasing numbers
-let streak [n] (xs: [n]i32) : i32  =
+def streak [n] (xs: [n]i32) : i32  =
   -- find increments
   let ys = rotate 1 xs
   let is = (map2 (\x y -> if x < y then 1 else 0) xs ys)[0:n-1]
@@ -34,4 +34,4 @@ let streak [n] (xs: [n]i32) : i32  =
   let res = reduce max 0 ss3
   in res
 
-let main [n] (xs: [n]i32) : i32 = streak xs
+def main [n] (xs: [n]i32) : i32 = streak xs

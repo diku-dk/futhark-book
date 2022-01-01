@@ -14,7 +14,7 @@
 
 
 -- A least significant digit radix sort to test out `write`.
-let radix_sort_step [n] (xs: [n]u32, digit_n: i32): [n]u32 =
+def radix_sort_step [n] (xs: [n]u32, digit_n: i32): [n]u32 =
   let bits       = map (\(x: u32): i32 ->
                           (i32.u32 x >> digit_n)
                           & 1) xs
@@ -29,10 +29,10 @@ let radix_sort_step [n] (xs: [n]u32, digit_n: i32): [n]u32 =
   let ps_actual  = map (\(p: i32): i32 -> p - 1) ps
   in scatter (copy xs) ps_actual xs
 
-let radix_sort [n] (xs: [n]u32): [n]u32 =
+def radix_sort [n] (xs: [n]u32): [n]u32 =
   loop (xs) for i < 32 do
     radix_sort_step(xs, i)
 
-let main: []u32 =
+def main: []u32 =
   let arg = map u32.i32 ([83, 1, 4, 99, 33, 0, 6, 5])
   in radix_sort(arg)
