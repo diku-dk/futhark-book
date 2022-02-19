@@ -20,6 +20,7 @@
    introduction.rst
    language.rst
    practical-matters.rst
+   modules.rst
    interoperability.rst
    parallel-cost-model.rst
    fusion.rst

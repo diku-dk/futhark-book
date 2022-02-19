@@ -38,6 +38,8 @@ from sphinx.highlighting import lexers
 extensions = ['sphinx.ext.mathjax',
               'sphinxcontrib.bibtex']
 
+bibtex_bibfiles = ['bib.bib']
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -196,4 +198,4 @@ texinfo_documents = [
 # -- Final setup --
 
 def setup(app):
-    app.add_javascript('exercises.js')
+    app.add_js_file('exercises.js')
