@@ -145,10 +145,10 @@ In fact, a plain ``import "module"`` declaration is equivalent to::
 
 This declaration opens ``"module"`` in the current file, but does not
 propagate its contents to modules that in turn ``import`` the current
-file.  If we wish to re-export names bound in another file, we would
+file.  If we wished to re-export names from another file, we would
 say::
 
-  local open import "module"
+  open import "module"
 
 .. _module-types:
 
