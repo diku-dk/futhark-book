@@ -243,6 +243,60 @@ definition is entirely abstract. Furthermore, no values of type
 ``speeds.thing`` exists except those that are created by the ``speeds``
 module.
 
+Module type refinement
+~~~~~~~~~~~~~~~~~~~~~~
+
+It is a common pattern to define generic modules with abstract types,
+that are then specialised or *refined* with concrete types.  For
+example, consider a module type describing monoids:
+
+::
+
+  module type monoid = {
+    type t
+    val add : t -> t -> t
+    val zero : t
+  }
+
+This module type specifies the presence of an *abstract type* ``t``,
+as well as a function operating on values of type ``t``.  But in many
+cases when we define modules implementing this module type, we don't
+want the module to operate on an abstract type.  Consider if we did
+this::
+
+  module monoid_i32 = add_i32 : monoid
+
+Now the function ``monoid_i32.add`` operates on some abstract type
+``t``, rather than on ``i32``, and the only value of that type that we
+can access is ``monoid_i32.zero``.  This is not particularly useful.
+Instead, what we want to state is that the module implements
+``monoid``, but *specifically* for the case where ``t`` is ``i32``.
+This can be done with a *module type refinement*::
+
+  module monoid_i32 = add_i32 : monoid with t = i32
+
+Here, ``monoid with t = i32`` is a module type *expression* that
+produces another module type.  In this case, the resulting module type
+is equivalent to ``monoid``, but with ``t`` replaced with ``i32``
+everywhere.  We can also bind the resulting module type to a name if
+we wish::
+
+  module type i32_monoid = monoid with t = i32
+
+This is completely equivalent to writing out the module type in full::
+
+  module type i32_monoid = {
+    type t = i32
+    val add : i32 -> i32 -> i32
+    val zero : i32
+  }
+
+As with all other Futhark types, module types are completely
+identified by their structure, not their names.  Binding module types
+to names is done only for brevity.  This makes them dissimilar to the
+"interfaces" of most other programming languages, which are identified
+by specific names.
+
 .. _parametric-modules:
 
 Parametric Modules
@@ -250,22 +304,12 @@ Parametric Modules
 
 While module types serve some purpose for namespace control and
 abstraction, their most interesting use is in the definition of
-parametric modules. A parametric module is conceptually equivalent to a
-function. Where a function takes a value as input and produces a value,
-a parametric module takes a module and produces a module. For example,
-given a module type
-
-::
-
-    module type monoid = {
-      type t
-      val add : t -> t -> t
-      val zero : t
-    }
-
-We can define a parametric module that accepts a module satisfying the
-``monoid`` module type, and produces a module containing a function for
-collapsing an array
+parametric modules. A parametric module is conceptually equivalent to
+a function. Where a function takes a value as input and produces a
+value, a parametric module takes a module and produces a module. For
+example, we can define a parametric module that accepts a module
+satisfying the ``monoid`` module type given above, and produces a
+module containing a function for collapsing an array
 
 ::
 
