@@ -498,7 +498,7 @@ only screen and (min-device-pixel-ratio: 2) {
 
 /* EXERCISES */
 
-.solution .last {
+.solution > .admonition-title + div {
     display: none;
 }
 
