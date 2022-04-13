@@ -46,8 +46,8 @@ function first computes the element-wise product of its two arguments,
 resulting in an array of integers, then computes the sum of the
 elements in this new array.
 
-If we save the program in a file ``dotprod.fut``, then we can compile
-it to a binary ``dotprod`` (or ``dotprod.exe`` on Windows) by running:
+If we save the program in a file ``dotprod.fut``, we can compile it to
+a binary ``dotprod`` by running:
 
 .. code-block:: none
 
@@ -93,8 +93,9 @@ Execution is just as before:
 In this case, the workload is small enough that there is little
 benefit in parallelising the execution. In fact, it is likely that for
 this tiny dataset, the OpenCL startup overhead results in several
-orders of magnitude slowdown over sequential execution. See
-:numref:`benchmarking` for information on how to measure execution times.
+orders of magnitude slowdown over sequential execution. In
+:numref:`benchmarking` we will discuss how to measure the performance
+of our programs.
 
 The ability to compile Futhark programs to executables is useful for
 testing, but it should be noted that it is not how Futhark is intended
@@ -104,7 +105,7 @@ such cannot be used as a general-purpose language. Futhark is intended
 to be used for small, performance-sensitive parts of larger
 applications, typically by compiling a Futhark program to a *library*
 that can be imported and used by applications written in conventional
-languages. See :numref:`interoperability` for more information.
+languages. We'll return to this in :numref:`interoperability`.
 
 As compiled Futhark executables are intended for testing, they take a
 range of command line options to manipulate their behaviour and print
