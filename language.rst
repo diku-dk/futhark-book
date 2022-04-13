@@ -460,7 +460,7 @@ size parameters.
 
    .. only:: html
 
-   .. admonition:: Solution (click to show)
+   .. admonition:: Solution
       :class: solution
 
       ::
@@ -895,7 +895,7 @@ unchanged - only the size is allowed to differ.
 
    .. only:: html
 
-   .. admonition:: Solution (click to show)
+   .. admonition:: Solution
       :class: solution
 
       *No*.  Each call to ``dup`` produces a *distinct* size that is
@@ -915,7 +915,7 @@ unchanged - only the size is allowed to differ.
 
    .. only:: html
 
-   .. admonition:: Solution (click to show)
+   .. admonition:: Solution
       :class: solution
 
       ::

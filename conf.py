@@ -194,8 +194,3 @@ texinfo_documents = [
      author, 'ParallelProgramminginFuthark', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-# -- Final setup --
-
-def setup(app):
-    app.add_js_file('exercises.js')
