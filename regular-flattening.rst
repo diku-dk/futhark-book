@@ -180,7 +180,7 @@ sizes to a corresponding array of boolean flags. Here is one possible
 parallel implementation of such an ``idxs_to_flags`` function:
 
 .. literalinclude:: src/idxs_to_flags.fut
-   :lines: 25-27
+   :lines: 25-28
 
 As an example use of the function, the expression ``idxs_to_flags
 [2,1,3]`` evaluates to the flag array
