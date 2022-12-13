@@ -152,13 +152,13 @@ generated Sobol numbers:
     module sobol_dir       : sobol_dir  -- file sobol-dir-50, e.g.
 
     module type sobol = {
-      val D : i32
+      val D : i64
       val norm : f64
       val independent : i32 -> [D]u32
       val recurrent   : i32 -> [D]u32 -> [D]u32
-      val sobol       : (n: i32) -> [n][D]f64
+      val sobol       : (n: i64) -> [n][D]f64
     }
-    module Sobol : (DM : sobol_dir) -> (X : { val D : i32 }) -> sobol
+    module Sobol : (DM : sobol_dir) -> (X : { val D : i64 }) -> sobol
 
 For estimating the value of :math:`\pi`, we will need a
 two-dimensional Sobol sequence, thus we apply the `Sobol` higher-order
