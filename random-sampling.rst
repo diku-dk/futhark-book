@@ -76,7 +76,7 @@ and then pass one to each application of ``f``:
 
     let rngs = minstd_rand.split_rng n rng
     let (rngs, ys) = unzip (map2 f rngs xs)
-    let rng = minstd.rand.join_rng rngs
+    let rng = minstd_rand.join_rng rngs
 
 We assume here that the function ``f`` returns not just the result,
 but also the new RNG state.  Generally, all functions that accept
