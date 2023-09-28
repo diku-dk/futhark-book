@@ -1,7 +1,7 @@
 import "lib/github.com/diku-dk/sobol/sobol-dir-50"
 import "lib/github.com/diku-dk/sobol/sobol"
 
-module sobol = Sobol sobol_dir { def D: i32 = 2 }
+module sobol = Sobol sobol_dir { def D: i64 = 2 }
 
 def sqr (x:f64) = x * x
 
@@ -11,19 +11,19 @@ def in_circle (p:[sobol.D]f64) : bool =
 def pi_arr [n] (arr: [n][sobol.D]f64) : f64 =
   let bs = map (i32.bool <-< in_circle) arr
   let sum = reduce (+) 0 bs
-  in 4f64 * r64 sum / f64.i32 n
+  in 4f64 * r64 sum / f64.i64 n
 
-def main (n:i32) : f64 =
+def main (n:i64) : f64 =
   sobol.sobol n |> pi_arr
 
-entry pi_sobol (n:i32) : f64 =
+entry pi_sobol (n:i64) : f64 =
   sobol.sobol n |> pi_arr
 
 
-entry pi_uniform (n:i32) : f64 =
-  let n = f32.i32 n |> f32.sqrt |> i32.f32
-  let d = f64.(1f64 / i32 n)
-  let points = map (\ x -> f64.(d*i32 x + d/2f64)) (iota n)
+entry pi_uniform (n:i64) : f64 =
+  let n = f32.i64 n |> f32.sqrt |> i64.f32
+  let d = f64.(1f64 / i64 n)
+  let points = map (\ x -> f64.(d*i64 x + d/2f64)) (iota n)
   let arr = map (\x -> map (\y -> [x,y] :> [sobol.D]f64) points) points
   in flatten arr |> pi_arr
 

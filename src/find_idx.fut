@@ -2,15 +2,15 @@
 -- input { } output { [true,true] }
 
 -- Return the first index i into xs for which xs[i] == e
-def find_idx_first [n] (e:i32) (xs:[n]i32) : i32 =
+def find_idx_first [n] (e:i32) (xs:[n]i32) : i64 =
   let es = map2 (\x i -> if x==e then i else n) xs (iota n)
-  let res = reduce i32.min n es
+  let res = i64.minimum es
   in if res == n then -1 else res
 
 -- Return the last index i into xs for which xs[i] == e
-def find_idx_last [n] (e:i32) (xs:[n]i32) : i32 =
+def find_idx_last [n] (e:i32) (xs:[n]i32) : i64 =
   let es = map2 (\x i -> if x==e then i else -1) xs (iota n)
-  in reduce i32.max (-1) es
+  in i64.minimum es
 
 def main : []bool =
   let xs = [34,453,23,5,67,445,23,-23,65,34,-232,56565,3,1,67567,3,545,67,343,23]

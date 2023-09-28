@@ -7,9 +7,9 @@
 --    [0i32, 3i32, 6i32, 9i32]]
 -- }
 
-def multable (n : i32) : [n][n]i32 =
+def multable (n : i64) : [n][n]i64 =
   map (\i ->
     map (\j -> i * j) (iota n))
       (iota n)
 
-def main (n:i32) : [n][n]i32 = multable n
+def main (n:i64) : [n][n]i64 = multable n
