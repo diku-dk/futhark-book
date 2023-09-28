@@ -102,7 +102,7 @@ feature is exploited in the following function, which implements a
 homomorphism for finding the largest element and its index in an array:
 
 .. literalinclude:: src/maxidx.fut
-   :lines: 4-11
+   :lines: 4-8
 
 The function is a *homomorphism* :cite:`BirdListTh`: For any :math:`x`
 and :math:`y`, and with :math:`++` denoting array concatenation, there

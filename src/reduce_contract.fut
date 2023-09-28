@@ -2,7 +2,7 @@
 -- input {} output { true }
 
 -- Find the smallest power of two greater than n
-def nextpow2 (n:i32) : i32 =
+def nextpow2 (n:i64) : i64 =
   loop a=2 while a < n do 2*a
 
 -- Pad a vector to make its size a power of two

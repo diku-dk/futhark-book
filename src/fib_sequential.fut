@@ -1,4 +1,4 @@
-def fib (n: i32): []i32 =
+def fib (n: i64): [n]i64 =
   -- Create "empty" array.
   let arr = iota(n)
   -- Fill array with Fibonacci numbers.

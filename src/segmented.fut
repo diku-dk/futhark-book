@@ -25,7 +25,7 @@ def segmented_reduce [n] 't (op: t -> t -> t) (ne: t)
   -- Find the segment ends.
   let segment_ends = rotate 1 flags
   -- Find the offset for each segment end.
-  let segment_end_offsets = segment_ends |> map i32.bool |> scan (+) 0
+  let segment_end_offsets = segment_ends |> map i64.bool |> scan (+) 0
   let num_segments = if n > 1 then segment_end_offsets[n-1] else 0
   -- Make room for the final result.  The specific value we write here
   -- does not matter; they will all be overwritten by the segment
@@ -41,7 +41,7 @@ def segmented_reduce [n] 't (op: t -> t -> t) (ne: t)
 -- the repetition array. As an example, replicated_iota [2,3,1]
 -- returns the array [0,0,1,1,1,2].
 
-def replicated_iota [n] (reps:[n]i32) : []i32 =
+def replicated_iota [n] (reps:[n]i64) : []i64 =
   let s1 = scan (+) 0 reps
   let s2 = map (\i -> if i==0 then 0 else s1[i-1]) (iota n)
   let tmp = scatter (replicate (reduce (+) 0 reps) 0) s2 (iota n)
@@ -54,7 +54,7 @@ def replicated_iota [n] (reps:[n]i32) : []i32 =
 -- [false,false,false,true,false,false,false] returns the array
 -- [0,1,2,0,1,2,3].
 
-def segmented_iota [n] (flags:[n]bool) : [n]i32 =
+def segmented_iota [n] (flags:[n]bool) : [n]i64 =
   let iotas = segmented_scan (+) 0 flags (replicate n 1)
   in map (\x -> x-1) iotas
 
@@ -66,8 +66,8 @@ def segmented_iota [n] (flags:[n]bool) : [n]i32 =
 -- source. As an example, the expression expand (\x->x) (*) [2,3,1]
 -- returns the array [0,2,0,3,6,0].
 
-def expand 'a 'b (sz: a -> i32) (get: a -> i32 -> b) (arr:[]a) : []b =
+def expand 'a 'b (sz: a -> i64) (get: a -> i64 -> b) (arr:[]a) : []b =
   let szs = map sz arr
   let idxs = replicated_iota szs
-  let iotas = segmented_iota (map2 (!=) idxs (rotate (i32.negate 1) idxs))
+  let iotas = segmented_iota (map2 (!=) idxs (rotate (i64.neg 1) idxs))
   in map2 (\i j -> get arr[i] j) idxs iotas
