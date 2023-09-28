@@ -19,7 +19,7 @@
 def primes (n:i32) : []i32 =
   let (acc, _) = loop (acc,c) = ([],2) while c < n+1 do
 	let c2 = i32.min (c * c) (n+1)
-	let is = map (+c) (iota(c2-c))
+	let is = map (+c) (map i32.i64 (iota (i64.i32 (c2-c))))
 	let fs = map (\i ->
 		      let xs = map (\p -> if i%p==0 then 1
 					  else 0) acc
@@ -30,5 +30,5 @@ def primes (n:i32) : []i32 =
   in acc
 
 -- Return the number of primes less than n
-def main (n:i32) : i32 =
+def main (n:i32) =
   let ps = primes n in length ps
