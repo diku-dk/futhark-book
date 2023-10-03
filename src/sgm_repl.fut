@@ -10,16 +10,16 @@ def segmented_scan [n] 't (op: t -> t -> t) (ne: t)
           (false, ne)
           (zip flags as))).1
 
-def replicated_iota [n] (reps:[n]i32) : []i32 =
+def replicated_iota [n] (reps:[n]i64) : []i64 =
   let s1 = scan (+) 0 reps
   let s2 = map (\i -> if i==0 then 0 else s1[i-1]) (iota n)
   let tmp = scatter (replicate s1[n-1] 0) s2 (iota n)
   let flags = map (>0) tmp
   in segmented_scan (+) 0 flags tmp
 
-def segmented_replicate [n] (reps:[n]i32) (vs:[n]i32) : []i32 =
+def segmented_replicate [n] (reps:[n]i64) (vs:[n]i64) : []i64 =
   let idxs = replicated_iota reps
   in map (\i -> vs[i]) idxs
 
-def main : []i32 =
+def main : []i64 =
   segmented_replicate ([2,1,0,3,0]) ([5,6,9,8,4])  -- [5,5,6,8,8,8]
