@@ -12,8 +12,8 @@
 
 
 -- Store elements for which bitn is not set first
-def rs_step_asc [n] ((xs:[n]u32,is:[n]i32),bitn:i32) : ([n]u32,[n]i32) =
-  let bits1 = map (\x -> (i32.u32 (x >> u32.i32 bitn)) & 1) xs
+def rs_step_asc [n] ((xs:[n]u32,is:[n]i64),bitn:i32) : ([n]u32,[n]i64) =
+  let bits1 = map (\x -> (i64.u32 (x >> u32.i32 bitn)) & 1) xs
   let bits0 = map (1-) bits1
   let idxs0 = map2 (*) bits0 (scan (+) 0 bits0)
   let idxs1 = scan (+) 0 bits1
@@ -24,15 +24,15 @@ def rs_step_asc [n] ((xs:[n]u32,is:[n]i32),bitn:i32) : ([n]u32,[n]i32) =
       scatter (copy is) idxs is)
 
 -- Radix sort - ascending
-def rsort_asc [n] (xs: [n]u32) : ([n]u32,[n]i32) =
+def rsort_asc [n] (xs: [n]u32) : ([n]u32,[n]i64) =
   let is = iota n
-  in loop (p : ([n]u32,[n]i32)) = (xs,is) for i < 32 do
+  in loop (p : ([n]u32,[n]i64)) = (xs,is) for i < 32 do
     rs_step_asc(p,i)
 
 
 -- Store elements for which bitn is set first
-def rs_step_desc [n] ((xs:[n]u32,is:[n]i32),bitn:i32) : ([n]u32,[n]i32) =
-  let bits1 = map (\x -> (i32.u32 (x >> u32.i32 bitn)) & 1) xs
+def rs_step_desc [n] ((xs:[n]u32,is:[n]i64),bitn:i32) : ([n]u32,[n]i64) =
+  let bits1 = map (\x -> (i64.u32 (x >> u32.i32 bitn)) & 1) xs
   let bits0 = map (1-) bits1
   let idxs1 = map2 (*) bits1 (scan (+) 0 bits1)
   let idxs0 = scan (+) 0 bits0
@@ -43,18 +43,18 @@ def rs_step_desc [n] ((xs:[n]u32,is:[n]i32),bitn:i32) : ([n]u32,[n]i32) =
       scatter (copy is) idxs is)
 
 -- Radix sort - descending
-def rsort_desc [n] (xs: [n]u32) : ([n]u32,[n]i32) =
-  loop (p : ([n]u32,[n]i32)) = (xs,iota n) for i < 32 do
+def rsort_desc [n] (xs: [n]u32) : ([n]u32,[n]i64) =
+  loop (p : ([n]u32,[n]i64)) = (xs,iota n) for i < 32 do
     rs_step_desc(p,i)
 
 
-def grade_up [n] (xs: [n]u32) : [n]i32 =
+def grade_up [n] (xs: [n]u32) : [n]i64 =
   let (_,is) = rsort_asc xs in is
 
-def grade_down [n] (xs: [n]u32) : [n]i32 =
+def grade_down [n] (xs: [n]u32) : [n]i64 =
   let (_,is) = rsort_desc xs in is
 
-def eq_vec [n] (v1: [n]i32) (v2: [n]i32) : bool =
+def eq_vec [n] (v1: [n]i64) (v2: [n]i64) : bool =
   reduce (&&) true (map2 (==) v1 v2)
 
 def main : []bool =

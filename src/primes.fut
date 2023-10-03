@@ -31,4 +31,9 @@ def primes (n:i64) : []i64 =
 
 -- Return the number of primes less than n
 def main (n:i64) =
-  let ps = primes n in length ps
+  primes n
+
+
+-- ==
+-- entry: main
+-- input { 100000000i64 }
