@@ -1,6 +1,6 @@
 -- ==
 -- input { [0,5,2,0,1] }
--- output { [1,2,4] }
+-- output { [1i64,2i64,4i64] }
 
 def indices_of_nonzero [n] (xs: [n]i32): []i64 =
   let xs_and_is = zip xs (iota n)

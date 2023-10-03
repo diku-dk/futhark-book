@@ -1,5 +1,5 @@
 -- ==
--- input {} output { [5i32, 5i32, 6i32, 8i32, 8i32, 8i32] }
+-- input {} output { [5i64, 5i64, 6i64, 8i64, 8i64, 8i64] }
 
 -- Segmented scan with integer addition
 def segmented_scan [n] 't (op: t -> t -> t) (ne: t)

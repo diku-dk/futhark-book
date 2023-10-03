@@ -6,8 +6,8 @@
 -- Oh, and it cannot handle non-meaningful inputs.
 --
 -- ==
--- input { [1] 0 } output { 1 }
--- input { [4, -8, 2, 2, 0, 0, 5, 9, -6, 2] 7 } output { 4 }
+-- input { [1] 0i64 } output { 1 }
+-- input { [4, -8, 2, 2, 0, 0, 5, 9, -6, 2] 7i64 } output { 4 }
 
 def quickselect [n] (s: [n]i32) (k:i64): i32 =
   let (_, s) =

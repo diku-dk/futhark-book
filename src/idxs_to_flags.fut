@@ -1,6 +1,6 @@
 -- ==
--- input { [2,1,3] } output { [false,false,true,true,false,false] }
--- input { [2,0,3] } output { [false,false,true,false,false] }
+-- input { [2i64,1i64,3i64] } output { [false,false,true,true,false,false] }
+-- input { [2i64,0i64,3i64] } output { [false,false,true,false,false] }
 
 -- Segmented scan with integer addition
 def segmented_scan [n] 't (op: t -> t -> t) (ne: t)

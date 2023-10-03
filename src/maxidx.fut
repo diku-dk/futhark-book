@@ -1,5 +1,5 @@
 -- ==
--- input {} output { 1212i32 17i32 }
+-- input {} output { 1212i32 17i64 }
 
 def mx (m1:i32,i1:i64) (m2:i32,i2:i64) : (i32,i64) =
   if m1 > m2 then (m1,i1) else (m2,i2)

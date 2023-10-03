@@ -1,5 +1,5 @@
 -- ==
--- input { 100 } output { 25 }
+-- input { 100i64 } output { 25i64 }
 
 -- Find the first n primes
 -- let primes (n:i32) : []i32 =
@@ -31,9 +31,4 @@ def primes (n:i64) : []i64 =
 
 -- Return the number of primes less than n
 def main (n:i64) =
-  primes n
-
-
--- ==
--- entry: main
--- input { 100000000i64 }
+  length (primes n)

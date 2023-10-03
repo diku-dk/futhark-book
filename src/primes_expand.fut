@@ -1,5 +1,5 @@
 -- ==
--- input { 100 } output { 25 }
+-- input { 100i64 } output { 25i64 }
 
 import "segmented"
 
