@@ -50,7 +50,7 @@ multiplication.  Suppose that we have the following defined in a file
 .. literalinclude:: src/matmul.fut
    :lines: 17-20
 
-Note that we use ``entry`` instead of ``let`` in order for the
+Note that we use ``entry`` instead of ``def`` in order for the
 function to be callable from the outside.
 
 We then add a test block:
@@ -121,11 +121,11 @@ done with the notation ``@ file``:
 
 This also shows another feature of ``futhark test``: if we precede
 ``input`` with the word ``compiled``, that test is not run with the
-interpreter.  This is useful for large tests that would take too long
-to run interpreted.  Alternatively, we could run the test with
-``futhark test -c``, which disables interpretation entirely.  There
-are more ways to filter which tests and programs should be skipped for
-a given invocation of ``futhark test``; see the `manual
+interpreter. This is useful for large tests that would take too long
+to run interpreted. By default ``futhark test`` does not use the
+interpreter unless the ``-i`` option is passed. There are more ways to
+filter which tests and programs should be skipped for a given
+invocation of ``futhark test``; see the `manual
 <https://futhark.readthedocs.io/en/latest/man/futhark-test.html>`_ for
 more information.
 
