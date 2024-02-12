@@ -308,14 +308,14 @@ We first define a type ``sgm`` that specifies a segment of an
 underlying one-dimensional array of values:
 
 .. literalinclude:: src/quick_sort.fut
-   :lines: 24-24
+   :lines: 25-25
 
 At top-level, the function ``qsort`` is defined as follows, assuming a
 function ``step`` of type ``(t -> t -> bool) -> *[n]t -> []sgm ->
 (*[n]t,[]sgm)``:
 
 .. literalinclude:: src/quick_sort.fut
-   :lines: 88-92
+   :lines: 89-93
 
 The ``step`` function is called initially with the array to be sorted
 as argument together with a singleton array containing a segment
@@ -336,7 +336,7 @@ helper functions.  Using the functions ``segmented_iota`` and
 finding all the indexes represented by an array of segments:
 
 .. literalinclude:: src/quick_sort.fut
-   :lines: 27-32
+   :lines: 28-33
 
 We also define a function ``info`` that, given an ordering function
 and two elements, returns ``-1`` if the first element is less than the
@@ -350,7 +350,7 @@ The following two functions ``tripit`` and ``tripadd`` are used for
 converting the classification of elements into subsegments:
 
 .. literalinclude:: src/quick_sort.fut
-   :lines: 18-22
+   :lines: 18-23
 
 We can now define the function ``step`` that, besides from an ordering
 function, takes as arguments (1) the array containing values and (2) an
@@ -359,7 +359,7 @@ reordered array of values and a new array of segments to be
 sorted:
 
 .. literalinclude:: src/quick_sort.fut
-   :lines: 34-78
+   :lines: 35-79
 
 The algorithm has best case work complexity :math:`O(n)` (when all
 elements are identical), worst case work complexity :math:`O(n^2)`,
