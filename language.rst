@@ -356,6 +356,13 @@ notation throughout this book.
    treatment of equality types and equality type variables in the
    Standard ML programming language.
 
+Apart from basic arithmetic operators, Futhark also provides various
+standard mathematical functions through built-in modules named after
+the corresponding type. For example, the function that takes the
+square root of a value of type ``f64`` is called ``f64.sqrt``. Consult
+the reference documentation for the Futhark prelude for a full list of
+available functions.
+
 .. _function-declarations:
 
 Top-Level Definitions
