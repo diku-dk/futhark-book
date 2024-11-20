@@ -209,17 +209,15 @@ is very slow compared to compiled code, this does mean that we can
 only debug with cut-down smaller testing sets, not with realistic
 workloads.
 
-Specifically, we use the two functions ``trace`` and ``break``.  The
-``trace`` function has the following type::
-
-  trace 't : t -> t
-
-Semantically, ``trace`` just returns its argument unchanged, and when
-compiling your Futhark code, this is indeed all that will happen.
-However, ``futhark repl`` and ``futhark run`` treat ``trace``
-specially, and will print the argument to the screen.  This is useful
-for seeing the value of internal variables.  For example, suppose we
-have the program ``trace.fut``:
+An *attribute* is a mechanism for adding additional information to a
+Futhark program. Attributes are intended not to affect the semantics
+of the program, meaning the value that results of evaluation, but can
+influence the compiler or interpreter in various other ways. For
+debugging, we can use the two attributes ``#[trace]`` and
+``#[break]``. We can attach these attributes to an expression by
+writing ``#[trace]`` or ``#[break]`` before any expression. After the
+expression is evaluated, its value will be printed to the console. For
+example, suppose we have the program ``trace.fut``:
 
 .. literalinclude:: src/trace.fut
 
@@ -233,14 +231,19 @@ We can then run it with ``futhark run`` to get the following output:
    Trace at trace.fut:1:24-1:49: 3i32
    [3i32, 4i32, 5i32]
 
-Similarly, the ``break`` function is semantically also the identity function::
+When using the interpreter, the value is a faithful representation of
+the underlying Futhark value. When using the compiler, the value
+printed will be based on the optimised run-time representation, which
+may be somewhat obscure. In some cases, such as when using a GPU
+backend, some traces may even be ignored, if they happen to occur in
+code that runs on the GPU. It is generally best to use the interpreter
+when tracing.
 
-  break 't : t -> t
-
-When the interpreter encounters ``break``, it suspends execution and
-lets us inspect the variables in scope.  At the moment, this works
-*only* when running an expression within ``futhark repl``, *not* when
-using ``futhark run``.  Suppose ``break.fut`` is:
+The ``#[break]`` attribute is attached to an expression in a similar
+manner. When the interpreter encounters ``break``, it suspends
+execution and lets us inspect the variables in scope. At the moment,
+this works *only* when running an expression within ``futhark repl``,
+*not* when using ``futhark run``. Suppose ``break.fut`` is:
 
 .. literalinclude:: src/break.fut
 
@@ -269,6 +272,12 @@ Then we can load and run it from ``futhark repl``:
 Whenever we are stopped at a break point, we can enter arbitrary
 Futhark expressions to inspect the state of the environment.  This is
 useful when operating on complex values.
+
+The prelude also defines functions ``trace`` and ``break`` that are
+semantically the identity function, but attach respectively the
+``#[trace]`` and ``#[break]`` attributes to their result. Sometimes
+using these functions is more syntactically convenient than using
+attributes.
 
 .. _benchmarking:
 
