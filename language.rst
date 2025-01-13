@@ -826,7 +826,7 @@ Size parameters are always of type ``i64``, and in fact, *any*
 lets us define a function that replicates an integer some number of
 times::
 
-    def replicate_i32 (n: i64) (x: i32): [n]i64 =
+    def replicate_i32 (n: i64) (x: i32): [n]i32 =
       map (\_ -> x) (0..<n)
 
 In :numref:`polymorphism` we will see how to write a polymorphic
