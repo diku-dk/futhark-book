@@ -433,9 +433,12 @@ the remaining SOACs follow the same lines as the definitions for
      S(\fop{reduce}~F~e'~e'') &=~~
        \Let~[v_1,\cdots,v_n] = \Eval{e''} \\
        & ~ ~~ \quad \lambda x~x'. e = \extractF{F} \\
-       & ~ ~~ \In~S(e') + S(e'') + S(e[v_1/x,v_n/x']) \times \mathrm{ln}\,n + 1 \\
-       & ~ ~~ \quad \mathrm{assuming} ~ S(e[v_1/x,v_n/x']) ~\mathrm{indifferent~to} ~v_1~ \mathrm{and} ~v_n \\
+       & ~ ~~ \In~S(e') + S(e'') + W(e[v_1/x,v_n/x']) \times \mathrm{ln}\,n + 1 \\
+       & ~ ~~ \quad \mathrm{assuming} ~ W(e[v_1/x,v_n/x']) ~\mathrm{indifferent~to} ~v_1~ \mathrm{and} ~v_n \\
      S(\fop{iota}~ e) &=~~ S(e) + 1
+
+Note how the rule for ``reduce`` makes it explicit that Futhark does not promise
+to exploit any parallelism inside the reduction operator.
 
 Reduction by Contraction
 ========================
