@@ -34,8 +34,8 @@ longest line.
 
 Another strategy for regularisation is to *flatten* the irregular
 parallelism into regular parallelism and use segmented operations to
-process each particular object. It turns out that there, in many
-cases, is a simple approach to implement such flattening, using, as we
+process each particular object. It turns out that, in many
+cases, there is a simple approach to implement such flattening, using, as we
 shall see, a technique called *expansion*, which will take care of all
 the knitty gritty details of the flattening. The expansion approach is
 centered around a function that we shall call ``expand``, which, as
