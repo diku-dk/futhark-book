@@ -462,7 +462,7 @@ input to a recursive call to the algorithm. In Futhark, the function can
 be implemented as follows:
 
 .. literalinclude:: src/reduce_contract.fut
-   :lines: 13-16
+   :lines: 13-17
 
 The function specializes the reduction operator :math:`\oplus` to be
 ``+`` and the neutral element to be ``0``. The function first pads the
