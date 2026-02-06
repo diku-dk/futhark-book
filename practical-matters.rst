@@ -48,7 +48,7 @@ multiplication.  Suppose that we have the following defined in a file
 ``matmul.fut``:
 
 .. literalinclude:: src/matmul.fut
-   :lines: 17-20
+   :lines: 19-22
 
 Note that we use ``entry`` instead of ``def`` in order for the
 function to be callable from the outside.
