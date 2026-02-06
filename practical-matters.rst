@@ -85,7 +85,7 @@ shape of the matrices don't match up:
    :lines: 8-9
 
 We provide a regular expression matching the expected error.  In this
-case, we just assert that the error mentions the file name.
+case, we just assert that the error is about sizes.
 
 Type inference on the input/output values is not performed, so the
 types must be unambiguous.  This means that the usual ``[]`` notation
@@ -94,7 +94,7 @@ notation is used to represent an array of type ``t``.  For example, we
 can test for empty arrays as such:
 
 .. literalinclude:: src/matmul.fut
-   :lines: 10-11
+   :lines: 12-13
 
 Note also that since plain integer literals are assumed to be of type
 ``i32``, and plain decimal literals to be of type ``f64``, you will
@@ -117,7 +117,7 @@ which can be generated with the ``futhark dataset`` tool.  This is
 done with the notation ``@ file``:
 
 .. literalinclude:: src/matmul.fut
-   :lines: 12-13
+   :lines: 14-15
 
 This also shows another feature of ``futhark test``: if we precede
 ``input`` with the word ``compiled``, that test is not run with the
@@ -139,7 +139,7 @@ again the dot product: what matters is the size of the vectors, not
 their contents.  This is done with the stanza ``random input``:
 
 .. literalinclude:: src/matmul.fut
-   :lines: 14
+   :lines: 16
 
 We again use ``compiled`` to indicate that this data set should not be
 used when testing with the interpreter.  However, instead of
@@ -157,7 +157,7 @@ to ask ``futhark test`` to automatically construct an expected output
 file before running the program:
 
 .. literalinclude:: src/matmul.fut
-   :lines: 14-15
+   :lines: 16-17
 
 The expected output is constructed by running the program compiled
 with ``futhark c``, and so is mainly useful for detecting differences
