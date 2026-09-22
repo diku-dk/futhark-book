@@ -173,7 +173,7 @@ A Futhark library typically comprises a number of ``.fut`` files means
 to be ``include``-ed by Futhark programs.  Libraries typically do not
 define entry points of the form required by ``futhark test``.  Indeed,
 it is not unusual for Futhark libraries to consist entirely of
-parametric modules and higher-order functions!  These are not directly
+parameterised modules and higher-order functions!  These are not directly
 accessible to ``futhark test``.
 
 The recommended solution is that, for every library file ``foo.fut``,
@@ -181,7 +181,7 @@ we define a corresponding ``foo_tests.fut`` that imports ``foo.fut``
 and defines a number of entry points.
 
 For example, suppose we have ``sum.fut`` that contains the ``sum``
-module from :numref:`parametric-modules`:
+module from :numref:`parameterised-modules`:
 
 .. literalinclude:: src/sum.fut
 

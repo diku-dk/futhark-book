@@ -157,7 +157,7 @@ Module Types
 
 What we have seen so far is nothing more than a simple namespace
 mechanism. The ML module system only becomes truly powerful once we
-introduce module types and parametric modules (in Standard ML, these
+introduce module types and parameterised modules (in Standard ML, these
 are called *signatures* and *functors*).
 
 A module type is the counterpart to a value type. It describes which
@@ -297,17 +297,17 @@ to names is done only for brevity.  This makes them dissimilar to the
 "interfaces" of most other programming languages, which are identified
 by specific names.
 
-.. _parametric-modules:
+.. _parameterised-modules:
 
-Parametric Modules
-------------------
+Parameterised Modules
+---------------------
 
 While module types serve some purpose for namespace control and
 abstraction, their most interesting use is in the definition of
-parametric modules. A parametric module is conceptually equivalent to
+parameterised modules. A parameterised module is conceptually equivalent to
 a function. Where a function takes a value as input and produces a
-value, a parametric module takes a module and produces a module. For
-example, we can define a parametric module that accepts a module
+value, a parameterised module takes a module and produces a module. For
+example, we can define a parameterised module that accepts a module
 satisfying the ``monoid`` module type given above, and produces a
 module containing a function for collapsing an array
 
@@ -326,7 +326,7 @@ of ``reduce``, and the algebraic concept of a *monoid*. Notice that in
 that there must be some type ``t``, and that certain operations are
 defined for it.
 
-We can use the parametric module ``sum`` as follows:
+We can use the parameterised module ``sum`` as follows:
 
 ::
 
@@ -334,7 +334,7 @@ We can use the parametric module ``sum`` as follows:
 
 We can now refer to the function ``sum_i32.sum``, which has type
 ``[]i32 -> i32``. The type is only abstract inside the definition of the
-parametric module. We can instantiate ``sum`` again with another module,
+parameterised module. We can instantiate ``sum`` again with another module,
 this time an anonymous module:
 
 ::
@@ -349,16 +349,16 @@ The function ``prod_f64.sum`` has type ``[]f64 -> f64``, and computes
 the product of an array of numbers (we should probably have picked a
 more generic name than ``sum`` for this function).
 
-Operationally, each application of a parametric module results in its
+Operationally, each application of a parameterised module results in its
 definition being duplicated and references to the module parameter
 replace by references to the concrete module argument. This is quite
-similar to how C++ templates are implemented. Indeed, parametric modules
+similar to how C++ templates are implemented. Indeed, parameterised modules
 can be seen as a simplified variant with no specialisation, and with
 module types to ensure rigid type checking. In C++, a template is
-type-checked when it is instantiated, whereas a parametric module is
+type-checked when it is instantiated, whereas a parameterised module is
 type-checked when it is defined.
 
-Parametric modules, like other modules, can contain more than one
+Parameterised modules, like other modules, can contain more than one
 declaration. This feature is useful for giving related functionality a
 common abstraction, for example to implement linear algebra operations
 that are polymorphic over the type of scalars. The following example
